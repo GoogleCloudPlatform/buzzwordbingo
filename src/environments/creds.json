@@ -1,0 +1,13 @@
+{
+    "type": "service_account",
+    "project_id": "bingo-collab",
+    "private_key_id": "036f3589e66b7e56296a43de06e96875ed0d1c6a",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCxofUU2qoDMDBX\nbzniB8PpGtUfva2mFYfrq8QKVASekpO6BCre99NioDFrZCugLw6nYzFRdxgoIsjV\nfJqJtkepFbXhYLf1UsBwh57kU5Dbp3GvHO/hbQLDZOwzTAQboRc7uKk/Lzkb9b75\n5xOZQlZfxoDT7bIRGFo4OyWVz9Gd5/j5cQiT3vUQNgUpB0HgFn1qEomzk0zvnytc\nNh95ATTMp4bMbZUbhH44nUYyqJhvusp55w002/jM3x4YJw62Gm/zHXky0JBsCcid\n8NHK5itLpoGGSCXW7ScsB1QuFlEFpnKWwxkUfVLuda4IyAhABT5sEoqtyVwr81Oi\nHrBHsA4lAgMBAAECggEAA2av9ssXB+zuHVvLq8MX97Mj/dxtDOngSogP6V4MIUMk\n4Uy/dg8gX4Tksq3eKKODWtDLOshBJfzrLoHubZDtaf84lnelHg/humXbtNB6zLyL\nMIipI9OpWAzAebJMvoCvnVz0SfmWqi04OmMNHNlIe8NPvSm8cpeuRoxaCbZ1yNmw\nyi88Q8wt7uLDFrCIUrXGkyYCzfmEswaxSmB39Qtc/XdInnIo0j9suEHisTiS7Xzi\nkXEFDKPpBPrP1JMrpL5T+Ps0lr3GO8R/G5BzGirw29hpodX9sCP5GHnh0kdTBYkV\nIowf6304BXwWG9Mok2i3fbTYVBPD5ggALM0zEPuC0QKBgQD2XJ5cc8hNSio8+81s\nEStL8QV0Gc01y+IjPCKGOudoqzuje/B1Wjw9Y2g+v3RM+PSIqM8rrE9thzjRwal6\nxWvnbAZIoiz6FBpdnF2O9K7hm6oPAhNRm+U3X8Tfdc7C23TPwsUZll6gjygLDwwa\niCVeao0/aykVFMeOUM7FtVexPQKBgQC4lP9Tv269ubtFUDkeWk5i9gZCc7pTAf8i\nfyB8M80Dn1esbC1v6pQMzo4ogxjKe3iNKpF5N5CXd5lHvJkTKJ7h47WXDrY5tsDl\nGCy+2gPwi0+NbeBC8qRmKzKEMSBbofYQY7uqxVNUWYA/D+qzj7FQF3w+DKViBwpo\nKKvrFB1PCQKBgQCen7HjSzVb9nXNwD9a5o8fHXfqcjZ7/eOD1lNQZBrdfOswbzu7\nA7enuxrC1Bj4+o7Qcwi5UP/vQNKn0+7gur6oShidqbYV6t2zClv/ELKNVuIfObHg\nqOTkS4iCbOMM+apzny+zMuuIq8QXor+jUafl6+s4OzI/fZqjmooYKJPm7QKBgAYy\n8tRENJrolvJ//DsZu1I1gwZOTq6k/YWSEWw6bSM3AcHHrEr67Nf1Q+72YCnEtcq/\n6DzS8ec0XBB9tAJhtdxOQnX9R39utNG82xvZxJIai6RrUUHOVlkcEElCQRzytonc\nX5wfnmnRy63SggZfyAuxjjmjQRamt+HBo+x0M3vJAoGAQGuQQiIzM1hklhHjO1FC\nKHDB2OkXdEdjVQm4APVAjDTU0Ad7eD9uero6TS0In/gNRfg1FDZ57cIXwdsTfzEk\nlJlpgC3q4Ya5ZQKa2jeCTOhAMzYKGfsf7+yCQ9d6JNtGLvJHK3oCBBbo+jvaW6ua\neAJlaJEyz4Wf1MOdqer7LVc=\n-----END PRIVATE KEY-----\n",
+    "client_email": "firebase-adminsdk-cffyr@bingo-collab.iam.gserviceaccount.com",
+    "client_id": "109997153968677153916",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-cffyr%40bingo-collab.iam.gserviceaccount.com"
+  }
+  

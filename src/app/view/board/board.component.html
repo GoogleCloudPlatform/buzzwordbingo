@@ -1,0 +1,10 @@
+<div class="phrases">
+    <div class="header">B</div>
+    <div class="header">I</div>
+    <div class="header">N</div>
+    <div class="header">G</div>
+    <div class="header">O</div>
+    <app-item *ngFor="let phrase of phrases | async; let i = index " [phrase]='phrase' 
+            (phraseEmitter)="recievePhrase($event)" [position]="i+1" >
+    </app-item>
+</div>
