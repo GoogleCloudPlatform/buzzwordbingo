@@ -31,6 +31,10 @@ Entities
         Text
 
 Backend
+Create Game
+    Creates Game
+    Populates Master Board 
+
 CreatePlayer
     Creates a player
     Creates a board for the player
