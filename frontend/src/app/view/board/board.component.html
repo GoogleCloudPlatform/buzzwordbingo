@@ -5,6 +5,6 @@
     <div class="header">G</div>
     <div class="header">O</div>
     <app-item *ngFor="let phrase of phrases | async; let i = index " [phrase]='phrase' 
-            (phraseEmitter)="recievePhrase($event)" [position]="i+1" >
+            (phraseEmitter)="recievePhrase($event)" [position]="i+1" [currentState]='currentState'>
     </app-item>
 </div>

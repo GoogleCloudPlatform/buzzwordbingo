@@ -10,6 +10,7 @@ import { Phrase} from '../../service/data.service'
 
 export class ItemComponent implements OnInit {
   @Input() phrase: Phrase;
+  @Input() currentState:any;
   @Input() position: number;
   @Output() phraseEmitter = new EventEmitter<Phrase>();
   
@@ -20,16 +21,28 @@ export class ItemComponent implements OnInit {
   }
 
   select(){
+    let selectedPhraseCount = Object.keys(this.currentState).length;
+    let item:HTMLElement = document.querySelector("#id_"+ this.phrase.id);
 
-    let id = this.phrase.id;
-
+      console.log(selectedPhraseCount)
 
     if (this.phrase.selected){
-      document.querySelector("#id_"+ id).classList.remove("selected");
       this.phrase.selected = false;
+      item.style.backgroundColor = "";
     } else {
-      document.querySelector("#id_"+ id).classList.add("selected");
       this.phrase.selected = true;
+
+      switch(selectedPhraseCount) {
+        case 0:
+          item.style.backgroundColor = "lavender";
+          break;
+        case 1:
+          item.style.backgroundColor = "goldenrod";
+          break;
+        default:
+          item.style.backgroundColor = "chartreuse";
+      }
+
     }
     
 

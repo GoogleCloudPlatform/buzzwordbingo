@@ -21,7 +21,13 @@ export class BoardComponent implements OnInit {
 
   recievePhrase($event) {
     let phrase = $event;
-    this.currentState[phrase.id] = phrase;
+
+    if (phrase.selected){
+      this.currentState[phrase.id] = phrase;
+    } else {
+      delete this.currentState[phrase.id];
+    }
+
     if (this.checkBingo()){
       alert("BINGO!")
     }
@@ -52,7 +58,6 @@ export class BoardComponent implements OnInit {
           }
       }
     });
-    console.log(counts);
     for (let key in counts) {
       if (counts[key] == 5){
           return true;
