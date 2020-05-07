@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { DataService, Phrase} from '../../service/data.service'
+import {AuthService, Player} from '../../service/auth.service'
+import {GameService, Board} from '../../service/game.service'
+
+
 
 @Component({
   selector: 'app-board',
@@ -9,11 +13,16 @@ import { DataService, Phrase} from '../../service/data.service'
 })
 export class BoardComponent implements OnInit {
 
+  public board: Observable<any>;
   public phrases: Observable<any[]>;
   public currentState:any = {};
+  public player:Player;
+  
 
-  constructor(data:DataService) {
+  constructor(data:DataService, auth:AuthService, game:GameService) {
+    let player = auth.getPlayer(); 
     this.phrases = data.getPhrases();
+    this.board = game.getBoard(player.email);
    }
 
   ngOnInit(): void {

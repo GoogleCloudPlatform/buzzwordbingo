@@ -57,3 +57,13 @@ Declare bingo
 
 
 
+Frontend Flow
+User arrives
+Login
+    Do they exist in system?
+        Yes 
+            Are they an admin
+                Yes - 
+                    Give them the master view
+                No - Give them a board
+        No - Create user, give them a board 
