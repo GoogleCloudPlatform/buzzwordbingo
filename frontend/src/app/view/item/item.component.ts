@@ -23,7 +23,6 @@ export class ItemComponent implements OnInit {
   }
 
   ngAfterViewChecked(): void {
-    console.log(this.phrase)
     if (this.phrase.selected){
       this.setDisplayChecked();
     }

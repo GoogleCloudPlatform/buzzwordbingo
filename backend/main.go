@@ -39,6 +39,8 @@ func main() {
 	http.HandleFunc("/healthz", handleHealth)
 	http.HandleFunc("/api/board", handleGetBoard)
 	http.HandleFunc("/api/record", handleRecordSelect)
+	http.HandleFunc("/api/game", handleGetGame)
+	http.HandleFunc("/api/game/new", handleNewGame)
 
 	log.Printf("Starting server on port %s\n", port)
 	if err := http.ListenAndServe(port, nil); err != nil {
@@ -68,6 +70,64 @@ func handleGetBoard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json, err := board.JSON()
+	if err != nil {
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	writeResponse(w, http.StatusOK, json)
+
+}
+
+func handleNewGame(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("/api/game/new called\n")
+
+	name, ok := r.URL.Query()["name"]
+
+	if !ok || len(name[0]) < 1 {
+		msg := "{\"error\":\"name is missing\"}"
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	game, err := getNewGame(name[0])
+	if err != nil {
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	json, err := game.JSON()
+	if err != nil {
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	writeResponse(w, http.StatusOK, json)
+
+}
+
+func handleGetGame(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("/api/game called\n")
+
+	id, ok := r.URL.Query()["id"]
+
+	if !ok || len(id[0]) < 1 {
+		msg := "{\"error\":\"id is missing\"}"
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	game, err := getGame(id[0])
+	if err != nil {
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	json, err := game.JSON()
 	if err != nil {
 		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
 		writeResponse(w, http.StatusInternalServerError, msg)
@@ -136,6 +196,24 @@ func getBoardForPlayer(p Player) (Board, error) {
 	return b, nil
 }
 
+func getNewGame(name string) (Game, error) {
+	game, err := a.NewGame(name)
+	if err != nil {
+		return game, fmt.Errorf("failed to get active game: %v", err)
+	}
+
+	return game, nil
+}
+
+func getGame(id string) (Game, error) {
+	game, err := a.GetGame(id)
+	if err != nil {
+		return game, fmt.Errorf("failed to get active game: %v", err)
+	}
+
+	return game, nil
+}
+
 func recordSelect(boardID string, phraseID string) error {
 	p := Phrase{}
 	p.ID = phraseID
@@ -150,15 +228,15 @@ func recordSelect(boardID string, phraseID string) error {
 		return fmt.Errorf("could not get game from firestore: %s", err)
 	}
 
-	b.Select(p)
-	g.Master.Select(p, b.Player)
+	p = b.Select(p)
+	record := g.Master.Select(p, b.Player)
 
-	if _, err := a.SaveBoard(b); err != nil {
-		return fmt.Errorf("could not save board to firestore: %s", err)
+	if err := a.UpdatePhraseOnBoard(b, p); err != nil {
+		return fmt.Errorf("could not update board to firestore: %s", err)
 	}
 
-	if err := a.SaveGame(g); err != nil {
-		return fmt.Errorf("could not save game to firestore: %s", err)
+	if err := a.UpdateRecordOnGame(g, record); err != nil {
+		return fmt.Errorf("could not update game to firestore: %s", err)
 	}
 
 	return nil

@@ -8,3 +8,7 @@ dev:
 	cd $(BASEDIR)/frontend && ng serve --open )
 
 	
+
+server:
+	cd $(BASEDIR)/backend && \
+	go run main.go firestore.go bingo.go 

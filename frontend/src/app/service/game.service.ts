@@ -28,12 +28,13 @@ export class GameService {
   private recordUrl: string = environment.record_url;
 
   getBoard (email:string): Observable<Board> {
+    console.log("Board", email)
     return this.http.get<Board>(this.boardUrl +"?email="+email);
   }
 
   record (pid:string, bid:string) {
-    console.log("Record", pid, bid)
-    return this.http.get(this.recordUrl + "?p="+pid + "&b=" + bid).subscribe(val=>console.log(val));
+    
+    return this.http.get(this.recordUrl + "?p="+pid + "&b=" + bid).subscribe();
   }
 
 }

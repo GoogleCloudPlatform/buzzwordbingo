@@ -9,24 +9,10 @@ import (
 
 // Game is the master structure for the game
 type Game struct {
-	ID     string  `json:"id"`
-	Name   string  `json:"name"`
-	Master Master  `json:"master"`
-	Active bool    `json:"active"`
-	Boards []Board `json:"boards"`
-}
-
-// Bingo determins if the correct sequence of items have been Selected to
-// make bingo on this board.
-func (g Game) Bingo() []Board {
-	result := []Board{}
-
-	for _, v := range g.Boards {
-		if v.Bingo() {
-			result = append(result, v)
-		}
-	}
-	return result
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Master Master `json:"master" firestore:"-"`
+	Active bool   `json:"active"`
 }
 
 // NewBoard creates a new board for a user.
@@ -37,6 +23,17 @@ func (g *Game) NewBoard(p Player) Board {
 	b.Load(g.Master.Phrases())
 	return b
 
+}
+
+// JSON Returns the given Board struct as a JSON string
+func (g Game) JSON() (string, error) {
+
+	bytes, err := json.Marshal(g)
+	if err != nil {
+		return "", fmt.Errorf("could not marshal json for response: %s", err)
+	}
+
+	return string(bytes), nil
 }
 
 // Master is the collection of all of the people who have selected which
@@ -64,8 +61,8 @@ func (m Master) Phrases() []Phrase {
 }
 
 // Select marks a phrase as selected by one or more players
-func (m *Master) Select(ph Phrase, pl Player) {
-
+func (m *Master) Select(ph Phrase, pl Player) Record {
+	r := Record{}
 	for i, v := range m.Records {
 
 		if v.Phrase.ID == ph.ID {
@@ -78,19 +75,21 @@ func (m *Master) Select(ph Phrase, pl Player) {
 					v.Phrase.Selected = false
 				}
 				m.Records[i] = v
-				return
+				return v
 			}
 			fmt.Printf("Was not member, adding.  \n")
 			v.Phrase.Selected = true
 			v.Players = append(v.Players, pl)
 			m.Records[i] = v
-			return
+			return v
 		}
 	}
+	return r
 }
 
 // Record is a structure that keeps track of who has selected which Phrase
 type Record struct {
+	ID      string  `json:"id"`
 	Phrase  Phrase  `json:"phrase"`
 	Players Players `json:"players"`
 }
@@ -139,7 +138,7 @@ type Board struct {
 	ID      string   `json:"id"`
 	Game    string   `json:"game"`
 	Player  Player   `json:"player"`
-	Phrases []Phrase `json:"phrases"`
+	Phrases []Phrase `json:"phrases" firestore:"-"`
 }
 
 // Bingo determins if the correct sequence of items have been Selected to
@@ -179,19 +178,20 @@ func (b Board) Bingo() bool {
 }
 
 // Select records if a phrase on the board has been selected.
-func (b *Board) Select(ph Phrase) {
+func (b *Board) Select(ph Phrase) Phrase {
 	for i, v := range b.Phrases {
 		if v.ID == ph.ID {
 			if v.Selected {
 				v.Selected = false
 				b.Phrases[i] = v
-				return
+				return v
 			}
 			v.Selected = true
 			b.Phrases[i] = v
-			return
+			return v
 		}
 	}
+	return ph
 }
 
 // Load adds the phrases to the board and randomly orders them.

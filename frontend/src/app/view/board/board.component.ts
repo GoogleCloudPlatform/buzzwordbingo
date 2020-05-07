@@ -30,7 +30,10 @@ export class BoardComponent implements OnInit {
 
     this.player = auth.getPlayer(); 
     this.phrases = data.getPhrases();
-    this.board = game.getBoard(this.player.email);
+    if (this.player.email != "undefined"){
+      this.board = game.getBoard(this.player.email);
+    }
+    
     this.board.subscribe(val=>this.boardid=val.id)
 
    }
