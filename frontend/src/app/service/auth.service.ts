@@ -12,6 +12,7 @@ export class Player{
 export class AuthService {
 
   private player:Player= new Player;
+  private isAuthed:boolean=false;
 
   constructor() { }
 
@@ -20,10 +21,15 @@ export class AuthService {
     this.player.name = name;
     this.player.email = email;
     this.player.admin = admin;
+    this.isAuthed = true;
   } 
 
   getPlayer():Player{
     return this.player;
+  }
+
+  isAuth():boolean{
+    return this.isAuthed;
   }
 
 }

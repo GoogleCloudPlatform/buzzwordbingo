@@ -221,7 +221,7 @@ func randomseed() int64 {
 type Phrase struct {
 	ID       string `json:"id"`
 	Text     string `json:"text"`
-	Selected bool   `json:"Selected"`
+	Selected bool   `json:"selected"`
 	Row      string `json:"row"`
 	Column   string `json:"column"`
 }

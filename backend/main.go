@@ -48,6 +48,7 @@ func main() {
 }
 
 func handleGetBoard(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("/api/board called\n")
 	email, ok := r.URL.Query()["email"]
 
 	if !ok || len(email[0]) < 1 {
@@ -78,6 +79,7 @@ func handleGetBoard(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleRecordSelect(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("/api/record called\n")
 	p, ok := r.URL.Query()["p"]
 
 	if !ok || len(p[0]) < 1 {

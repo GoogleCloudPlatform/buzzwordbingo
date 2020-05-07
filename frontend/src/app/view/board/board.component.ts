@@ -3,6 +3,7 @@ import { Observable, of } from 'rxjs';
 import { DataService, Phrase} from '../../service/data.service'
 import {AuthService, Player} from '../../service/auth.service'
 import {GameService, Board} from '../../service/game.service'
+import {Router} from '@angular/router';
 
 
 
@@ -17,15 +18,25 @@ export class BoardComponent implements OnInit {
   public phrases: Observable<any[]>;
   public currentState:any = {};
   public player:Player;
+  public boardid:string;
   
 
-  constructor(data:DataService, auth:AuthService, game:GameService) {
-    let player = auth.getPlayer(); 
+  constructor(data:DataService, auth:AuthService, game:GameService, router:Router) {
+    if (!auth.isAuth()){
+      router.navigateByUrl('/login');
+    }
+    
+
+
+    this.player = auth.getPlayer(); 
     this.phrases = data.getPhrases();
-    this.board = game.getBoard(player.email);
+    this.board = game.getBoard(this.player.email);
+    this.board.subscribe(val=>this.boardid=val.id)
+
    }
 
   ngOnInit(): void {
+    
   }
 
   recievePhrase($event) {
