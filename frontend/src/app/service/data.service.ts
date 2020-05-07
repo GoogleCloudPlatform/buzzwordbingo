@@ -3,7 +3,7 @@ import { AngularFirestore } from '@angular/fire/firestore';
 
 export class Phrase{
   id:number
-  phrase:string
+  text:string
   selected:boolean
   tid:string
 }
