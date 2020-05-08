@@ -41,6 +41,7 @@ func main() {
 	http.HandleFunc("/api/record", handleRecordSelect)
 	http.HandleFunc("/api/game", handleGetGame)
 	http.HandleFunc("/api/game/new", handleNewGame)
+	http.HandleFunc("/api/game/active", handleActiveGame)
 
 	log.Printf("Starting server on port %s\n", port)
 	if err := http.ListenAndServe(port, nil); err != nil {
@@ -53,14 +54,23 @@ func handleGetBoard(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("/api/board called\n")
 	email, ok := r.URL.Query()["email"]
 
-	if !ok || len(email[0]) < 1 {
+	if !ok || len(email[0]) < 1 || email[0] == "undefined" {
 		msg := "{\"error\":\"email is missing\"}"
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	name, ok := r.URL.Query()["name"]
+
+	if !ok || len(name[0]) < 1 || name[0] == "undefined" {
+		msg := "{\"error\":\"name is missing\"}"
 		writeResponse(w, http.StatusInternalServerError, msg)
 		return
 	}
 
 	p := Player{}
 	p.Email = email[0]
+	p.Name = name[0]
 
 	board, err := getBoardForPlayer(p)
 	if err != nil {
@@ -92,6 +102,27 @@ func handleNewGame(w http.ResponseWriter, r *http.Request) {
 	}
 
 	game, err := getNewGame(name[0])
+	if err != nil {
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	json, err := game.JSON()
+	if err != nil {
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	writeResponse(w, http.StatusOK, json)
+
+}
+
+func handleActiveGame(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("/api/game/active called\n")
+
+	game, err := getActiveGame()
 	if err != nil {
 		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
 		writeResponse(w, http.StatusInternalServerError, msg)
@@ -184,13 +215,23 @@ func getBoardForPlayer(p Player) (Board, error) {
 		return b, fmt.Errorf("error getting board for player: %v", err)
 	}
 
+	m := Message{}
+	m.Text = fmt.Sprintf("%s rejoined the game.", b.Player.Name)
+	m.Audience = "all"
+
 	if b.ID == "" {
 		b = game.NewBoard(p)
 		b, err = a.SaveBoard(b)
 		if err != nil {
 			return b, fmt.Errorf("error saving board for player: %v", err)
 		}
+		m.Text = fmt.Sprintf("%s got a board and joined the game.", b.Player.Name)
+		m.Audience = "all"
 
+	}
+
+	if err := a.AddMessageToGame(game, m); err != nil {
+		return b, fmt.Errorf("could not send message: %s", err)
 	}
 
 	return b, nil
@@ -198,6 +239,15 @@ func getBoardForPlayer(p Player) (Board, error) {
 
 func getNewGame(name string) (Game, error) {
 	game, err := a.NewGame(name)
+	if err != nil {
+		return game, fmt.Errorf("failed to get active game: %v", err)
+	}
+
+	return game, nil
+}
+
+func getActiveGame() (Game, error) {
+	game, err := a.GetActiveGame()
 	if err != nil {
 		return game, fmt.Errorf("failed to get active game: %v", err)
 	}
@@ -237,6 +287,14 @@ func recordSelect(boardID string, phraseID string) error {
 
 	if err := a.UpdateRecordOnGame(g, record); err != nil {
 		return fmt.Errorf("could not update game to firestore: %s", err)
+	}
+
+	m := Message{}
+	m.Text = fmt.Sprintf("%s selected %s on their board.", b.Player.Name, p.Text)
+	m.Audience = "all"
+
+	if err := a.AddMessageToGame(g, m); err != nil {
+		return fmt.Errorf("could not send message: %s", err)
 	}
 
 	return nil

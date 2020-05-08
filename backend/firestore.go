@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
@@ -90,6 +92,10 @@ func (a *Agent) NewGame(name string) (Game, error) {
 		batch.Set(ref, v)
 	}
 
+	m := Message{"Game has begun!", "all"}
+	mref := client.Collection("games").Doc(g.ID).Collection("messages").Doc("00001")
+	batch.Set(mref, m)
+
 	_, err = batch.Commit(ctx)
 	if err != nil {
 		return g, fmt.Errorf("failed to add records to database: %v", err)
@@ -119,6 +125,21 @@ func (a *Agent) GetGame(id string) (Game, error) {
 	}
 
 	return g, nil
+}
+
+func (a *Agent) AddMessageToGame(g Game, m Message) error {
+	timestamp := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
+	client, err := a.getClient()
+	if err != nil {
+		return fmt.Errorf("failed to create client: %v", err)
+	}
+
+	_, err = client.Collection("games").Doc(g.ID).Collection("messages").Doc(timestamp).Set(ctx, m)
+	if err != nil {
+		return fmt.Errorf("failed to send message : %v", err)
+	}
+
+	return nil
 }
 
 func (a *Agent) loadGameWithRecords(g Game) (Game, error) {

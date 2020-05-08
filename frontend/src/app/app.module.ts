@@ -10,13 +10,15 @@ import { environment } from "src/environments/environment";
 import { AngularFireModule } from "@angular/fire";
 import { AngularFirestoreModule } from "@angular/fire/firestore";
 import { LoginComponent } from './view/login/login.component';
+import { MessagesComponent } from './view/messages/messages.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     BoardComponent,
     ItemComponent,
-    LoginComponent
+    LoginComponent,
+    MessagesComponent
   ],
   imports: [
     BrowserModule,

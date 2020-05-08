@@ -19,19 +19,20 @@ export class BoardComponent implements OnInit {
   public currentState:any = {};
   public player:Player;
   public boardid:string;
-  
+  public messages: Observable<any[]>;
 
-  constructor(data:DataService, auth:AuthService, game:GameService, router:Router) {
+  constructor(public data:DataService, auth:AuthService, public game:GameService, router:Router) {
+    let self = this;
     if (!auth.isAuth()){
       router.navigateByUrl('/login');
     }
-    
-
 
     this.player = auth.getPlayer(); 
-    this.phrases = data.getPhrases();
+    
+    
+    
     if (this.player.email != "undefined"){
-      this.board = game.getBoard(this.player.email);
+      this.board = game.getBoard(this.player.email, this.player.name);
     }
     
     this.board.subscribe(val=>this.boardid=val.id)
@@ -39,7 +40,7 @@ export class BoardComponent implements OnInit {
    }
 
   ngOnInit(): void {
-    
+    this.messages = this.data.getMessages(this.game.game.id);
   }
 
   recievePhrase($event) {

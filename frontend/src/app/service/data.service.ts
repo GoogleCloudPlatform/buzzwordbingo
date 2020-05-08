@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/firestore';
+import { AngularFirestore } from '@angular/fire/firestore'; 
+import {GameService, Game} from '../service/game.service'
 
 export class Phrase{
   id:string
@@ -15,10 +16,15 @@ export class Phrase{
 
 export class DataService {
 
-  constructor(private firestore: AngularFirestore) { }
+  constructor(private firestore: AngularFirestore, private game:GameService) { }
 
   getPhrases() { 
     return this.firestore.collection("phrases").valueChanges();
+  }
+
+  getMessages(id) { 
+    
+    return this.firestore.collection("games").doc(id).collection("messages").valueChanges();
   }
 
 }

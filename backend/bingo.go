@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+type Message struct {
+	Text     string `json:"text" firestore:"text"`
+	Audience string `json:"audience" firestore:"audience"`
+}
+
 // Game is the master structure for the game
 type Game struct {
 	ID     string `json:"id"`
