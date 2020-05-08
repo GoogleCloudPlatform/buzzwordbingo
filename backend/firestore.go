@@ -93,7 +93,8 @@ func (a *Agent) NewGame(name string) (Game, error) {
 	}
 
 	m := Message{}
-	m.Set("all", "Game has begun!")
+	m.SetText("Game has begun!")
+	m.SetAudience("all")
 
 	mref := client.Collection("games").Doc(g.ID).Collection("messages").Doc("00001")
 	batch.Set(mref, m)
@@ -200,7 +201,6 @@ func (a *Agent) SaveGame(g Game) error {
 
 func (a *Agent) GetBoard(id string) (Board, error) {
 	b := Board{}
-
 	client, err := a.getClient()
 	if err != nil {
 		return b, fmt.Errorf("failed to create client: %v", err)
@@ -208,7 +208,7 @@ func (a *Agent) GetBoard(id string) (Board, error) {
 
 	doc, err := client.Collection("boards").Doc(id).Get(ctx)
 	if err != nil {
-		return b, fmt.Errorf("failed to get game: %v", err)
+		return b, fmt.Errorf("failed to get board: %v", err)
 	}
 
 	doc.DataTo(&b)
@@ -217,7 +217,6 @@ func (a *Agent) GetBoard(id string) (Board, error) {
 	if err != nil {
 		return b, fmt.Errorf("failed to load phrases for board: %v", err)
 	}
-
 	return b, nil
 }
 
@@ -226,7 +225,7 @@ func (a *Agent) loadBoardWithPhrases(b Board) (Board, error) {
 	if err != nil {
 		return b, fmt.Errorf("failed to create client: %v", err)
 	}
-	iter := client.Collection("boards").Doc(b.ID).Collection("phrases").Documents(ctx)
+	iter := client.Collection("boards").Doc(b.ID).Collection("phrases").OrderBy("DisplayOrder", firestore.Asc).Documents(ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -307,6 +306,21 @@ func (a *Agent) UpdatePhraseOnBoard(b Board, p Phrase) error {
 	return nil
 }
 
+func (a *Agent) UpdateBingoOnBoard(b Board, bingo bool) error {
+	client, err := a.getClient()
+	if err != nil {
+		return fmt.Errorf("failed to create client: %v", err)
+	}
+
+	ref := client.Collection("boards").Doc(b.ID)
+
+	if _, err := ref.Set(ctx, map[string]interface{}{"BingoDeclared": bingo}); err != nil {
+		return fmt.Errorf("failed to update phrase: %v", err)
+	}
+
+	return nil
+}
+
 func (a *Agent) GetActiveGame() (Game, error) {
 	client, err := a.getClient()
 	g := Game{}
@@ -334,6 +348,68 @@ func (a *Agent) GetActiveGame() (Game, error) {
 	g, err = a.loadGameWithRecords(g)
 	if err != nil {
 		return g, fmt.Errorf("failed to load records for game: %v", err)
+	}
+
+	return g, nil
+}
+
+func (a *Agent) ResetActiveGame() (Game, error) {
+	client, err := a.getClient()
+	g := Game{}
+
+	if err != nil {
+		return g, fmt.Errorf("failed to create client: %v", err)
+	}
+	defer client.Close()
+
+	iter := client.Collection("games").Where("Active", "==", true).Documents(ctx)
+
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return g, fmt.Errorf("failed to iterate over response from firestore: %v", err)
+		}
+		doc.DataTo(&g)
+		g.ID = doc.Ref.ID
+		break
+	}
+
+	ref := client.Collection("games").Doc(g.ID).Collection("messages")
+	for {
+		// Get a batch of documents
+		iter := ref.Limit(100).Documents(ctx)
+		numDeleted := 0
+
+		// Iterate through the documents, adding
+		// a delete operation for each one to a
+		// WriteBatch.
+		batch := client.Batch()
+		for {
+			doc, err := iter.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				return g, fmt.Errorf("failed to clean messages from firestore: %v", err)
+			}
+
+			batch.Delete(doc.Ref)
+			numDeleted++
+		}
+
+		// If there are no documents to delete,
+		// the process is over.
+		if numDeleted == 0 {
+			break
+		}
+
+		_, err := batch.Commit(ctx)
+		if err != nil {
+			return g, fmt.Errorf("failed to clean messages from firestore: %v", err)
+		}
 	}
 
 	return g, nil

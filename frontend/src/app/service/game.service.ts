@@ -10,6 +10,7 @@ export class Board{
   game:string
   player:Player
   phrases:Phrase[]
+  bingodeclared:boolean=false
 }
 
 export class Phrase{
@@ -26,8 +27,27 @@ export class Game  {
 }
 
 export class Message  {
-	text:string 
-	audience:string   
+  text:string 
+  bingo:boolean
+  audience:string[]   
+  
+  public isAudience(email:string):boolean{
+    this.audience.forEach(function(aud:string) {			
+      if (aud == email){
+        return true;
+      }			
+    })	
+    return false;	
+  }
+
+  public isAll():boolean{
+    this.audience.forEach(function(aud:string) {			
+      if (aud == "all"){
+        return true;
+      }			
+    })
+    return false;	
+  }
 }
 
 @Injectable({

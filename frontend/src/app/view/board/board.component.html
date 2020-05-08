@@ -4,8 +4,8 @@
     <div class="header">N</div>
     <div class="header">G</div>
     <div class="header">O</div>
-    <app-item *ngFor="let phrase of (board | async)?.phrases; let i = index;" [phrase]='phrase' [boardid]='boardid' 
-            (phraseEmitter)="recievePhrase($event)" [position]="i+1" [currentState]='currentState'>
+    <app-item #items *ngFor="let phrase of (board | async)?.phrases; let i = index;" [phrase]='phrase' [boardid]='boardid' 
+            (phraseEmitter)="recievePhrase($event)" (readyEmitter)="receiveChild($event)" [position]="i+1" [currentState]='currentState'>
     </app-item>
 </div>
 <app-messages [messages]='messages'></app-messages>

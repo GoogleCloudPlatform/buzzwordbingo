@@ -10,14 +10,17 @@ import (
 )
 
 type Message struct {
-	Text     string `json:"text" firestore:"text"`
-	Audience string `json:"audience" firestore:"audience"`
-	Bingo    bool   `json:"bingo" firestore:"bingo"`
+	Text     string   `json:"text" firestore:"text"`
+	Audience []string `json:"audience" firestore:"audience"`
+	Bingo    bool     `json:"bingo" firestore:"bingo"`
 }
 
-func (m *Message) Set(a string, t string, args ...interface{}) {
-	m.Audience = a
+func (m *Message) SetText(t string, args ...interface{}) {
 	m.Text = fmt.Sprintf(t, args...)
+}
+
+func (m *Message) SetAudience(a ...string) {
+	m.Audience = a
 }
 
 // Game is the master structure for the game
@@ -148,15 +151,16 @@ func (ps *Players) Add(p Player) {
 
 // Board is an individual board that the players use to play bingo
 type Board struct {
-	ID      string   `json:"id"`
-	Game    string   `json:"game"`
-	Player  Player   `json:"player"`
-	Phrases []Phrase `json:"phrases" firestore:"-"`
+	ID            string   `json:"id"`
+	Game          string   `json:"game"`
+	Player        Player   `json:"player"`
+	BingoDeclared bool     `json:"bingodeclared"`
+	Phrases       []Phrase `json:"phrases" firestore:"-"`
 }
 
 // Bingo determins if the correct sequence of items have been Selected to
 // make bingo on this board.
-func (b Board) Bingo() bool {
+func (b *Board) Bingo() bool {
 	diag1 := []string{"B1", "I2", "N3", "G4", "O5"}
 	diag2 := []string{"B5", "I4", "N3", "G2", "O1"}
 	counts := make(map[string]int)
@@ -182,10 +186,10 @@ func (b Board) Bingo() bool {
 		}
 	}
 
-	fmt.Printf("%+v\n", counts)
-
 	for _, v := range counts {
 		if v == 5 {
+			fmt.Printf("Bingo Declared\n")
+			b.BingoDeclared = true
 			return true
 		}
 	}
@@ -217,6 +221,7 @@ func (b *Board) Load(p []Phrase) {
 	for i, v := range p {
 		v.Selected = false
 		v.Column, v.Row = b.CalcColumnsRows(i + 1)
+		v.DisplayOrder = i
 		p[i] = v
 	}
 	b.Phrases = p
@@ -262,11 +267,12 @@ func randomseed() int64 {
 // Phrase represents a statement, event or other such thing that we are on the
 // lookout for in this game of bingo.
 type Phrase struct {
-	ID       string `json:"id"`
-	Text     string `json:"text"`
-	Selected bool   `json:"selected"`
-	Row      string `json:"row"`
-	Column   string `json:"column"`
+	ID           string `json:"id"`
+	Text         string `json:"text"`
+	Selected     bool   `json:"selected"`
+	Row          string `json:"row"`
+	Column       string `json:"column"`
+	DisplayOrder int    `json:"display_order"`
 }
 
 // Position returns the combined Row and Column of the Phrase

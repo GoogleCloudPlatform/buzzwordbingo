@@ -14,7 +14,10 @@ export class ItemComponent implements OnInit {
   @Input() boardid: string;
   @Input() currentState:any;
   @Input() position: number;
+  @Input() bingo:boolean = false;
   @Output() phraseEmitter = new EventEmitter<Phrase>();
+  @Output() readyEmitter = new EventEmitter<ItemComponent>();
+  disabled:boolean=false;
   
   constructor(private game:GameService) { }
 
@@ -28,7 +31,19 @@ export class ItemComponent implements OnInit {
     }
   }
 
+  ngAfterViewInit():void{
+    this.readyEmitter.emit(this);
+  } 
+
   select(){
+    if (this.bingo){
+      this.disabled = true;
+      this.disable();
+    }
+
+    if (this.disabled){
+      return;
+    }
     
     this.selectDisplay();
     this.phraseEmitter.emit(this.phrase);
@@ -62,6 +77,15 @@ export class ItemComponent implements OnInit {
     }
     
     return;
+  }
+
+  public disable(){
+    console.log("disabled called");
+    this.disabled = true;
+    let item:HTMLElement = document.querySelector("#id_"+ this.phrase.id);
+    if (!this.phrase.selected){
+      item.style.backgroundColor = "#DDD";
+    }
   }
 
   

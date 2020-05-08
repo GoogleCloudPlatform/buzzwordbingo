@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { DataService, Phrase} from '../../service/data.service'
 import {AuthService, Player} from '../../service/auth.service'
-import {GameService, Board} from '../../service/game.service'
+import {GameService, Board, Message} from '../../service/game.service'
 import {Router} from '@angular/router';
+import {ItemComponent} from '../item/item.component'
 
 
 
@@ -14,14 +15,19 @@ import {Router} from '@angular/router';
 })
 export class BoardComponent implements OnInit {
 
+  @ViewChild(ItemComponent)
+  private itemComponent: ItemComponent;
+  public itemComponents: ItemComponent[] = [];
+
   public board: Observable<any>;
   public phrases: Observable<any[]>;
   public currentState:any = {};
   public player:Player;
   public boardid:string;
   public messages: Observable<any[]>;
+  public bingo:boolean=false;
 
-  constructor(public data:DataService, auth:AuthService, public game:GameService, router:Router) {
+  constructor(public data:DataService, public auth:AuthService, public game:GameService, router:Router) {
     let self = this;
     if (!auth.isAuth()){
       router.navigateByUrl('/login');
@@ -35,12 +41,60 @@ export class BoardComponent implements OnInit {
       this.board = game.getBoard(this.player.email, this.player.name);
     }
     
-    this.board.subscribe(val=>this.boardid=val.id)
+    this.board.subscribe(val=>{this.boardid=val.id; console.log(val); if (val.bingodeclared){this.declareBingo()}})
 
    }
 
   ngOnInit(): void {
     this.messages = this.data.getMessages(this.game.game.id);
+    this.messages.subscribe(ms=>{this.listenForBingo(ms)})
+  }
+
+  ngAfterViewInit() {
+    if (this.bingo){
+      console.log("Bingo declared in afterviewinit")
+      this.itemComponent.disable();
+    }
+  }
+  ngOnChanges(){
+    console.log("On Changes called");
+  }
+
+  declareBingo(){
+    this.bingo=true;
+      console.log("Bingo Declared");
+      console.log(this.itemComponents);
+      this.itemComponents.forEach(function(child){
+        console.log("Looping through children")
+        child.disable();
+      })
+  }
+
+  listenForBingo(messages:Message[]){
+    let self = this;
+    console.log(messages)
+    let msg:Message = messages[messages.length-1] as Message;
+    console.log(msg)
+    if (!msg || typeof msg == "undefined"){
+      return;
+    }
+    let halt:boolean = true;
+    msg.audience.forEach(function(aud){
+      if( (aud == self.auth.getPlayer().email) ){
+        halt = false;
+      }
+      if( (aud == "all") ){
+        halt = false;
+      }
+    })
+
+    if (halt){
+      return;
+    }
+
+    if (msg.bingo){
+      this.declareBingo()
+    }
   }
 
   recievePhrase($event) {
@@ -55,6 +109,12 @@ export class BoardComponent implements OnInit {
     if (this.checkBingo()){
       alert("BINGO!")
     }
+    
+  }
+
+  receiveChild($event) {
+    let child = $event;
+    this.itemComponents.push(child)
     
   }
 

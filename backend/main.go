@@ -11,6 +11,8 @@ var (
 	randseedfunc = randomseed
 	a            = Agent{ProjectID: "bingo-collab"}
 	port         = os.Getenv("PORT")
+	boards       = make(map[string]Board)
+	games        = make(map[string]Game)
 )
 
 func main() {
@@ -42,6 +44,7 @@ func main() {
 	http.HandleFunc("/api/game", handleGetGame)
 	http.HandleFunc("/api/game/new", handleNewGame)
 	http.HandleFunc("/api/game/active", handleActiveGame)
+	http.HandleFunc("/api/game/reset", handleResetActiveGame)
 
 	log.Printf("Starting server on port %s\n", port)
 	if err := http.ListenAndServe(port, nil); err != nil {
@@ -116,6 +119,23 @@ func handleNewGame(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeResponse(w, http.StatusOK, json)
+
+}
+
+func handleResetActiveGame(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("/api/game/reset called\n")
+
+	game, err := a.ResetActiveGame()
+	if err != nil {
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+	boards = make(map[string]Board)
+	games = make(map[string]Game)
+
+	msg := fmt.Sprintf("{\"msg\":\"Game %s Reset\"}", game.ID)
+	writeResponse(w, http.StatusOK, msg)
 
 }
 
@@ -205,18 +225,26 @@ func handleRecordSelect(w http.ResponseWriter, r *http.Request) {
 
 func getBoardForPlayer(p Player) (Board, error) {
 	b := Board{}
-	game, err := a.GetActiveGame()
+	var ok bool
+
+	game, err := getActiveGame()
 	if err != nil {
 		return b, fmt.Errorf("failed to get active game: %v", err)
 	}
 
-	b, err = a.GetBoardForPlayer(game.ID, p.Email)
-	if err != nil {
-		return b, fmt.Errorf("error getting board for player: %v", err)
-	}
+	b, ok = boards[game.ID+"_"+p.Email]
+	if !ok {
 
+		b, err = a.GetBoardForPlayer(game.ID, p.Email)
+		if err != nil {
+			return b, fmt.Errorf("error getting board for player: %v", err)
+		}
+		boards[game.ID+"_"+p.Email] = b
+
+	}
 	m := Message{}
-	m.Set("all", "<strong>%s</strong> rejoined the game.", b.Player.Name)
+	m.SetText("<strong>%s</strong> rejoined the game.", b.Player.Name)
+	m.SetAudience("all")
 
 	if b.ID == "" {
 		b = game.NewBoard(p)
@@ -224,12 +252,45 @@ func getBoardForPlayer(p Player) (Board, error) {
 		if err != nil {
 			return b, fmt.Errorf("error saving board for player: %v", err)
 		}
-		m.Set("all", "<strong>%s</strong> got a board and joined the game.", b.Player.Name)
+		boards[game.ID+"_"+p.Email] = b
+		boards[b.ID] = b
+		m.SetText("<strong>%s</strong> got a board and joined the game.", b.Player.Name)
+		m.SetAudience("all", b.Player.Email)
 
 	}
 
 	if err := a.AddMessageToGame(game, m); err != nil {
 		return b, fmt.Errorf("could not send message: %s", err)
+	}
+
+	bingo := b.Bingo()
+	if bingo {
+		m := Message{}
+		m.SetText("<strong>%s</strong> already had <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
+		m.SetAudience("all", b.Player.Email)
+		m.Bingo = bingo
+
+		if err := a.AddMessageToGame(game, m); err != nil {
+			return b, fmt.Errorf("could not send message: %s", err)
+		}
+	}
+
+	return b, nil
+}
+
+func getBoard(bid string) (Board, error) {
+	b := Board{}
+	var ok bool
+	var err error
+
+	b, ok = boards[bid]
+	if !ok {
+		b, err = a.GetBoard(bid)
+		if err != nil {
+			return b, fmt.Errorf("could not get board from firestore: %s", err)
+		}
+		boards[bid] = b
+
 	}
 
 	return b, nil
@@ -245,39 +306,52 @@ func getNewGame(name string) (Game, error) {
 }
 
 func getActiveGame() (Game, error) {
-	game, err := a.GetActiveGame()
-	if err != nil {
-		return game, fmt.Errorf("failed to get active game: %v", err)
+	var err error
+	game, ok := games["active"]
+	if !ok {
+		game, err = a.GetActiveGame()
+		if err != nil {
+			return game, fmt.Errorf("failed to get active game: %v", err)
+		}
+
+		games["active"] = game
+		games[game.ID] = game
 	}
 
 	return game, nil
 }
 
 func getGame(id string) (Game, error) {
-	game, err := a.GetGame(id)
-	if err != nil {
-		return game, fmt.Errorf("failed to get active game: %v", err)
+	game, ok := games[id]
+	if !ok {
+		game, err := a.GetGame(id)
+		if err != nil {
+			return game, fmt.Errorf("could not get game from cache or id(%s) from firestore: %s", id, err)
+		}
+		games[id] = game
 	}
-
 	return game, nil
 }
 
 func recordSelect(boardID string, phraseID string) error {
 	p := Phrase{}
 	p.ID = phraseID
+	fmt.Printf("BoardID %v\n", boardID)
 
-	b, err := a.GetBoard(boardID)
+	b, err := getBoard(boardID)
 	if err != nil {
-		return fmt.Errorf("could not get board from firestore: %s", err)
+		return fmt.Errorf("could not get board id(%s): %s", boardID, err)
 	}
 
-	g, err := a.GetGame(b.Game)
+	g, err := getGame(b.Game)
 	if err != nil {
-		return fmt.Errorf("could not get game from firestore: %s", err)
+		return fmt.Errorf("could not get game id(%s): %s", b.Game, err)
 	}
 
 	p = b.Select(p)
 	record := g.Master.Select(p, b.Player)
+	games[g.ID] = g
+	boards[b.ID] = b
 
 	if err := a.UpdatePhraseOnBoard(b, p); err != nil {
 		return fmt.Errorf("could not update board to firestore: %s", err)
@@ -293,7 +367,8 @@ func recordSelect(boardID string, phraseID string) error {
 	}
 
 	m := Message{}
-	m.Set("all", "<strong>%s</strong> %s <em>%s</em> on their board.", b.Player.Name, indicator, p.Text)
+	m.SetText("<strong>%s</strong> %s <em>%s</em> on their board.", b.Player.Name, indicator, p.Text)
+	m.SetAudience("all")
 
 	if err := a.AddMessageToGame(g, m); err != nil {
 		return fmt.Errorf("could not send message: %s", err)
@@ -301,9 +376,16 @@ func recordSelect(boardID string, phraseID string) error {
 
 	bingo := b.Bingo()
 	if bingo {
+		boards[b.ID] = b
+		boards[g.ID+"_"+b.Player.Email] = b
 		m := Message{}
-		m.Set("all", "<strong>%s</strong> just got <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
+		m.SetText("<strong>%s</strong> just got <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
+		m.SetAudience("all")
 		m.Bingo = bingo
+
+		if err := a.UpdateBingoOnBoard(b, bingo); err != nil {
+			return fmt.Errorf("could not record bingo on board: %s", err)
+		}
 
 		if err := a.AddMessageToGame(g, m); err != nil {
 			return fmt.Errorf("could not send message: %s", err)
