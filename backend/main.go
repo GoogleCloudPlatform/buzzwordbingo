@@ -216,8 +216,7 @@ func getBoardForPlayer(p Player) (Board, error) {
 	}
 
 	m := Message{}
-	m.Text = fmt.Sprintf("%s rejoined the game.", b.Player.Name)
-	m.Audience = "all"
+	m.Set("all", "<strong>%s</strong> rejoined the game.", b.Player.Name)
 
 	if b.ID == "" {
 		b = game.NewBoard(p)
@@ -225,8 +224,7 @@ func getBoardForPlayer(p Player) (Board, error) {
 		if err != nil {
 			return b, fmt.Errorf("error saving board for player: %v", err)
 		}
-		m.Text = fmt.Sprintf("%s got a board and joined the game.", b.Player.Name)
-		m.Audience = "all"
+		m.Set("all", "<strong>%s</strong> got a board and joined the game.", b.Player.Name)
 
 	}
 
@@ -289,12 +287,27 @@ func recordSelect(boardID string, phraseID string) error {
 		return fmt.Errorf("could not update game to firestore: %s", err)
 	}
 
+	indicator := "unselected"
+	if p.Selected {
+		indicator = "selected"
+	}
+
 	m := Message{}
-	m.Text = fmt.Sprintf("%s selected %s on their board.", b.Player.Name, p.Text)
-	m.Audience = "all"
+	m.Set("all", "<strong>%s</strong> %s <em>%s</em> on their board.", b.Player.Name, indicator, p.Text)
 
 	if err := a.AddMessageToGame(g, m); err != nil {
 		return fmt.Errorf("could not send message: %s", err)
+	}
+
+	bingo := b.Bingo()
+	if bingo {
+		m := Message{}
+		m.Set("all", "<strong>%s</strong> just got <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
+		m.Bingo = bingo
+
+		if err := a.AddMessageToGame(g, m); err != nil {
+			return fmt.Errorf("could not send message: %s", err)
+		}
 	}
 
 	return nil

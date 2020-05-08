@@ -50,7 +50,7 @@ export class GameService {
 
   getActiveGame () {
     console.log("active game called")
-    return this.http.get(this.gameActiveUrl).subscribe(val=>{this.game=val; console.log(val)});
+    return this.http.get(this.gameActiveUrl).pipe(share()).subscribe(val=>{this.game=val});
   }
 
   record (pid:string, bid:string) {

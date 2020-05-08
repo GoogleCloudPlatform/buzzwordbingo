@@ -12,23 +12,23 @@ func TestBoardBingo(t *testing.T) {
 	}{
 		{Board{}, false},
 		{Board{Phrases: []Phrase{
-			Phrase{Row: "1", Column: "B", Clicked: true},
-			Phrase{Row: "1", Column: "I", Clicked: true},
-			Phrase{Row: "1", Column: "N", Clicked: true},
-			Phrase{Row: "1", Column: "G", Clicked: true},
-			Phrase{Row: "1", Column: "O", Clicked: true}}}, true},
+			Phrase{Row: "1", Column: "B", Selected: true},
+			Phrase{Row: "1", Column: "I", Selected: true},
+			Phrase{Row: "1", Column: "N", Selected: true},
+			Phrase{Row: "1", Column: "G", Selected: true},
+			Phrase{Row: "1", Column: "O", Selected: true}}}, true},
 		{Board{Phrases: []Phrase{
-			Phrase{Row: "1", Column: "B", Clicked: true},
-			Phrase{Row: "2", Column: "I", Clicked: true},
-			Phrase{Row: "3", Column: "N", Clicked: true},
-			Phrase{Row: "4", Column: "G", Clicked: true},
-			Phrase{Row: "5", Column: "O", Clicked: true}}}, true},
+			Phrase{Row: "1", Column: "B", Selected: true},
+			Phrase{Row: "2", Column: "I", Selected: true},
+			Phrase{Row: "3", Column: "N", Selected: true},
+			Phrase{Row: "4", Column: "G", Selected: true},
+			Phrase{Row: "5", Column: "O", Selected: true}}}, true},
 		{Board{Phrases: []Phrase{
-			Phrase{Row: "1", Column: "B", Clicked: true},
-			Phrase{Row: "2", Column: "I", Clicked: true},
-			Phrase{Row: "3", Column: "N", Clicked: true},
-			Phrase{Row: "2", Column: "G", Clicked: true},
-			Phrase{Row: "1", Column: "O", Clicked: true}}}, false},
+			Phrase{Row: "1", Column: "B", Selected: true},
+			Phrase{Row: "2", Column: "I", Selected: true},
+			Phrase{Row: "3", Column: "N", Selected: true},
+			Phrase{Row: "2", Column: "G", Selected: true},
+			Phrase{Row: "1", Column: "O", Selected: true}}}, false},
 	}
 
 	for _, c := range cases {
@@ -78,39 +78,27 @@ func TestBoardLoad(t *testing.T) {
 
 }
 
-func TestGameBingo(t *testing.T) {
-
+func TestRowCalc(t *testing.T) {
 	cases := []struct {
-		in   Game
-		want int
+		in     int
+		column string
+		row    string
 	}{
-		{Game{}, 0},
-		{Game{
-			Board{},
-			[]Board{Board{Phrases: []Phrase{
-				Phrase{Row: "1", Column: "B", Clicked: true},
-				Phrase{Row: "1", Column: "I", Clicked: true},
-				Phrase{Row: "1", Column: "N", Clicked: true},
-				Phrase{Row: "1", Column: "G", Clicked: true},
-				Phrase{Row: "1", Column: "O", Clicked: true}}},
-				Board{Phrases: []Phrase{
-					Phrase{Row: "1", Column: "B", Clicked: true},
-					Phrase{Row: "2", Column: "I", Clicked: true},
-					Phrase{Row: "3", Column: "N", Clicked: true},
-					Phrase{Row: "4", Column: "G", Clicked: true},
-					Phrase{Row: "5", Column: "O", Clicked: true}}},
-				Board{Phrases: []Phrase{
-					Phrase{Row: "1", Column: "B", Clicked: true},
-					Phrase{Row: "2", Column: "I", Clicked: true},
-					Phrase{Row: "3", Column: "N", Clicked: true},
-					Phrase{Row: "2", Column: "G", Clicked: true},
-					Phrase{Row: "1", Column: "O", Clicked: true}}}}}, 2},
+		{1, "B", "0"},
+		{2, "I", "0"},
+		{3, "N", "0"},
+		{6, "B", "1"},
+		{25, "O", "4"},
 	}
-
+	b := Board{}
 	for _, c := range cases {
-		got := c.in.Bingo()
-		if len(got) != c.want {
-			t.Errorf("Game.Bingo() got %d, want %d", len(got), c.want)
+		gotcolumn, gotrow := b.CalcColumnsRows(c.in)
+		if gotcolumn != c.column {
+			t.Errorf("Board.CalcColumnsRows(%d) column got %s, want %s", c.in, gotcolumn, c.column)
+		}
+
+		if gotrow != c.row {
+			t.Errorf("Board.CalcColumnsRows(%d) row got %s, want %s", c.in, gotrow, c.row)
 		}
 	}
 

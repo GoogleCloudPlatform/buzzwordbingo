@@ -3,13 +3,21 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
 type Message struct {
 	Text     string `json:"text" firestore:"text"`
 	Audience string `json:"audience" firestore:"audience"`
+	Bingo    bool   `json:"bingo" firestore:"bingo"`
+}
+
+func (m *Message) Set(a string, t string, args ...interface{}) {
+	m.Audience = a
+	m.Text = fmt.Sprintf(t, args...)
 }
 
 // Game is the master structure for the game
@@ -174,6 +182,8 @@ func (b Board) Bingo() bool {
 		}
 	}
 
+	fmt.Printf("%+v\n", counts)
+
 	for _, v := range counts {
 		if v == 5 {
 			return true
@@ -203,7 +213,35 @@ func (b *Board) Select(ph Phrase) Phrase {
 func (b *Board) Load(p []Phrase) {
 	rand.Seed(randseedfunc())
 	rand.Shuffle(len(p), func(i, j int) { p[i], p[j] = p[j], p[i] })
+
+	for i, v := range p {
+		v.Selected = false
+		v.Column, v.Row = b.CalcColumnsRows(i + 1)
+		p[i] = v
+	}
 	b.Phrases = p
+}
+
+func (b *Board) CalcColumnsRows(i int) (string, string) {
+	column := ""
+	row := ""
+
+	switch i % 5 {
+	case 1:
+		column = "B"
+	case 2:
+		column = "I"
+	case 3:
+		column = "N"
+	case 4:
+		column = "G"
+	default:
+		column = "O"
+	}
+
+	row = strconv.Itoa(int(math.Round(float64((i - 1) / 5))))
+
+	return column, row
 }
 
 // JSON Returns the given Board struct as a JSON string

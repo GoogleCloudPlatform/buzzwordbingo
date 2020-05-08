@@ -92,7 +92,9 @@ func (a *Agent) NewGame(name string) (Game, error) {
 		batch.Set(ref, v)
 	}
 
-	m := Message{"Game has begun!", "all"}
+	m := Message{}
+	m.Set("all", "Game has begun!")
+
 	mref := client.Collection("games").Doc(g.ID).Collection("messages").Doc("00001")
 	batch.Set(mref, m)
 
