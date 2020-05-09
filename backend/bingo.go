@@ -218,12 +218,25 @@ func (b *Board) Load(p []Phrase) {
 	rand.Seed(randseedfunc())
 	rand.Shuffle(len(p), func(i, j int) { p[i], p[j] = p[j], p[i] })
 
+	free := 0
+	center := 12
+
 	for i, v := range p {
+
 		v.Selected = false
 		v.Column, v.Row = b.CalcColumnsRows(i + 1)
 		v.DisplayOrder = i
+
+		if v.Text == "FREE" {
+			free = i
+			v.Selected = true
+		}
 		p[i] = v
+
 	}
+
+	p[free], p[center] = p[center], p[free]
+
 	b.Phrases = p
 }
 
