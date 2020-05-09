@@ -391,16 +391,12 @@ func recordSelect(boardID string, phraseID string) error {
 	}
 
 	p = b.Select(p)
-	record := g.Master.Select(p, b.Player)
+	r := g.Master.Select(p, b.Player)
 	games[g.ID] = g
 	boards[b.ID] = b
 
-	if err := a.UpdatePhraseOnBoard(b, p); err != nil {
-		return fmt.Errorf("could not update board to firestore: %s", err)
-	}
-
-	if err := a.UpdateRecordOnGame(g, record); err != nil {
-		return fmt.Errorf("could not update game to firestore: %s", err)
+	if err := a.UpdatePhrase(b, p, r); err != nil {
+		return fmt.Errorf("record click to firestore: %s", err)
 	}
 
 	indicator := "unselected"

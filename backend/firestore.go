@@ -318,6 +318,32 @@ func (a *Agent) savePhrases(b Board) error {
 	return nil
 }
 
+// UpdatePhrase records clicks on the board and the game
+func (a *Agent) UpdatePhrase(b Board, p Phrase, r Record) error {
+	client, err := a.getClient()
+	if err != nil {
+		return fmt.Errorf("failed to create client: %v", err)
+	}
+
+	a.log("Starting batch operation")
+	batch := client.Batch()
+
+	a.log("Updating phrase on board")
+	bref := client.Collection("boards").Doc(b.ID).Collection("phrases").Doc(p.ID)
+	batch.Set(bref, p)
+
+	a.log("Updating game record")
+	gref := client.Collection("games").Doc(b.Game).Collection("records").Doc(r.Phrase.ID)
+	batch.Set(gref, r)
+
+	_, err = batch.Commit(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to update phrase: %v", err)
+	}
+
+	return nil
+}
+
 // UpdatePhraseOnBoard records clicks on an individual board
 func (a *Agent) UpdatePhraseOnBoard(b Board, p Phrase) error {
 	client, err := a.getClient()
