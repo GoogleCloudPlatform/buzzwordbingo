@@ -9,16 +9,19 @@ import (
 	"time"
 )
 
+// Message is a message that will be broadcast from the server to all players
 type Message struct {
 	Text     string   `json:"text" firestore:"text"`
 	Audience []string `json:"audience" firestore:"audience"`
 	Bingo    bool     `json:"bingo" firestore:"bingo"`
 }
 
+// SetText sets the text of the broadcast message
 func (m *Message) SetText(t string, args ...interface{}) {
 	m.Text = fmt.Sprintf(t, args...)
 }
 
+// SetAudience adds the recipients to the messaage
 func (m *Message) SetAudience(a ...string) {
 	m.Audience = a
 }
@@ -115,6 +118,17 @@ type Player struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
 	Admin bool   `json:"admin"`
+}
+
+// JSON Returns the given Board struct as a JSON string
+func (p Player) JSON() (string, error) {
+
+	bytes, err := json.Marshal(p)
+	if err != nil {
+		return "", fmt.Errorf("could not marshal json for response: %s", err)
+	}
+
+	return string(bytes), nil
 }
 
 // Players is a slice of Player.
@@ -224,7 +238,7 @@ func (b *Board) Load(p []Phrase) {
 	for i, v := range p {
 
 		v.Selected = false
-		v.Column, v.Row = b.CalcColumnsRows(i + 1)
+		v.Column, v.Row = calcColumnsRows(i + 1)
 		v.DisplayOrder = i
 
 		if v.Text == "FREE" {
@@ -240,7 +254,7 @@ func (b *Board) Load(p []Phrase) {
 	b.Phrases = p
 }
 
-func (b *Board) CalcColumnsRows(i int) (string, string) {
+func calcColumnsRows(i int) (string, string) {
 	column := ""
 	row := ""
 

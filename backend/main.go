@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 var (
@@ -45,6 +46,7 @@ func main() {
 	http.HandleFunc("/api/game/new", handleNewGame)
 	http.HandleFunc("/api/game/active", handleActiveGame)
 	http.HandleFunc("/api/game/reset", handleResetActiveGame)
+	http.HandleFunc("/api/player/identify", handleGetIAPUsername)
 
 	log.Printf("Starting server on port %s\n", port)
 	if err := http.ListenAndServe(port, nil); err != nil {
@@ -53,6 +55,44 @@ func main() {
 
 }
 
+func handleGetIAPUsername(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("/api/player/identify called\n")
+	p := Player{}
+
+	arr := r.Header.Get("X-Goog-Authenticated-User-Email")
+	email := getEmailFromString(arr)
+
+	if email == "" {
+		username := os.Getenv("USER")
+		email = fmt.Sprintf("%s@google.com_", username)
+	}
+
+	p.Email = email
+
+	json, err := p.JSON()
+	if err != nil {
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	writeResponse(w, http.StatusOK, json)
+
+}
+
+func getEmailFromString(arr string) string {
+	email := ""
+	if len(arr) > 0 {
+
+		iapstrings := strings.Split(arr, ":")
+		if len(iapstrings) < 2 {
+			return email
+		}
+
+		email = iapstrings[1]
+	}
+	return email
+}
 func handleGetBoard(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("/api/board called\n")
 	email, ok := r.URL.Query()["email"]
@@ -329,6 +369,9 @@ func getGame(id string) (Game, error) {
 			return game, fmt.Errorf("could not get game from cache or id(%s) from firestore: %s", id, err)
 		}
 		games[id] = game
+		if game.Active {
+			games["active"] = game
+		}
 	}
 	return game, nil
 }
@@ -336,7 +379,6 @@ func getGame(id string) (Game, error) {
 func recordSelect(boardID string, phraseID string) error {
 	p := Phrase{}
 	p.ID = phraseID
-	fmt.Printf("BoardID %v\n", boardID)
 
 	b, err := getBoard(boardID)
 	if err != nil {

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Observable, of  } from 'rxjs';
 import {Router} from '@angular/router';
 import {AuthService, Player} from '../../service/auth.service'
 
@@ -10,7 +11,12 @@ import {AuthService, Player} from '../../service/auth.service'
 })
 export class LoginComponent implements OnInit {
 
-  constructor(private auth:AuthService, private router: Router) { }
+  public identity:Observable<any>;
+
+  constructor(private auth:AuthService, private router: Router) { 
+    this.identity =auth.identifyPlayer();
+
+  }
 
   ngOnInit(): void {
   }

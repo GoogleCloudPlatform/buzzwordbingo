@@ -16,6 +16,7 @@ export const environment = {
   board_url: 'http://127.0.0.1:8080/api/board',
   record_url: 'http://127.0.0.1:8080/api/record',
   game_active_url: 'http://127.0.0.1:8080/api/game/active',
+  player_url: 'http://127.0.0.1:8080/api/player/identify',
 };
 
 /*

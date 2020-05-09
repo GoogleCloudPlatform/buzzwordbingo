@@ -35,8 +35,7 @@ func (a *Agent) getClient() (*firestore.Client, error) {
 	return firestore.NewClient(context.Background(), a.ProjectID)
 }
 
-// GetPhrases fetches the list of nodes from Firestore and arranges them
-// into a route.Route
+// GetPhrases fetches the master list of Phrases for populating Games
 func (a *Agent) GetPhrases() ([]Phrase, error) {
 
 	p := []Phrase{}
@@ -68,6 +67,7 @@ func (a *Agent) GetPhrases() ([]Phrase, error) {
 	return p, nil
 }
 
+// NewGame will create a new game in the database and initialize it.
 func (a *Agent) NewGame(name string) (Game, error) {
 	g := Game{}
 
@@ -117,6 +117,7 @@ func (a *Agent) NewGame(name string) (Game, error) {
 	return g, nil
 }
 
+// GetGame gets a given game from the database
 func (a *Agent) GetGame(id string) (Game, error) {
 	g := Game{}
 
@@ -141,6 +142,7 @@ func (a *Agent) GetGame(id string) (Game, error) {
 	return g, nil
 }
 
+// AddMessageToGame broadcasts a message to the game players
 func (a *Agent) AddMessageToGame(g Game, m Message) error {
 	timestamp := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
 	client, err := a.getClient()
@@ -181,6 +183,8 @@ func (a *Agent) loadGameWithRecords(g Game) (Game, error) {
 	return g, nil
 }
 
+// UpdateRecordOnGame updates the master record on the game to track selected
+// phrases
 func (a *Agent) UpdateRecordOnGame(g Game, r Record) error {
 	client, err := a.getClient()
 	if err != nil {
@@ -197,6 +201,7 @@ func (a *Agent) UpdateRecordOnGame(g Game, r Record) error {
 	return nil
 }
 
+// SaveGame records a game to firestore.
 func (a *Agent) SaveGame(g Game) error {
 
 	client, err := a.getClient()
@@ -214,6 +219,7 @@ func (a *Agent) SaveGame(g Game) error {
 	return nil
 }
 
+// GetBoard retrieves a specifc board from firestore
 func (a *Agent) GetBoard(id string) (Board, error) {
 	b := Board{}
 	client, err := a.getClient()
@@ -260,6 +266,7 @@ func (a *Agent) loadBoardWithPhrases(b Board) (Board, error) {
 	return b, nil
 }
 
+// SaveBoard persists a board to firestore
 func (a *Agent) SaveBoard(b Board) (Board, error) {
 	client, err := a.getClient()
 	if err != nil {
@@ -311,6 +318,7 @@ func (a *Agent) savePhrases(b Board) error {
 	return nil
 }
 
+// UpdatePhraseOnBoard records clicks on an individual board
 func (a *Agent) UpdatePhraseOnBoard(b Board, p Phrase) error {
 	client, err := a.getClient()
 	if err != nil {
@@ -327,6 +335,7 @@ func (a *Agent) UpdatePhraseOnBoard(b Board, p Phrase) error {
 	return nil
 }
 
+// UpdateBingoOnBoard records a bingo call.
 func (a *Agent) UpdateBingoOnBoard(b Board, bingo bool) error {
 	client, err := a.getClient()
 	if err != nil {
@@ -336,13 +345,15 @@ func (a *Agent) UpdateBingoOnBoard(b Board, bingo bool) error {
 	a.log("Updating board to bingo")
 	ref := client.Collection("boards").Doc(b.ID)
 
-	if _, err := ref.Set(ctx, map[string]interface{}{"BingoDeclared": bingo}, firestore.MergeAll); err != nil {
+	update := map[string]interface{}{"BingoDeclared": bingo}
+	if _, err := ref.Set(ctx, update, firestore.MergeAll); err != nil {
 		return fmt.Errorf("failed to update phrase: %v", err)
 	}
 
 	return nil
 }
 
+// GetActiveGame returns the currently beign played game.
 func (a *Agent) GetActiveGame() (Game, error) {
 	client, err := a.getClient()
 	g := Game{}
@@ -379,6 +390,7 @@ func (a *Agent) GetActiveGame() (Game, error) {
 	return g, nil
 }
 
+// ResetActiveGame returns a Game to a pristine state.
 func (a *Agent) ResetActiveGame() (Game, error) {
 	g := Game{}
 	client, err := a.getClient()
@@ -414,9 +426,6 @@ func (a *Agent) ResetActiveGame() (Game, error) {
 		iter := ref.Limit(100).Documents(ctx)
 		numDeleted := 0
 
-		// Iterate through the documents, adding
-		// a delete operation for each one to a
-		// WriteBatch.
 		batch := client.Batch()
 		for {
 			doc, err := iter.Next()
@@ -431,8 +440,6 @@ func (a *Agent) ResetActiveGame() (Game, error) {
 			numDeleted++
 		}
 
-		// If there are no documents to delete,
-		// the process is over.
 		if numDeleted == 0 {
 			break
 		}
@@ -446,6 +453,7 @@ func (a *Agent) ResetActiveGame() (Game, error) {
 	return g, nil
 }
 
+// GetBoardForPlayer returns the board for a given player
 func (a *Agent) GetBoardForPlayer(id string, email string) (Board, error) {
 	b := Board{}
 	client, err := a.getClient()
