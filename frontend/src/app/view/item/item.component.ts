@@ -54,6 +54,7 @@ export class ItemComponent implements OnInit {
   setDisplayChecked(){
     let item:HTMLElement = document.querySelector("#id_"+ this.phrase.id);
     let selectedPhraseCount = Object.keys(this.currentState).length;
+    item.classList.add("selected");
     switch(selectedPhraseCount) {
       case 0:
         item.style.backgroundColor = "lavender";
@@ -80,11 +81,10 @@ export class ItemComponent implements OnInit {
   }
 
   public disable(){
-    console.log("disabled called");
     this.disabled = true;
     let item:HTMLElement = document.querySelector("#id_"+ this.phrase.id);
     if (!this.phrase.selected){
-      item.style.backgroundColor = "#DDD";
+      item.classList.add("disabled");
     }
   }
 

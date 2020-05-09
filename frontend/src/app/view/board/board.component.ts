@@ -50,31 +50,24 @@ export class BoardComponent implements OnInit {
     this.messages.subscribe(ms=>{this.listenForBingo(ms)})
   }
 
-  ngAfterViewInit() {
-    if (this.bingo){
-      console.log("Bingo declared in afterviewinit")
-      this.itemComponent.disable();
-    }
-  }
-  ngOnChanges(){
-    console.log("On Changes called");
-  }
 
   declareBingo(){
     this.bingo=true;
       console.log("Bingo Declared");
-      console.log(this.itemComponents);
+      this.showBingo()
       this.itemComponents.forEach(function(child){
-        console.log("Looping through children")
         child.disable();
       })
   }
 
+  showBingo(){
+    let board = document.querySelector(".header-container");
+    board.classList.add("header-bingo");
+  }
+
   listenForBingo(messages:Message[]){
     let self = this;
-    console.log(messages)
     let msg:Message = messages[messages.length-1] as Message;
-    console.log(msg)
     if (!msg || typeof msg == "undefined"){
       return;
     }
@@ -106,9 +99,6 @@ export class BoardComponent implements OnInit {
       delete this.currentState[phrase.id];
     }
 
-    if (this.checkBingo()){
-      alert("BINGO!")
-    }
     
   }
 
@@ -119,38 +109,6 @@ export class BoardComponent implements OnInit {
   }
 
 
-  checkBingo(){
-    let counts = {};
-    let diag1 = ["b1", "i2", "n3", "g4", "o5"];
-    let diag2 = ["b5", "i4", "n3", "g2", "o1"];
-
-    let keys = Object.values(this.currentState) as Phrase[];
-
-    keys.forEach(function(phrase) {
-      var column = phrase.tid.charAt(0);
-      var row= phrase.tid.charAt(1);
-      if (phrase.selected){
-          counts[column] = (counts[column] || 0) + 1;
-          counts[row] = (counts[row] || 0) + 1;
-
-          if (diag1.indexOf(phrase.tid) >= 0) {
-              counts["diag1"] = (counts["diag1"] || 0) + 1;
-          }
-
-          if (diag2.indexOf(phrase.tid) >= 0) {
-              counts["diag2"] = (counts["diag2"] || 0) + 1;
-          }
-      }
-    });
-    for (let key in counts) {
-      if (counts[key] == 5){
-          return true;
-      } 
-    }
-    return false;
-
-
-  }
 
 
 

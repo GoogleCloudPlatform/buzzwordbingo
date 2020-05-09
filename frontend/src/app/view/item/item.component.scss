@@ -1,5 +1,5 @@
 :host {
-    width: 19%;
+    width: unquote("calc(20% - 2px)");
     border: 1px solid #ccc;
 }    
 
@@ -12,10 +12,14 @@
         padding: 20% 20px;
         display:block;
     }
-
-    
-    
 }
-.selected{
+
+
+.disabled{
     background-color: #dedede;
+    cursor: default;
+}
+
+.selected{
+    cursor: default;
 }

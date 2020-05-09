@@ -1,11 +1,17 @@
 <div class="phrases">
-    <div class="header">B</div>
-    <div class="header">I</div>
-    <div class="header">N</div>
-    <div class="header">G</div>
-    <div class="header">O</div>
-    <app-item #items *ngFor="let phrase of (board | async)?.phrases; let i = index;" [phrase]='phrase' [boardid]='boardid' 
-            (phraseEmitter)="recievePhrase($event)" (readyEmitter)="receiveChild($event)" [position]="i+1" [currentState]='currentState'>
+    <div class="header-container">
+        <header>B</header>
+        <header>I</header>
+        <header>N</header>
+        <header>G</header>
+        <header>O</header>
+    </div>
+    <app-item #items class="cell"
+        *ngFor="let phrase of (board | async)?.phrases; let i = index;" 
+        [phrase]='phrase' [boardid]='boardid' 
+        (phraseEmitter)="recievePhrase($event)" 
+        (readyEmitter)="receiveChild($event)" 
+        [position]="i+1" [currentState]='currentState'>
     </app-item>
 </div>
 <app-messages [messages]='messages'></app-messages>
