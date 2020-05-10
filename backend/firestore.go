@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -157,6 +158,27 @@ func (a *Agent) GetGame(id string) (Game, error) {
 	}
 
 	return g, nil
+}
+
+// IsAdmin gets a given game from the database
+func (a *Agent) IsAdmin(email string) (bool, error) {
+	var err error
+	client, err = a.getClient()
+	if err != nil {
+		return false, fmt.Errorf("failed to create client: %v", err)
+	}
+
+	a.log("See if user exists")
+	doc, err := client.Collection("admins").Doc(email).Get(ctx)
+	if err != nil {
+		if strings.Contains(err.Error(), "code = NotFound") {
+			return false, nil
+		}
+		return false, fmt.Errorf("failed to get game: %v", err)
+	}
+
+	return doc.Exists(), nil
+
 }
 
 // AddMessagesToGame broadcasts a message to the game players

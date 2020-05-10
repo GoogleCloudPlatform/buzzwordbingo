@@ -47,11 +47,34 @@ func main() {
 	http.HandleFunc("/api/game/active", handleActiveGame)
 	http.HandleFunc("/api/game/reset", handleResetActiveGame)
 	http.HandleFunc("/api/player/identify", handleGetIAPUsername)
+	http.HandleFunc("/api/player/isadmin", handleGetIsAdmin)
 
 	log.Printf("Starting server on port %s\n", port)
 	if err := http.ListenAndServe(port, nil); err != nil {
 		log.Fatal(err)
 	}
+
+}
+
+func handleGetIsAdmin(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("/api/player/isadmin called\n")
+	email, ok := r.URL.Query()["email"]
+
+	if !ok || len(email[0]) < 1 || email[0] == "undefined" {
+		msg := "{\"error\":\"email is missing\"}"
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	result, err := a.IsAdmin(email[0])
+	if err != nil {
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	msg := fmt.Sprintf("{\"is_admin\":\"%t\"}", result)
+	writeResponse(w, http.StatusOK, msg)
 
 }
 

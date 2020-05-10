@@ -117,7 +117,6 @@ type Record struct {
 type Player struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
-	Admin bool   `json:"admin"`
 }
 
 // JSON Returns the given Board struct as a JSON string
