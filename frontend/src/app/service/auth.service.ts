@@ -19,6 +19,11 @@ export class AuthService {
   private isAuthed:boolean=false;
 
   constructor(private http: HttpClient) { 
+    let player = JSON.parse(localStorage.getItem('player'));
+    if (player != null){
+      this.player = player;
+      this.isAuthed = true;
+    }
   }
   private playerUrl: string = environment.player_url;
 
@@ -27,6 +32,7 @@ export class AuthService {
     this.player.email = email;
     this.player.admin = admin;
     this.isAuthed = true;
+    localStorage.setItem('player', JSON.stringify(this.player));
   } 
 
   getPlayer():Player{
@@ -42,7 +48,6 @@ export class AuthService {
   }
 
   identifyPlayer () {
-    console.log("making the call")
     return this.http.get(this.playerUrl);
   }
 

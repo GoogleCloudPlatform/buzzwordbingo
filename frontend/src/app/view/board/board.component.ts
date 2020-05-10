@@ -41,7 +41,7 @@ export class BoardComponent implements OnInit {
       this.board = game.getBoard(this.player.email, this.player.name);
     }
     
-    this.board.subscribe(val=>{this.boardid=val.id; console.log(val); if (val.bingodeclared){this.declareBingo()}})
+    this.board.subscribe(val=>{this.boardid=val.id; if (val.bingodeclared){this.declareBingo()}})
 
    }
 

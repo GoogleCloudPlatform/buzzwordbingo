@@ -1,32 +1,45 @@
-
-
-.header-container{
-    width: 100%;
+.main{
+    max-width: 1000px;
     display: flex;
     flex-wrap: wrap;
-    header{
-        width: unquote("calc(20% - 2px)");
-        text-align: center;
-        font-size: 132px;
-        font-weight: 900;
-        color: #4287f5;
-        
+
+    .phrases{
+        width: 60%;
+        display: flex;
+        flex-wrap: wrap;
+        padding: 20px 50px;
+        color:purple;
+
+        .header-container{
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            header{
+                width: unquote("calc(20% - 2px)");
+                text-align: center;
+                font-size: 132px;
+                font-weight: 900;
+                color: #4287f5;
+                
+            }
+        }
+
+        .header-bingo{
+            background-color: #4287f5;
+            
+            header{
+                width: unquote("calc(20% - 2px)");
+                color: #fff;
+            }
+        }
     }
+
+    .board-messages{
+        width: 30%;
+        padding: 20px 0;
+    }
+
 }
 
-.phrases{
-   
-    display: flex;
-    flex-wrap: wrap;
-    padding: 20px 50px;
-    color:purple;
-}
 
-.header-bingo{
-    background-color: #4287f5;
-    
-    header{
-        width: unquote("calc(20% - 2px)");
-        color: #fff;
-    }
-}
+
