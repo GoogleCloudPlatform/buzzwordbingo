@@ -209,25 +209,6 @@ func (a *Agent) loadGameWithRecords(g Game) (Game, error) {
 	return g, nil
 }
 
-// UpdateRecordOnGame updates the master record on the game to track selected
-// phrases
-func (a *Agent) UpdateRecordOnGame(g Game, r Record) error {
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return fmt.Errorf("Failed to create client: %v", err)
-	}
-
-	a.log("Updating game record")
-	ref := client.Collection("games").Doc(g.ID).Collection("records").Doc(r.Phrase.ID)
-
-	if _, err := ref.Set(ctx, r); err != nil {
-		return fmt.Errorf("failed to update phrase: %v", err)
-	}
-
-	return nil
-}
-
 // SaveGame records a game to firestore.
 func (a *Agent) SaveGame(g Game) error {
 
@@ -377,43 +358,6 @@ func (a *Agent) UpdatePhrase(b Board, p Phrase, r Record) error {
 	a.log("Committing Batch")
 	_, err = batch.Commit(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to update phrase: %v", err)
-	}
-
-	return nil
-}
-
-// UpdatePhraseOnBoard records clicks on an individual board
-func (a *Agent) UpdatePhraseOnBoard(b Board, p Phrase) error {
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return fmt.Errorf("Failed to create client: %v", err)
-	}
-
-	a.log("Updating phrase on board")
-	ref := client.Collection("boards").Doc(b.ID).Collection("phrases").Doc(p.ID)
-
-	if _, err := ref.Set(ctx, p); err != nil {
-		return fmt.Errorf("failed to update phrase: %v", err)
-	}
-
-	return nil
-}
-
-// UpdateBingoOnBoard records a bingo call.
-func (a *Agent) UpdateBingoOnBoard(b Board, bingo bool) error {
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return fmt.Errorf("Failed to create client: %v", err)
-	}
-
-	a.log("Updating board to bingo")
-	ref := client.Collection("boards").Doc(b.ID)
-
-	update := map[string]interface{}{"BingoDeclared": bingo}
-	if _, err := ref.Set(ctx, update, firestore.MergeAll); err != nil {
 		return fmt.Errorf("failed to update phrase: %v", err)
 	}
 
