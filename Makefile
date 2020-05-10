@@ -12,3 +12,7 @@ dev:
 server:
 	cd $(BASEDIR)/backend && \
 	go run main.go firestore.go bingo.go 
+
+init:
+	cd frontend && npm install
+	cd backend && go mod vendor
