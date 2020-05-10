@@ -23,7 +23,7 @@ init:
 	cd frontend && npm install
 	cd backend && go mod vendor
 
-serviceaccount:
+serviceaccount: env
 	@echo ~~~~~~~~~~~~~ Download key for service account. 
 	-gcloud iam service-accounts keys create creds/creds.json \
   	--iam-account $(SAACCOUNT)@$(PROJECT).iam.gserviceaccount.com  	
