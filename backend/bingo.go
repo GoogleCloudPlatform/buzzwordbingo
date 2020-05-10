@@ -199,7 +199,7 @@ func (b *Board) Bingo() bool {
 			}
 		}
 	}
-
+	b.log(fmt.Sprintf("%v", counts))
 	for _, v := range counts {
 		if v == 5 {
 			b.log("Bingo Declared")
@@ -214,11 +214,14 @@ func (b *Board) Bingo() bool {
 func (b *Board) Select(ph Phrase) Phrase {
 	for i, v := range b.Phrases {
 		if v.ID == ph.ID {
+
 			if v.Selected {
+				b.log(fmt.Sprintf("Unselected %s", v.Position()))
 				v.Selected = false
 				b.Phrases[i] = v
 				return v
 			}
+			b.log(fmt.Sprintf("Selected %s", v.Position()))
 			v.Selected = true
 			b.Phrases[i] = v
 			return v
@@ -238,8 +241,6 @@ func (b *Board) Load(p []Phrase) {
 	for i, v := range p {
 
 		v.Selected = false
-		v.Column, v.Row = calcColumnsRows(i + 1)
-		v.DisplayOrder = i
 
 		if v.Text == "FREE" {
 			free = i
@@ -251,6 +252,12 @@ func (b *Board) Load(p []Phrase) {
 
 	p[free], p[center] = p[center], p[free]
 
+	for i, v := range p {
+		v.Column, v.Row = calcColumnsRows(i)
+		v.DisplayOrder = i
+		p[i] = v
+	}
+
 	b.Phrases = p
 }
 
@@ -260,18 +267,18 @@ func calcColumnsRows(i int) (string, string) {
 
 	switch i % 5 {
 	case 1:
-		column = "B"
-	case 2:
 		column = "I"
-	case 3:
+	case 2:
 		column = "N"
-	case 4:
+	case 3:
 		column = "G"
-	default:
+	case 4:
 		column = "O"
+	default:
+		column = "B"
 	}
 
-	row = strconv.Itoa(int(math.Round(float64((i - 1) / 5))))
+	row = strconv.Itoa(int(math.Round(float64((i) / 5))))
 
 	return column, row
 }
