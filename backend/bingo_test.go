@@ -7,34 +7,35 @@ import (
 func TestBoardBingo(t *testing.T) {
 
 	cases := []struct {
-		in   Board
-		want bool
+		label string
+		in    Board
+		want  bool
 	}{
-		{Board{}, false},
-		{Board{Phrases: []Phrase{
-			Phrase{Row: "1", Column: "B", Selected: true},
+		{"Empty", Board{}, false},
+		{"Top Row", Board{Phrases: []Phrase{
+			Phrase{Row: "0", Column: "B", Selected: true},
+			Phrase{Row: "0", Column: "I", Selected: true},
+			Phrase{Row: "0", Column: "N", Selected: true},
+			Phrase{Row: "0", Column: "G", Selected: true},
+			Phrase{Row: "0", Column: "O", Selected: true}}}, true},
+		{"Diagonal", Board{Phrases: []Phrase{
+			Phrase{Row: "0", Column: "B", Selected: true},
 			Phrase{Row: "1", Column: "I", Selected: true},
-			Phrase{Row: "1", Column: "N", Selected: true},
+			Phrase{Row: "2", Column: "N", Selected: true},
+			Phrase{Row: "3", Column: "G", Selected: true},
+			Phrase{Row: "4", Column: "O", Selected: true}}}, true},
+		{"V pattern", Board{Phrases: []Phrase{
+			Phrase{Row: "0", Column: "B", Selected: true},
+			Phrase{Row: "1", Column: "I", Selected: true},
+			Phrase{Row: "2", Column: "N", Selected: true},
 			Phrase{Row: "1", Column: "G", Selected: true},
-			Phrase{Row: "1", Column: "O", Selected: true}}}, true},
-		{Board{Phrases: []Phrase{
-			Phrase{Row: "1", Column: "B", Selected: true},
-			Phrase{Row: "2", Column: "I", Selected: true},
-			Phrase{Row: "3", Column: "N", Selected: true},
-			Phrase{Row: "4", Column: "G", Selected: true},
-			Phrase{Row: "5", Column: "O", Selected: true}}}, true},
-		{Board{Phrases: []Phrase{
-			Phrase{Row: "1", Column: "B", Selected: true},
-			Phrase{Row: "2", Column: "I", Selected: true},
-			Phrase{Row: "3", Column: "N", Selected: true},
-			Phrase{Row: "2", Column: "G", Selected: true},
-			Phrase{Row: "1", Column: "O", Selected: true}}}, false},
+			Phrase{Row: "0", Column: "O", Selected: true}}}, false},
 	}
 
 	for _, c := range cases {
 		got := c.in.Bingo()
 		if got != c.want {
-			t.Errorf("Board.TestBingo() got %t, want %t", got, c.want)
+			t.Errorf("Board.TestBingo(%s) got %t, want %t", c.label, got, c.want)
 		}
 	}
 

@@ -175,34 +175,34 @@ type Board struct {
 // Bingo determins if the correct sequence of items have been Selected to
 // make bingo on this board.
 func (b *Board) Bingo() bool {
-	diag1 := []string{"B1", "I2", "N3", "G4", "O5"}
-	diag2 := []string{"B5", "I4", "N3", "G2", "O1"}
+	diag1 := []string{"B0", "I1", "N2", "G3", "O4"}
+	diag2 := []string{"B4", "I3", "N2", "G1", "O0"}
 	counts := make(map[string]int)
 
 	for _, v := range b.Phrases {
 		if v.Selected {
 			counts[v.Column]++
 			counts[v.Row]++
-		}
 
-		for _, sub := range diag1 {
-			if sub == v.Position() {
-				counts["diag1"]++
-				continue
+			for _, sub := range diag1 {
+				if sub == v.Position() {
+					counts["diag1"]++
+					continue
+				}
 			}
-		}
 
-		for _, sub := range diag2 {
-			if sub == v.Position() {
-				counts["diag2"]++
-				continue
+			for _, sub := range diag2 {
+				if sub == v.Position() {
+					counts["diag2"]++
+					continue
+				}
 			}
 		}
 	}
 
 	for _, v := range counts {
 		if v == 5 {
-			fmt.Printf("Bingo Declared\n")
+			b.log("Bingo Declared")
 			b.BingoDeclared = true
 			return true
 		}
@@ -305,4 +305,10 @@ type Phrase struct {
 // Position returns the combined Row and Column of the Phrase
 func (p Phrase) Position() string {
 	return p.Column + p.Row
+}
+
+func (b Board) log(msg string) {
+	if noisy {
+		fmt.Printf("Bingo: %s\n", msg)
+	}
 }

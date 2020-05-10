@@ -266,6 +266,7 @@ func handleRecordSelect(w http.ResponseWriter, r *http.Request) {
 func getBoardForPlayer(p Player) (Board, error) {
 	b := Board{}
 	var ok bool
+	messages := []Message{}
 
 	game, err := getActiveGame()
 	if err != nil {
@@ -299,20 +300,19 @@ func getBoardForPlayer(p Player) (Board, error) {
 
 	}
 
-	if err := a.AddMessageToGame(game, m); err != nil {
-		return b, fmt.Errorf("could not send message: %s", err)
-	}
+	messages = append(messages, m)
 
 	bingo := b.Bingo()
 	if bingo {
-		m := Message{}
-		m.SetText("<strong>%s</strong> already had <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
-		m.SetAudience("all", b.Player.Email)
-		m.Bingo = bingo
+		m2 := Message{}
+		m2.SetText("<strong>%s</strong> already had <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
+		m2.SetAudience("all", b.Player.Email)
+		m2.Bingo = bingo
+		messages = append(messages, m2)
+	}
 
-		if err := a.AddMessageToGame(game, m); err != nil {
-			return b, fmt.Errorf("could not send message: %s", err)
-		}
+	if err := a.AddMessagesToGame(game, messages); err != nil {
+		return b, fmt.Errorf("could not send message: %s", err)
 	}
 
 	return b, nil
@@ -379,6 +379,7 @@ func getGame(id string) (Game, error) {
 func recordSelect(boardID string, phraseID string) error {
 	p := Phrase{}
 	p.ID = phraseID
+	messages := []Message{}
 
 	b, err := getBoard(boardID)
 	if err != nil {
@@ -392,8 +393,12 @@ func recordSelect(boardID string, phraseID string) error {
 
 	p = b.Select(p)
 	r := g.Master.Select(p, b.Player)
+	bingo := b.Bingo()
+
 	games[g.ID] = g
+	games["active"] = g
 	boards[b.ID] = b
+	boards[g.ID+"_"+b.Player.Email] = b
 
 	if err := a.UpdatePhrase(b, p, r); err != nil {
 		return fmt.Errorf("record click to firestore: %s", err)
@@ -407,27 +412,18 @@ func recordSelect(boardID string, phraseID string) error {
 	m := Message{}
 	m.SetText("<strong>%s</strong> %s <em>%s</em> on their board.", b.Player.Name, indicator, p.Text)
 	m.SetAudience("all")
+	messages = append(messages, m)
 
-	if err := a.AddMessageToGame(g, m); err != nil {
-		return fmt.Errorf("could not send message: %s", err)
+	if bingo {
+		m2 := Message{}
+		m2.SetText("<strong>%s</strong> just got <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
+		m2.SetAudience("all")
+		m2.Bingo = bingo
+		messages = append(messages, m2)
 	}
 
-	bingo := b.Bingo()
-	if bingo {
-		boards[b.ID] = b
-		boards[g.ID+"_"+b.Player.Email] = b
-		m := Message{}
-		m.SetText("<strong>%s</strong> just got <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
-		m.SetAudience("all")
-		m.Bingo = bingo
-
-		if err := a.UpdateBingoOnBoard(b, bingo); err != nil {
-			return fmt.Errorf("could not record bingo on board: %s", err)
-		}
-
-		if err := a.AddMessageToGame(g, m); err != nil {
-			return fmt.Errorf("could not send message: %s", err)
-		}
+	if err := a.AddMessagesToGame(g, messages); err != nil {
+		return fmt.Errorf("could not send message: %s", err)
 	}
 
 	return nil
