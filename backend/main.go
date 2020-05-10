@@ -73,7 +73,7 @@ func handleGetIsAdmin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	msg := fmt.Sprintf("{\"is_admin\":\"%t\"}", result)
+	msg := fmt.Sprintf("%t", result)
 	writeResponse(w, http.StatusOK, msg)
 
 }

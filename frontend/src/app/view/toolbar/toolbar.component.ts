@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AuthService } from 'src/app/service/auth.service';
 
 @Component({
   selector: 'app-toolbar',
@@ -7,7 +8,12 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ToolbarComponent implements OnInit {
 
-  constructor() { }
+  isAdmin:boolean = false;
+
+  constructor(public auth:AuthService) {
+    this.isAdmin = auth.isAdmin()
+    console.log("Isadmin");
+   }
 
   ngOnInit(): void {
   }

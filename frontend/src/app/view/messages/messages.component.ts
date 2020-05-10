@@ -30,7 +30,6 @@ export class MessagesComponent implements OnInit {
     let self = this;
     let result:boolean = false;
     message.audience.forEach(function(val){
-      console.log("called", val, self.target)
         if ((val == self.target) || (val == "all")) {
           result = true
         } 
@@ -41,10 +40,8 @@ export class MessagesComponent implements OnInit {
 
 
   scrollDownWindow(){
-    console.log("called")
     let d = document.querySelector('.messages');
     if (d) {
-      console.log("got here")
       d.scrollTop = d.scrollHeight;
     }
   }

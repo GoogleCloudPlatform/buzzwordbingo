@@ -66,10 +66,16 @@ export class GameService {
   private boardUrl: string = environment.board_url;
   private recordUrl: string = environment.record_url;
   private gameActiveUrl: string = environment.game_active_url;
+  private adminUrl: string = environment.admin_url;
 
   getBoard (email:string, name:string): Observable<Board> {
     if (email == "undefined") return
     return this.http.get<Board>(this.boardUrl +"?email="+email+"&name="+name).pipe(share());
+  }
+
+  isAdmin (email:string): Observable<boolean> {
+    if (email == "undefined") return
+    return this.http.get<boolean>(this.adminUrl +"?email="+email);
   }
 
   getActiveGame () {
