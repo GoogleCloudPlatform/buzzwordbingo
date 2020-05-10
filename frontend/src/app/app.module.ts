@@ -12,6 +12,8 @@ import { AngularFirestoreModule } from "@angular/fire/firestore";
 import { LoginComponent } from './view/login/login.component';
 import { MessagesComponent } from './view/messages/messages.component';
 import { ReplacePipe } from './replace.pipe';
+import { AdminComponent } from './view/admin/admin.component';
+import { ToolbarComponent } from './view/toolbar/toolbar.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +22,9 @@ import { ReplacePipe } from './replace.pipe';
     ItemComponent,
     LoginComponent,
     ReplacePipe,
-    MessagesComponent
+    MessagesComponent,
+    AdminComponent,
+    ToolbarComponent
   ],
   imports: [
     BrowserModule,

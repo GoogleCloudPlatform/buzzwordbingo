@@ -285,7 +285,7 @@ func getBoardForPlayer(p Player) (Board, error) {
 	}
 	m := Message{}
 	m.SetText("<strong>%s</strong> rejoined the game.", b.Player.Name)
-	m.SetAudience("all")
+	m.SetAudience("admin", b.Player.Email)
 
 	if b.ID == "" {
 		b = game.NewBoard(p)
@@ -305,8 +305,8 @@ func getBoardForPlayer(p Player) (Board, error) {
 	bingo := b.Bingo()
 	if bingo {
 		m2 := Message{}
-		m2.SetText("<strong>%s</strong> already had <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
-		m2.SetAudience("all", b.Player.Email)
+		m2.SetText("<strong>You</strong> already had <em><strong>BINGO</strong></em> on your board.")
+		m2.SetAudience(b.Player.Email)
 		m2.Bingo = bingo
 		messages = append(messages, m2)
 	}
@@ -411,7 +411,7 @@ func recordSelect(boardID string, phraseID string) error {
 
 	m := Message{}
 	m.SetText("<strong>%s</strong> %s <em>%s</em> on their board.", b.Player.Name, indicator, p.Text)
-	m.SetAudience("all")
+	m.SetAudience("admin", b.Player.Email)
 	messages = append(messages, m)
 
 	if bingo {

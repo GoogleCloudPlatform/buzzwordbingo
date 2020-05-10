@@ -1,5 +1,22 @@
-.message{
-    font-size: 14px;
-    padding-bottom: 10px;
-    line-height: 14px;
+
+
+.messages{
+    padding: 10px;
+    box-sizing: border-box;
+    margin: 20px 0;
+    border: 1px solid #ccc;
+    height: 100%;
+    overflow-y: scroll;
+
+
+    .message{
+        
+        .content{
+            font-size: 12px;
+            padding-bottom: 10px;
+            line-height: 14px;
+        }
+    }
+
+
 }

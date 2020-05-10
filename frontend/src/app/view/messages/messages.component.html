@@ -1,5 +1,5 @@
-<div class="messages">
-    <div class="message" *ngFor="let message of messages | async" 
-    [innerHTML]="message.text">
+<div class="messages" #scrollMe [scrollTop]="scrollMe.scrollHeight">
+    <div class="message"  *ngFor="let message of messages | async">
+        <span class="content" *ngIf="findInAudience(message)" [innerHTML]="message.text"></span>
     </div>
 </div>

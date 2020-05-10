@@ -4,7 +4,7 @@
     <input id="name" type="text" name="name" value="Terrence Ryan">
     <br />
     <label for="">Email:  </label>
-    <input readonly id="email" type="email" name="email" [value]="(identity | async)?.email | replace">
+    <input  id="email" type="email" name="email" [value]="(identity | async)?.email | replace">
     <br />
     <button (click)="submitPlayer()">Submit</button>
 </div>

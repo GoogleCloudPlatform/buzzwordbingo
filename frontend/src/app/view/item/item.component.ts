@@ -22,7 +22,6 @@ export class ItemComponent implements OnInit {
   constructor(private game:GameService) { }
 
   ngOnInit(): void {
-    this.phrase.tid = this.convertPositionToTID(this.position);
   }
 
   ngAfterViewChecked(): void {
@@ -39,6 +38,10 @@ export class ItemComponent implements OnInit {
     if (this.bingo){
       this.disabled = true;
       this.disable();
+    }
+
+    if (this.phrase.text == "FREE"){
+      return;
     }
 
     if (this.disabled){
@@ -90,28 +93,5 @@ export class ItemComponent implements OnInit {
 
   
 
-  convertPositionToTID(position){
-    let first = "";
-    let second = "";
-    second = Math.ceil(position/5).toString();
-    switch(position % 5) {
-      case 1:
-        first = "B";
-        break;
-      case 2:
-        first = "I";
-        break;
-      case 3:
-        first = "N";
-        break;
-      case 4:
-        first = "G";
-        break;  
-      default:
-        first = "O";
-    }
-    return first + second;
-
-  }
 
 }

@@ -1,26 +1,30 @@
 .main{
     max-width: 1000px;
+    margin: 0 auto;
     display: flex;
     flex-wrap: wrap;
 
     .phrases{
-        width: 60%;
+        width: 600px;
         display: flex;
         flex-wrap: wrap;
-        padding: 20px 50px;
+        align-items: flex-start;
+        margin: 20px;
         color:purple;
 
         .header-container{
-            width: 100%;
+            width: 585px;
             display: flex;
             flex-wrap: wrap;
             header{
-                width: unquote("calc(20% - 2px)");
+                width: 117px;
+                height: 115px;
                 text-align: center;
-                font-size: 132px;
+                font-size: 72px;
                 font-weight: 900;
                 color: #4287f5;
-                
+                padding-top:10px;
+                box-sizing: border-box;
             }
         }
 
@@ -28,15 +32,14 @@
             background-color: #4287f5;
             
             header{
-                width: unquote("calc(20% - 2px)");
                 color: #fff;
             }
         }
     }
 
     .board-messages{
-        width: 30%;
-        padding: 20px 0;
+        width: 355px;
+        height: 700px;
     }
 
 }
