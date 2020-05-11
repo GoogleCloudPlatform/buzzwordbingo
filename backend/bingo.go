@@ -108,15 +108,15 @@ func (m *Master) Select(ph Phrase, pl Player) Record {
 
 // Record is a structure that keeps track of who has selected which Phrase
 type Record struct {
-	ID      string  `json:"id"`
-	Phrase  Phrase  `json:"phrase"`
-	Players Players `json:"players"`
+	ID      string  `json:"id"  firestore:"id"`
+	Phrase  Phrase  `json:"phrase"  firestore:"phrase"`
+	Players Players `json:"players"  firestore:"players"`
 }
 
 // Player is a human user who is playing the game.
 type Player struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	Name  string `json:"name"  firestore:"name"`
+	Email string `json:"email"  firestore:"email"`
 }
 
 // JSON Returns the given Board struct as a JSON string
@@ -300,12 +300,12 @@ func randomseed() int64 {
 // Phrase represents a statement, event or other such thing that we are on the
 // lookout for in this game of bingo.
 type Phrase struct {
-	ID           string `json:"id"`
-	Text         string `json:"text"`
-	Selected     bool   `json:"selected"`
-	Row          string `json:"row"`
-	Column       string `json:"column"`
-	DisplayOrder int    `json:"display_order"`
+	ID           string `json:"id" firestore:"id"`
+	Text         string `json:"text" firestore:"text"`
+	Selected     bool   `json:"selected" firestore:"selected"`
+	Row          string `json:"row" firestore:"-"`
+	Column       string `json:"column" firestore:"-"`
+	DisplayOrder int    `json:"display_order" firestore:"display_order"`
 }
 
 // Position returns the combined Row and Column of the Phrase

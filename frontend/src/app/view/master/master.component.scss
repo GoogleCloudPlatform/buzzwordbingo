@@ -1,0 +1,16 @@
+.record{
+    display: flex;
+    flex-wrap: wrap;
+    padding: 3px; 
+    .count{
+        margin-right: 3px;
+        text-align: right;
+        width: 30px;
+    }
+
+}
+
+.active{
+    font-weight: 900;
+    background-color: #eee;
+}

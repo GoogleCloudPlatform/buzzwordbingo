@@ -1,0 +1,8 @@
+<div class="records">
+    <div *ngFor="let record of records | async">
+        <div class="record" [class.active]="isActive(record)">
+            <div class="count" [innerHTML]="playerCount(record)"></div>
+            <div class="text" [innerHTML]="record.phrase.text"></div>
+        </div>
+    </div>
+</div>

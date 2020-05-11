@@ -14,6 +14,7 @@ import { MessagesComponent } from './view/messages/messages.component';
 import { ReplacePipe } from './replace.pipe';
 import { AdminComponent } from './view/admin/admin.component';
 import { ToolbarComponent } from './view/toolbar/toolbar.component';
+import { MasterComponent } from './view/master/master.component';
 
 @NgModule({
   declarations: [
@@ -24,7 +25,8 @@ import { ToolbarComponent } from './view/toolbar/toolbar.component';
     ReplacePipe,
     MessagesComponent,
     AdminComponent,
-    ToolbarComponent
+    ToolbarComponent,
+    MasterComponent
   ],
   imports: [
     BrowserModule,

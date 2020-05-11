@@ -2,5 +2,6 @@
 	<ul>
 		<li><a routerLink="/game" routerLinkActive="active">Game</a></li>
 		<li *ngIf="auth.isAdmin()"><a routerLink="/admin" routerLinkActive="active">Admin</a></li>
+		<li><a href="" (click)="logout()">Logout</a></li>
 	</ul>
 </nav>

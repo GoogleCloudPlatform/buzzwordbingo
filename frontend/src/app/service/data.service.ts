@@ -23,8 +23,11 @@ export class DataService {
   }
 
   getMessages(id) { 
-    
     return this.firestore.collection("games").doc(id).collection("messages").valueChanges();
+  }
+
+  getRecords(id) { 
+    return this.firestore.collection("games").doc(id).collection("records").valueChanges();
   }
 
 }

@@ -13,6 +13,11 @@ export class Board{
   bingodeclared:boolean=false
 }
 
+export class Record{
+  phrase:Phrase
+  players:Player[]
+}
+
 export class Phrase{
   id:number
   phrase:string
