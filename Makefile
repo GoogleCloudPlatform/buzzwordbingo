@@ -1,7 +1,7 @@
 BASEDIR = $(shell pwd)
 PROJECT=bingo-collab
 SAACCOUNT=firebase-adminsdk-cffyr
-PROJECTNUMBER=$(shell gcloud projects list --filter="$(PROJECTAPPENGINE)" --format="value(PROJECT_NUMBER)")
+PROJECTNUMBER=$(shell gcloud projects list --filter="$(PROJECT)" --format="value(PROJECT_NUMBER)")
 
 env:
 	gcloud config set project $(PROJECT)

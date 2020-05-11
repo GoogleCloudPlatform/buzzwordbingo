@@ -1,10 +1,12 @@
 
 <div class="login">
+    <h1>Enter name to play</h1>
+    <p>Only your name will appear on screen. </p>
     <label for="">Name:  </label>
     <input id="name" type="text" name="name" value="Terrence Ryan">
     <br />
     <label for="">Email:  </label>
     <input  id="email" type="email" name="email" [value]="(identity | async)?.email | replace">
     <br />
-    <button (click)="submitPlayer()">Submit</button>
+    <button (click)="submitPlayer()">Go</button>
 </div>
