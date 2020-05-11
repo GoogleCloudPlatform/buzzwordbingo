@@ -1,10 +1,21 @@
 BASEDIR = $(shell pwd)
 PROJECT=bingo-collab
 SAACCOUNT=firebase-adminsdk-cffyr
+PROJECTNUMBER=$(shell gcloud projects list --filter="$(PROJECTAPPENGINE)" --format="value(PROJECT_NUMBER)")
 
 env:
 	gcloud config set project $(PROJECT)
 
+
+clean:
+	-rm -rf server/dist		
+
+frontend: clean
+	cd frontend && ng build --prod
+
+
+deploy: env clean frontend
+	cd backend && gcloud app deploy -q
 
 dev:
 	(trap 'kill 0' SIGINT; \
@@ -27,3 +38,13 @@ serviceaccount: env
 	@echo ~~~~~~~~~~~~~ Download key for service account. 
 	-gcloud iam service-accounts keys create creds/creds.json \
   	--iam-account $(SAACCOUNT)@$(PROJECT).iam.gserviceaccount.com  	
+
+project: env
+	@echo ~~~~~~~~~~~~~ Intialize AppEngine on $(PROJECT)
+	-gcloud app create --region us-central -q 
+	@echo ~~~~~~~~~~~~~ Enable Cloud Build service account to deploy to AppEngine on $(PROJECT)
+	-gcloud projects add-iam-policy-binding $(PROJECT) \
+  	--member serviceAccount:$(PROJECTNUMBER)@cloudbuild.gserviceaccount.com \
+  	--role roles/appengine.appAdmin	
+	@echo ~~~~~~~~~~~~~ Create Angular builder for Cloud Build 
+	-cd builder && make build    
