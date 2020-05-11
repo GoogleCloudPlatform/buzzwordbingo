@@ -67,3 +67,15 @@ Login
                     Give them the master view
                 No - Give them a board
         No - Create user, give them a board 
+
+
+
+
+
+Things to do. 
+    Configure Angular to do production build correctly
+    Configure project 
+    deploy to appengine
+    config iap
+    deploy using cloud build.     
+    
