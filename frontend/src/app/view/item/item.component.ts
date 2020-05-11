@@ -1,7 +1,9 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { Phrase} from '../../service/data.service'
 import {GameService, Board} from '../../service/game.service'
+import {ElementRef,Renderer2} from '@angular/core';
+
 
 @Component({
   selector: 'app-item',
@@ -19,7 +21,8 @@ export class ItemComponent implements OnInit {
   @Output() readyEmitter = new EventEmitter<ItemComponent>();
   disabled:boolean=false;
   
-  constructor(private game:GameService) { }
+  @ViewChild('host') el:ElementRef;
+  constructor(private game:GameService, private rd: Renderer2,) { }
 
   ngOnInit(): void {
   }
@@ -33,6 +36,10 @@ export class ItemComponent implements OnInit {
   ngAfterViewInit():void{
     this.readyEmitter.emit(this);
   } 
+
+  ngOnChange(){
+    console.log("Bingo:", this.bingo);
+  }
 
   select(){
     if (this.bingo){
@@ -85,10 +92,12 @@ export class ItemComponent implements OnInit {
 
   public disable(){
     this.disabled = true;
+    console.log("Disable!");
     let item:HTMLElement = document.querySelector("#id_"+ this.phrase.id);
     if (!this.phrase.selected){
       item.classList.add("disabled");
     }
+    this.rd.addClass(this.el, "bingo");
   }
 
   

@@ -2,7 +2,32 @@
     width: 115px;
     height: 115px;
     border: 1px solid #ccc;
+   
 }    
+
+:host:nth-of-type(1){
+    border-top-left-radius: 6px;
+}
+
+:host:nth-of-type(5){
+    border-top-right-radius: 6px;
+}
+
+.bingo{
+    border-top-left-radius: 0;
+}
+
+.bingo{
+    border-top-right-radius: 0;
+}
+
+:host:nth-of-type(21){
+    border-bottom-left-radius: 6px;
+}
+
+:host:nth-of-type(25){
+    border-bottom-right-radius: 6px;
+}
 
 .phrase{
     cursor: pointer;
@@ -13,7 +38,7 @@
         padding: 20% 20px;
         display:block;
     }
-}
+}   
 
 
 .disabled{
@@ -24,3 +49,22 @@
 .selected{
     cursor: default;
 }
+
+@media screen and (max-width: 600px) {
+    :host {
+        width: 70px;
+        height: 70px;
+        border: 1px solid #ccc;
+       
+    }    
+
+    .phrase{
+        height: 70px;
+        font-size: 8px;
+        span{
+            padding: 20% 2px;
+            display:block;
+        }
+    }   
+    
+}    

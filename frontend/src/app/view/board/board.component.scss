@@ -5,14 +5,17 @@
     flex-wrap: wrap;
 
     .phrases{
+        
         width: 600px;
         display: flex;
         flex-wrap: wrap;
         align-items: flex-start;
-        margin: 20px;
         color:purple;
+        
 
         .header-container{
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
             width: 585px;
             display: flex;
             flex-wrap: wrap;
@@ -43,6 +46,53 @@
     }
 
 }
+
+@media screen and (max-width: 1000px) {
+    .main{
+        max-width: 600px;
+        .phrases{
+            width: 600px;
+        }    
+        .board-messages{
+            margin-top: 10px;
+            width: 585px;
+            height: 100px;
+
+        }
+    }    
+    
+}    
+
+@media screen and (max-width: 600px) {
+    .main{
+        max-width: 375px;
+        .phrases{
+            width: 375px;
+
+            .header-container{
+                border-top-left-radius: 6px;
+                border-top-right-radius: 6px;
+                width: 375px;
+                display: flex;
+                flex-wrap: wrap;
+                header{
+                    width: 72px;
+                    height: 70px;
+                    font-size: 36px;
+                    padding-top:2px;
+                    line-height: 1.8;
+                }
+            }
+        }    
+        .board-messages{
+            margin-top: 10px;
+            width: 360px;
+            height: 100px;
+
+        }
+    }    
+    
+}    
 
 
 
