@@ -2,7 +2,6 @@ import { Component, OnInit, Input, Output, EventEmitter, ViewChild } from '@angu
 import { Observable, of } from 'rxjs';
 import { Phrase} from '../../service/data.service'
 import {GameService, Board} from '../../service/game.service'
-import {ElementRef,Renderer2} from '@angular/core';
 
 
 @Component({
@@ -21,8 +20,7 @@ export class ItemComponent implements OnInit {
   @Output() readyEmitter = new EventEmitter<ItemComponent>();
   disabled:boolean=false;
   
-  @ViewChild('host') el:ElementRef;
-  constructor(private game:GameService, private rd: Renderer2,) { }
+  constructor(private game:GameService) { }
 
   ngOnInit(): void {
   }
@@ -97,7 +95,7 @@ export class ItemComponent implements OnInit {
     if (!this.phrase.selected){
       item.classList.add("disabled");
     }
-    this.rd.addClass(this.el, "bingo");
+    item.classList.add("board-disabled");
   }
 
   

@@ -5,22 +5,25 @@
     flex-wrap: wrap;
 
     .phrases{
-        
+        padding: 0;
         width: 600px;
         display: flex;
         flex-wrap: wrap;
         align-items: flex-start;
         color:purple;
+        box-sizing: border-box;
         
 
         .header-container{
+            box-sizing: border-box;
             border-top-left-radius: 6px;
             border-top-right-radius: 6px;
-            width: 585px;
+            width: 600px;
             display: flex;
             flex-wrap: wrap;
             header{
-                width: 117px;
+                box-sizing: border-box;
+                width: 20%;
                 height: 115px;
                 text-align: center;
                 font-size: 72px;
@@ -42,7 +45,8 @@
 
     .board-messages{
         width: 355px;
-        height: 700px;
+        height: 690px;
+        margin-left: 10px;
     }
 
 }
@@ -55,9 +59,9 @@
         }    
         .board-messages{
             margin-top: 10px;
-            width: 585px;
+            width: 600px;
             height: 100px;
-
+            margin-left: 0px;
         }
     }    
     
@@ -86,7 +90,7 @@
         }    
         .board-messages{
             margin-top: 10px;
-            width: 360px;
+            width: 375px;
             height: 100px;
 
         }

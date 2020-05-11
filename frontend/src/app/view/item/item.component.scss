@@ -1,37 +1,39 @@
 :host {
-    width: 115px;
+    width: 20%;
     height: 115px;
-    border: 1px solid #ccc;
+    padding:0;
+    margin:0;
+    box-sizing: border-box;
    
 }    
 
-:host:nth-of-type(1){
+:host:nth-of-type(1) .phrase{
     border-top-left-radius: 6px;
 }
 
-:host:nth-of-type(5){
+:host:nth-of-type(5) .phrase{
     border-top-right-radius: 6px;
 }
 
-.bingo{
-    border-top-left-radius: 0;
-}
-
-.bingo{
-    border-top-right-radius: 0;
-}
-
-:host:nth-of-type(21){
+:host:nth-of-type(21) .phrase{
     border-bottom-left-radius: 6px;
 }
 
-:host:nth-of-type(25){
+:host:nth-of-type(25) .phrase{
     border-bottom-right-radius: 6px;
 }
 
+
+
+
+
 .phrase{
+    box-sizing: border-box;
+    margin: 0;
+    border: 1px solid #ccc;
     cursor: pointer;
-    height: 115px;
+    height: 100%;
+    width:100%;
     text-align: center;
     font-size: 11px;
     span{
@@ -44,6 +46,12 @@
 .disabled{
     background-color: #dedede;
     cursor: default;
+    
+}
+
+.board-disabled{
+    border-top-left-radius: 0 !important; 
+    border-top-right-radius: 0 !important;
 }
 
 .selected{
@@ -52,9 +60,10 @@
 
 @media screen and (max-width: 600px) {
     :host {
-        width: 70px;
+        width: 20%;
         height: 70px;
         border: 1px solid #ccc;
+        margin-top: 0px;
        
     }    
 
