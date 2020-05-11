@@ -11,32 +11,12 @@ import (
 var (
 	randseedfunc = randomseed
 	a            = Agent{ProjectID: "bingo-collab"}
-	port         = os.Getenv("PORT")
+	port         = ":8080"
 	boards       = make(map[string]Board)
 	games        = make(map[string]Game)
 )
 
 func main() {
-	// terry := Player{"Terrence Ryan", "tpryan@google.com", false}
-	// jenn := Player{"Jenn Thomas", "thomasjennifer@google.com", false}
-	// gameid := "PvleSnZLcW1g_8NJMPUQb7wKZXqwD9OhgMDJpTVkezM"
-	// boardid := "H4smyjYHeDzjELBlmMS7Mt_k0Bidw6UHjg6IdFF8iwo"
-	// phrase := Phrase{"101", "Achieve peak dead-pan", false, "", ""}
-
-	// if err := recordSelect(boardid, phrase.ID); err != nil {
-	// 	log.Fatalf("could select record: %s", err)
-	// }
-
-	// test, err := getBoardForPlayer(jenn)
-	// if err != nil {
-	// 	log.Fatalf("could select record: %s", err)
-	// }
-	// fmt.Printf("%s\n", test)
-	// fmt.Printf("Done \n")
-
-	if port == "" {
-		port = ":8080"
-	}
 
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	http.HandleFunc("/healthz", handleHealth)
