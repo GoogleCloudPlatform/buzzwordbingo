@@ -65,108 +65,34 @@ export class ItemComponent implements OnInit {
     item.classList.add("selected");
     switch(selectedPhraseCount) {
     case 0:
-      item.style.backgroundColor = '#f4d9ff';
+      item.style.backgroundColor = '#e3c3ff';
       item.style.color = '#3f3d40';
       break;
     case 1:
-      item.style.backgroundColor = '#f3ffdd';
+      item.style.backgroundColor = '#facdd5';
       item.style.color = '#3f3d40';
       break;
     case 2:
-      item.style.backgroundColor = '#ffeedd';
+      item.style.backgroundColor = '#fffcbc';
       item.style.color = '#3f3d40';
       break;
     case 3:
-      item.style.backgroundColor = '#ffeedd';
-      item.style.color = '#ddffeb';
+      item.style.backgroundColor = '#d9ffe3';
+      item.style.color = '#3f3d40';
       break;
     case 4:
-      item.style.backgroundColor = '#ffeedd';
-      item.style.color = '#bddbff';
+      item.style.backgroundColor = '#ccedfd';
+      item.style.color = '#3f3d40';
       break;
     case 5:
-      item.style.backgroundColor = '#f4d9ff';
+      item.style.backgroundColor = '#e3c3ff';
       item.style.color = '#3f3d40';
-      break;
-    case 6:
-      item.style.backgroundColor = '#f3ffdd';
-      item.style.color = '#3f3d40';
-      break;
-    case 7:
-      item.style.backgroundColor = '#ffeedd';
-      item.style.color = '#3f3d40';
-      break;
-    case 8:
-      item.style.backgroundColor = '#ffeedd';
-      item.style.color = '#ddffeb';
-      break;
-    case 9:
-      item.style.backgroundColor = '#ffeedd';
-      item.style.color = '#bddbff';
-      break;
-    case 10:
-      item.style.backgroundColor = '#f4d9ff';
-      item.style.color = '#3f3d40';
-      break;
-    case 11:
-      item.style.backgroundColor = '#f3ffdd';
-      item.style.color = '#3f3d40';
-      break;
-    case 12:
-      item.style.backgroundColor = '#ffeedd';
-      item.style.color = '#3f3d40';
-      break;
-    case 13:
-      item.style.backgroundColor = '#ffeedd';
-      item.style.color = '#ddffeb';
-      break;
-    case 14:
-      item.style.backgroundColor = '#ffeedd';
-      item.style.color = '#bddbff';
-      break;
-    case 15:
-      item.style.backgroundColor = '#f4d9ff';
-      item.style.color = '#3f3d40';
-      break;
-    case 16:
-      item.style.backgroundColor = '#f3ffdd';
-      item.style.color = '#3f3d40';
-      break;
-    case 17:
-      item.style.backgroundColor = '#ffeedd';
-      item.style.color = '#3f3d40';
-      break;
-    case 18:
-      item.style.backgroundColor = '#ffeedd';
-      item.style.color = '#ddffeb';
-      break;
-    case 19:
-      item.style.backgroundColor = '#ffeedd';
-      item.style.color = '#bddbff';
-      break;
-    case 20:
-      item.style.backgroundColor = '#f4d9ff';
-      item.style.color = '#3f3d40';
-      break;
-    case 21:
-      item.style.backgroundColor = '#f3ffdd';
-      item.style.color = '#3f3d40';
-      break;
-    case 22:
-      item.style.backgroundColor = '#ffeedd';
-      item.style.color = '#3f3d40';
-      break;
-    case 23:
-      item.style.backgroundColor = '#ffeedd';
-      item.style.color = '#ddffeb';
-      break;
-    case 24:
-      item.style.backgroundColor = '#ffeedd';
-      item.style.color = '#bddbff';
       break;
 
+
     default:
-      item.style.backgroundColor = '#f3ffdd';
+      item.style.backgroundColor = '#e3c3ff';
+      item.style.color = '#3f3d40';
       break;
 
     }
