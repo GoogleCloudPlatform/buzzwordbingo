@@ -30,8 +30,8 @@ func (m *Message) SetAudience(a ...string) {
 type Game struct {
 	ID     string `json:"id"`
 	Name   string `json:"name"`
-	Master Master `json:"master" firestore:"-"`
 	Active bool   `json:"active"`
+	Master Master `json:"master" firestore:"-"`
 }
 
 // NewBoard creates a new board for a user.
@@ -42,6 +42,76 @@ func (g *Game) NewBoard(p Player) Board {
 	b.Load(g.Master.Phrases())
 	return b
 
+}
+
+type Report struct {
+	Phrase  Phrase  `json:"phrase"`
+	Percent float32 `json:"percent"`
+	Count   int     `json:"count"`
+	Total   int     `json:"total"`
+}
+
+type Reports []Report
+
+func (r Reports) IsDubious() bool {
+	threshold := float32(.5)
+	count := 2
+	actual := 0
+
+	for _, v := range r {
+		if v.Percent < threshold {
+			actual++
+		}
+		if actual > count {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (g *Game) CheckBoard(b Board) Reports {
+
+	results := Reports{}
+	total := g.CountPlayers()
+
+	for _, v := range b.Phrases {
+		if v.Selected && v.Text != "FREE" {
+
+			master := g.FindRecord(v)
+			r := Report{}
+			r.Phrase = v
+			r.Percent = float32(len(master.Players)) / float32(total)
+			r.Count = len(master.Players)
+			r.Total = total
+			results = append(results, r)
+		}
+	}
+
+	return results
+}
+
+func (g Game) FindRecord(p Phrase) Record {
+	for _, v := range g.Master.Records {
+		if v.Phrase.ID == p.ID {
+			return v
+		}
+	}
+	return Record{}
+}
+
+func (g *Game) CountPlayers() int {
+	counter := make(map[string]bool)
+
+	for _, v := range g.Master.Records {
+		if v.Phrase.Selected {
+			for _, p := range v.Players {
+				counter[p.Email] = true
+			}
+		}
+	}
+
+	return len(counter)
 }
 
 // JSON Returns the given Board struct as a JSON string
