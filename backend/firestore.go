@@ -325,7 +325,6 @@ func (a *Agent) DeleteBoard(id string) error {
 }
 
 func (a *Agent) loadBoardWithPhrases(b Board) (Board, error) {
-	fmt.Printf("Boardin %v\n", b)
 	var err error
 	client, err = a.getClient()
 	if err != nil {
@@ -346,7 +345,6 @@ func (a *Agent) loadBoardWithPhrases(b Board) (Board, error) {
 		doc.DataTo(&p)
 		b.Phrases = append(b.Phrases, p)
 	}
-	fmt.Printf("Board out %v\n", b)
 
 	return b, nil
 }
