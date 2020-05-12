@@ -18,7 +18,8 @@ var (
 
 func main() {
 
-	http.Handle("/", http.FileServer(http.Dir("./static")))
+	fs := wrapHandler(http.FileServer(http.Dir("./static")))
+	http.HandleFunc("/", fs)
 	http.HandleFunc("/healthz", handleHealth)
 	http.HandleFunc("/api/board", handleGetBoard)
 	http.HandleFunc("/api/board/delete", handleDeleteBoard)
@@ -544,4 +545,34 @@ func writeResponse(w http.ResponseWriter, code int, msg string) {
 	w.Write([]byte(msg))
 
 	return
+}
+
+type NotFoundRedirectRespWr struct {
+	http.ResponseWriter // We embed http.ResponseWriter
+	status              int
+}
+
+func (w *NotFoundRedirectRespWr) WriteHeader(status int) {
+	w.status = status // Store the status for our own use
+	if status != http.StatusNotFound {
+		w.ResponseWriter.WriteHeader(status)
+	}
+}
+
+func (w *NotFoundRedirectRespWr) Write(p []byte) (int, error) {
+	if w.status != http.StatusNotFound {
+		return w.ResponseWriter.Write(p)
+	}
+	return len(p), nil // Lie that we successfully written it
+}
+
+func wrapHandler(h http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		nfrw := &NotFoundRedirectRespWr{ResponseWriter: w}
+		h.ServeHTTP(nfrw, r)
+		if nfrw.status == 404 {
+			log.Printf("Redirecting %s to index.html.", r.RequestURI)
+			http.Redirect(w, r, "/index.html", http.StatusFound)
+		}
+	}
 }
