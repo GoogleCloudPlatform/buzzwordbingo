@@ -2,6 +2,7 @@
     display: flex;
     flex-wrap: wrap;
     padding: 3px; 
+    color: #fff;
     .count{
         margin-right: 3px;
         text-align: right;
@@ -12,5 +13,6 @@
 
 .active{
     font-weight: 900;
-    background-color: #eee;
+    background-color: #f5e389;
+    color: #fcb500;
 }

@@ -7,6 +7,7 @@
     height: 100%;
     overflow-y: scroll;
     border-radius: 6px;
+    color: #fff;
 
     .message{
         
@@ -19,7 +20,8 @@
         }
 
         .bingo{
-            background-color: rgb(198, 230, 230); 
+            background-color: #ffedfb; 
+            color: #270147;
         }
     }
 }
