@@ -89,6 +89,10 @@ func (a *Agent) GetPhrases() ([]Phrase, error) {
 func (a *Agent) NewGame(name string) (Game, error) {
 	g := Game{}
 
+	if err := a.DeActivateGames(); err != nil {
+		return g, fmt.Errorf("failed to deactivate games: %v", err)
+	}
+
 	phrases, err := a.GetPhrases()
 	if err != nil {
 		return g, fmt.Errorf("failed to get phrases client: %v", err)
@@ -414,7 +418,7 @@ func (a *Agent) GetActiveGame() (Game, error) {
 	}
 
 	a.log("Gettign active game")
-	iter := client.Collection("games").Where("Active", "==", true).Documents(ctx)
+	iter := client.Collection("games").Where("active", "==", true).Documents(ctx)
 
 	for {
 		doc, err := iter.Next()
@@ -429,16 +433,52 @@ func (a *Agent) GetActiveGame() (Game, error) {
 		break
 	}
 
-	if g.ID == "" {
-		return a.NewGame("Default Bingo Board")
-	}
-
 	g, err = a.loadGameWithRecords(g)
 	if err != nil {
 		return g, fmt.Errorf("failed to load records for game: %v", err)
 	}
 
 	return g, nil
+}
+
+// DeActivateGames returns the currently beign played game.
+func (a *Agent) DeActivateGames() error {
+	var err error
+	client, err = a.getClient()
+
+	if err != nil {
+		return fmt.Errorf("failed to create client: %v", err)
+	}
+
+	a.log("Gettign active game")
+	iter := client.Collection("games").Where("active", "==", true).Documents(ctx)
+
+	batch := client.Batch()
+	update := map[string]interface{}{"active": false}
+	numDeactivated := 0
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("failed to iterate over response from firestore: %v", err)
+		}
+		batch.Set(doc.Ref, update, firestore.MergeAll)
+		numDeactivated++
+
+	}
+
+	if numDeactivated == 0 {
+		return nil
+	}
+
+	_, err = batch.Commit(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to clean messages from firestore: %v", err)
+	}
+
+	return nil
 }
 
 // ResetActiveGame returns a Game to a pristine state.
