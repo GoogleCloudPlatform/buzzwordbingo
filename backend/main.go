@@ -312,6 +312,25 @@ func getBoardForPlayer(p Player) (Board, error) {
 		m2.SetAudience(b.Player.Email)
 		m2.Bingo = bingo
 		messages = append(messages, m2)
+
+		reports := game.CheckBoard(b)
+		if reports.IsDubious() {
+			b.log("REPORTED BINGO IS DUBIOUS")
+			m3 := Message{}
+			m3.SetText("<strong>%s</strong> might have just redeclared a dubious <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
+			m3.SetAudience("admin", b.Player.Email)
+			m3.Bingo = bingo
+			messages = append(messages, m3)
+
+			for _, v := range reports {
+				mr := Message{}
+				mr.SetText("<strong>%s</strong> was selected by %d of %d other players", v.Phrase.Text, v.Count, v.Total-1)
+				mr.SetAudience("admin", b.Player.Email)
+				mr.Bingo = bingo
+				messages = append(messages, mr)
+			}
+
+		}
 	}
 
 	if err := a.AddMessagesToGame(game, messages); err != nil {
@@ -423,6 +442,25 @@ func recordSelect(boardID string, phraseID string) error {
 		m2.SetAudience("all")
 		m2.Bingo = bingo
 		messages = append(messages, m2)
+
+		reports := g.CheckBoard(b)
+		if reports.IsDubious() {
+			b.log("REPORTED BINGO IS DUBIOUS")
+			m3 := Message{}
+			m3.SetText("<strong>%s</strong> might have just declared a dubious <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
+			m3.SetAudience("admin", b.Player.Email)
+			m3.Bingo = bingo
+			messages = append(messages, m3)
+
+			for _, v := range reports {
+				mr := Message{}
+				mr.SetText("<strong>%s</strong> was selected by %d of %d other players", v.Phrase.Text, v.Count, v.Total-1)
+				mr.SetAudience("admin", b.Player.Email)
+				mr.Bingo = bingo
+				messages = append(messages, mr)
+			}
+		}
+
 	}
 
 	if err := a.AddMessagesToGame(g, messages); err != nil {

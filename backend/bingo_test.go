@@ -42,33 +42,7 @@ func TestBoardBingo(t *testing.T) {
 }
 
 func TestBoardLoad(t *testing.T) {
-	phrases := []Phrase{
-		Phrase{"1", "", false, "", "", 0},
-		Phrase{"2", "", false, "", "", 1},
-		Phrase{"3", "", false, "", "", 2},
-		Phrase{"4", "", false, "", "", 3},
-		Phrase{"5", "", false, "", "", 4},
-		Phrase{"6", "", false, "", "", 5},
-		Phrase{"7", "", false, "", "", 6},
-		Phrase{"8", "", false, "", "", 0},
-		Phrase{"9", "", false, "", "", 1},
-		Phrase{"10", "", false, "", "", 2},
-		Phrase{"11", "", false, "", "", 3},
-		Phrase{"12", "", false, "", "", 4},
-		Phrase{"13", "", false, "", "", 5},
-		Phrase{"14", "", false, "", "", 6},
-		Phrase{"15", "", false, "", "", 0},
-		Phrase{"16", "", false, "", "", 1},
-		Phrase{"17", "", false, "", "", 2},
-		Phrase{"18", "", false, "", "", 3},
-		Phrase{"19", "", false, "", "", 4},
-		Phrase{"20", "", false, "", "", 5},
-		Phrase{"21", "", false, "", "", 6},
-		Phrase{"22", "", false, "", "", 3},
-		Phrase{"23", "", false, "", "", 4},
-		Phrase{"24", "", false, "", "", 5},
-		Phrase{"25", "", false, "", "", 6},
-	}
+	phrases := getTestPhrases()
 
 	cases := []struct {
 		in    func() int64
@@ -140,4 +114,54 @@ func TestRowCalc(t *testing.T) {
 		}
 	}
 
+}
+
+func TestDubiousBingo(t *testing.T) {
+
+}
+
+func getTestBoard() Board {
+	board := Board{}
+	board.Load(getTestPhrases())
+
+	return board
+}
+
+func getTestGame() Game {
+	game := Game{}
+	game.Master.Load(getTestPhrases())
+
+	return game
+}
+
+func getTestPhrases() []Phrase {
+	phrases := []Phrase{
+		Phrase{"1", "", false, "", "", 0},
+		Phrase{"2", "", false, "", "", 1},
+		Phrase{"3", "", false, "", "", 2},
+		Phrase{"4", "", false, "", "", 3},
+		Phrase{"5", "", false, "", "", 4},
+		Phrase{"6", "", false, "", "", 5},
+		Phrase{"7", "", false, "", "", 6},
+		Phrase{"8", "", false, "", "", 0},
+		Phrase{"9", "", false, "", "", 1},
+		Phrase{"10", "", false, "", "", 2},
+		Phrase{"11", "", false, "", "", 3},
+		Phrase{"12", "", false, "", "", 4},
+		Phrase{"13", "", false, "", "", 5},
+		Phrase{"14", "", false, "", "", 6},
+		Phrase{"15", "", false, "", "", 0},
+		Phrase{"16", "", false, "", "", 1},
+		Phrase{"17", "", false, "", "", 2},
+		Phrase{"18", "", false, "", "", 3},
+		Phrase{"19", "", false, "", "", 4},
+		Phrase{"20", "", false, "", "", 5},
+		Phrase{"21", "", false, "", "", 6},
+		Phrase{"22", "", false, "", "", 3},
+		Phrase{"23", "", false, "", "", 4},
+		Phrase{"24", "", false, "", "", 5},
+		Phrase{"25", "", false, "", "", 6},
+	}
+
+	return phrases
 }
