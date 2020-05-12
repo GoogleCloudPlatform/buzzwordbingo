@@ -1,13 +1,19 @@
 header{
-    width: 1000px;
+    width: 100%;
     margin: 0 auto;
     display: flex;
     flex-wrap: wrap;
+    
     h1{
-        width: 280px;
+        width: 60%;
+        font-family: 'Monoton';
+        font-size: 40px;
+        color: #53eaxf5;
+
     }
+
     nav{
-        width: 700px;
+        width: 40%;
         
         ul{
             display: flex;
@@ -48,6 +54,7 @@ header{
         h1{
             width: 200px;
             font-size: 20px;
+
         }
         nav{
             width: 300px;
