@@ -104,9 +104,6 @@ export class BoardComponent implements OnInit {
       if( (aud == self.auth.getPlayer().email) ){
         halt = false;
       }
-      if( (aud == "all") ){
-        halt = false;
-      }
     })
 
     if (halt){
