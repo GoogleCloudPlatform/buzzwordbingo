@@ -51,10 +51,16 @@ export class BoardComponent implements OnInit {
     this.messages.subscribe(ms=>{this.listenForBingo(ms),this.listenForReset(ms)})
   }
 
+  ngOnChanges():void{
+      if (this.bingo){
+        this.declareBingo();
+      }
+  }
+
 
   declareBingo(){
     this.bingo=true;
-      console.log("Bingo Declared");
+      console.log("Bingo Declared", this.itemComponents.length);
       this.showBingo()
       this.itemComponents.forEach(function(child){
         child.disable();
@@ -102,6 +108,9 @@ export class BoardComponent implements OnInit {
     let halt:boolean = true;
     msg.audience.forEach(function(aud){
       if( (aud == self.auth.getPlayer().email) ){
+        halt = false;
+      }
+      if( (aud == "all") ){
         halt = false;
       }
     })

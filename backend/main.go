@@ -192,18 +192,40 @@ func handleNewGame(w http.ResponseWriter, r *http.Request) {
 func handleResetActiveGame(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("/api/game/reset called\n")
 
-	game, err := a.ResetActiveGame()
+	game, err := resetGame()
 	if err != nil {
 		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
 		writeResponse(w, http.StatusInternalServerError, msg)
 		return
 	}
-	boards = make(map[string]Board)
-	games = make(map[string]Game)
 
 	msg := fmt.Sprintf("{\"msg\":\"Game %s Reset\"}", game.ID)
 	writeResponse(w, http.StatusOK, msg)
 
+}
+
+func resetGame() (Game, error) {
+	game, err := a.ResetActiveGame()
+	if err != nil {
+		return Game{}, err
+	}
+	boards = make(map[string]Board)
+	games = make(map[string]Game)
+
+	if game.ID != "" {
+		messages := []Message{}
+		m := Message{}
+		m.SetText("Your game is being reset")
+		m.SetAudience("all")
+		m.Operation = "reset"
+		messages = append(messages, m)
+
+		if err := a.AddMessagesToGame(game, messages); err != nil {
+			return game, fmt.Errorf("could not send message to reset: %s", err)
+		}
+	}
+
+	return game, nil
 }
 
 func handleActiveGame(w http.ResponseWriter, r *http.Request) {
@@ -310,6 +332,7 @@ func getBoardForPlayer(p Player) (Board, error) {
 		boards[game.ID+"_"+p.Email] = b
 
 	}
+	b.Player = p
 	m := Message{}
 	m.SetText("<strong>%s</strong> rejoined the game.", b.Player.Name)
 	m.SetAudience("admin", b.Player.Email)
@@ -358,7 +381,7 @@ func getBoardForPlayer(p Player) (Board, error) {
 	}
 
 	if err := a.AddMessagesToGame(game, messages); err != nil {
-		return b, fmt.Errorf("could not send message: %s", err)
+		return b, fmt.Errorf("could not send message to notify player of bingo: %s", err)
 	}
 
 	return b, nil
@@ -396,7 +419,7 @@ func deleteBoard(bid string) error {
 	b.log(fmt.Sprintf("Cleaning from cache %s", bid))
 	b.log(fmt.Sprintf("Cleaning from cache %s", b.Player.Email))
 	delete(boards, bid)
-	delete(boards, b.Player.Email)
+	delete(boards, game.ID+"_"+b.Player.Email)
 
 	if err := a.DeleteBoard(bid); err != nil {
 		return fmt.Errorf("could not get board from firestore: %s", err)
@@ -410,16 +433,22 @@ func deleteBoard(bid string) error {
 	messages = append(messages, m)
 
 	if err := a.AddMessagesToGame(game, messages); err != nil {
-		return fmt.Errorf("could not send message: %s", err)
+		return fmt.Errorf("could not send message to delete board: %s", err)
 	}
 
 	return nil
 }
 
 func getNewGame(name string) (Game, error) {
+
+	_, err := resetGame()
+	if err != nil {
+		return Game{}, err
+	}
+
 	game, err := a.NewGame(name)
 	if err != nil {
-		return game, fmt.Errorf("failed to get active game: %v", err)
+		return game, fmt.Errorf("failed to get new game: %v", err)
 	}
 
 	return game, nil
@@ -522,7 +551,7 @@ func recordSelect(boardID string, phraseID string) error {
 	}
 
 	if err := a.AddMessagesToGame(g, messages); err != nil {
-		return fmt.Errorf("could not send message: %s", err)
+		return fmt.Errorf("could not send message announce bingo on select: %s", err)
 	}
 
 	return nil
@@ -571,7 +600,6 @@ func wrapHandler(h http.Handler) http.HandlerFunc {
 		nfrw := &NotFoundRedirectRespWr{ResponseWriter: w}
 		h.ServeHTTP(nfrw, r)
 		if nfrw.status == 404 {
-			log.Printf("Redirecting %s to index.html.", r.RequestURI)
 			http.Redirect(w, r, "/index.html", http.StatusFound)
 		}
 	}

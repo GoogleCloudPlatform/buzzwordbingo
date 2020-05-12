@@ -64,6 +64,10 @@ export class GameService {
   game:any = new Game;
 
   constructor(private http: HttpClient) { 
+    let game = JSON.parse(localStorage.getItem('game'));
+    if (game != null){
+      this.game = game;
+    }
   }
   private boardUrl: string = environment.board_url;
   private recordUrl: string = environment.record_url;
@@ -82,7 +86,7 @@ export class GameService {
   }
 
   getActiveGame () {
-    return this.http.get(this.gameActiveUrl).pipe(share()).subscribe(val=>{this.game=val;});
+    return this.http.get(this.gameActiveUrl).pipe(share()).subscribe(val=>{this.game=val; localStorage.setItem('game', JSON.stringify(val));});
   }
 
   record (pid:string, bid:string) {

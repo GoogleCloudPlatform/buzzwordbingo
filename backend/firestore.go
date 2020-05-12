@@ -285,11 +285,40 @@ func (a *Agent) DeleteBoard(id string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create client: %v", err)
 	}
+	batch := client.Batch()
+
+	a.log("removing messages from game")
+	ref := client.Collection("boards").Doc(id).Collection("phrases")
+	for {
+		// Get a batch of documents
+		iter := ref.Limit(25).Documents(ctx)
+		numDeleted := 0
+
+		for {
+			doc, err := iter.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				return fmt.Errorf("failed to clean phrases from firestore: %v", err)
+			}
+
+			batch.Delete(doc.Ref)
+			numDeleted++
+		}
+
+		if numDeleted == 0 {
+			break
+		}
+
+	}
 
 	a.log("Deleting board")
-	_, err = client.Collection("boards").Doc(id).Delete(ctx)
+	bref := client.Collection("boards").Doc(id)
+	batch.Delete(bref)
+	_, err = batch.Commit(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to delete board: %v", err)
+		return fmt.Errorf("failed to clean messages from firestore: %v", err)
 	}
 
 	return nil
@@ -417,7 +446,7 @@ func (a *Agent) GetActiveGame() (Game, error) {
 		return g, fmt.Errorf("failed to create client: %v", err)
 	}
 
-	a.log("Gettign active game")
+	a.log("Getting active game")
 	iter := client.Collection("games").Where("active", "==", true).Documents(ctx)
 
 	for {
@@ -431,6 +460,9 @@ func (a *Agent) GetActiveGame() (Game, error) {
 		doc.DataTo(&g)
 		g.ID = doc.Ref.ID
 		break
+	}
+	if g.ID == "" {
+		return g, fmt.Errorf("no active game in database")
 	}
 
 	g, err = a.loadGameWithRecords(g)
@@ -450,7 +482,7 @@ func (a *Agent) DeActivateGames() error {
 		return fmt.Errorf("failed to create client: %v", err)
 	}
 
-	a.log("Gettign active game")
+	a.log("Getting active games")
 	iter := client.Collection("games").Where("active", "==", true).Documents(ctx)
 
 	batch := client.Batch()
@@ -470,9 +502,11 @@ func (a *Agent) DeActivateGames() error {
 	}
 
 	if numDeactivated == 0 {
+		a.log("Nothing to deactivate")
 		return nil
 	}
 
+	a.log("Deactivated games")
 	_, err = batch.Commit(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to clean messages from firestore: %v", err)
@@ -493,22 +527,10 @@ func (a *Agent) ResetActiveGame() (Game, error) {
 	a.log("Reset game")
 	g, err = a.GetActiveGame()
 	if err != nil {
-		return g, fmt.Errorf("failed to get active game: %v", err)
-	}
-
-	iter := client.Collection("games").Where("Active", "==", true).Documents(ctx)
-
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
+		if strings.Contains(err.Error(), "no active game") {
+			return g, nil
 		}
-		if err != nil {
-			return g, fmt.Errorf("failed to iterate over response from firestore: %v", err)
-		}
-		doc.DataTo(&g)
-		g.ID = doc.Ref.ID
-		break
+		return g, fmt.Errorf("failed to get active game to reset: %v", err)
 	}
 
 	a.log("removing messages from game")
