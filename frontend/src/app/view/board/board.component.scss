@@ -1,16 +1,18 @@
 .main{
+    background-color: #260252;
     max-width: 1000px;
     margin: 0 auto;
     display: flex;
     flex-wrap: wrap;
+    justify-content: space-between;
 
     .phrases{
         padding: 0;
-        width: 600px;
+        width: 60%;
         display: flex;
         flex-wrap: wrap;
         align-items: flex-start;
-        color:#7906d1;
+        color:#FFF;
         box-sizing: border-box;
         
 
@@ -44,9 +46,9 @@
     }
 
     .board-messages{
-        width: 355px;
+        width: 30%;
         height: 690px;
-        margin-left: 10px;
+        color: #fcf0fb;
     }
 
 }
