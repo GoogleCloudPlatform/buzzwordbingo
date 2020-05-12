@@ -64,14 +64,37 @@ export class ItemComponent implements OnInit {
     let selectedPhraseCount = Object.keys(this.currentState).length;
     item.classList.add("selected");
     switch(selectedPhraseCount) {
-      case 0:
-        item.style.backgroundColor = "lavender";
-        break;
-      case 1:
-        item.style.backgroundColor = "goldenrod";
-        break;
-      default:
-        item.style.backgroundColor = "chartreuse";
+    case 0:
+      item.style.backgroundColor = '#e3c3ff';
+      item.style.color = '#3f3d40';
+      break;
+    case 1:
+      item.style.backgroundColor = '#facdd5';
+      item.style.color = '#3f3d40';
+      break;
+    case 2:
+      item.style.backgroundColor = '#fffcbc';
+      item.style.color = '#3f3d40';
+      break;
+    case 3:
+      item.style.backgroundColor = '#d9ffe3';
+      item.style.color = '#3f3d40';
+      break;
+    case 4:
+      item.style.backgroundColor = '#ccedfd';
+      item.style.color = '#3f3d40';
+      break;
+    case 5:
+      item.style.backgroundColor = '#e3c3ff';
+      item.style.color = '#3f3d40';
+      break;
+
+
+    default:
+      item.style.backgroundColor = '#e3c3ff';
+      item.style.color = '#3f3d40';
+      break;
+
     }
   }
   selectDisplay(){

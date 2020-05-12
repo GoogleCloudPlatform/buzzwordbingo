@@ -1,13 +1,19 @@
 header{
-    width: 1000px;
+    width: 100%;
     margin: 0 auto;
     display: flex;
     flex-wrap: wrap;
+    
     h1{
-        width: 280px;
+        width: 60%;
+        font-family: 'Cinzel Decorative', cursive;
+        font-size: 40px;
+        color: #FFF
+
     }
+
     nav{
-        width: 700px;
+        width: 40%;
         
         ul{
             display: flex;
@@ -24,9 +30,9 @@ header{
                     padding: 5px 5px;
                     margin-right: 8px;
                     border-radius: 3px;
-                    background-color: rgba(227, 229, 230, 0.975);
+                    background-color: #000;
                     box-shadow: 0 1px 2px 0 rgba(60,64,67,0.30), 0 2px 6px 2px rgba(60,64,67,0.15);
-                    color: #333;
+                    color: #fff25e;
                     text-decoration: none;
                 }
                 a:hover{
@@ -48,6 +54,7 @@ header{
         h1{
             width: 200px;
             font-size: 20px;
+
         }
         nav{
             width: 300px;
