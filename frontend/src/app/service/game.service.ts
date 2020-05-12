@@ -34,7 +34,8 @@ export class Game  {
 export class Message  {
   text:string 
   bingo:boolean
-  audience:string[]   
+  audience:string[]  
+  operation:string 
   
   public isAudience(email:string):boolean{
     this.audience.forEach(function(aud:string) {			
@@ -63,15 +64,12 @@ export class GameService {
   game:any = new Game;
 
   constructor(private http: HttpClient) { 
-    let game = JSON.parse(localStorage.getItem('game'));
-    if (game != null){
-      this.game = game;
-    }
   }
   private boardUrl: string = environment.board_url;
   private recordUrl: string = environment.record_url;
   private gameActiveUrl: string = environment.game_active_url;
   private adminUrl: string = environment.admin_url;
+  private resetUrl: string = environment.reset_url;
 
   getBoard (email:string, name:string): Observable<Board> {
     if (email == "undefined") return
@@ -84,11 +82,15 @@ export class GameService {
   }
 
   getActiveGame () {
-    return this.http.get(this.gameActiveUrl).pipe(share()).subscribe(val=>{this.game=val; localStorage.setItem('game', JSON.stringify(val));});
+    return this.http.get(this.gameActiveUrl).pipe(share()).subscribe(val=>{this.game=val;});
   }
 
   record (pid:string, bid:string) {
     return this.http.get(this.recordUrl + "?p="+pid + "&b=" + bid).subscribe();
+  }
+
+  resetboard (bid:string) {
+    return this.http.get(this.resetUrl + "?b=" + bid).subscribe();
   }
 
 }

@@ -11,9 +11,10 @@ import (
 
 // Message is a message that will be broadcast from the server to all players
 type Message struct {
-	Text     string   `json:"text" firestore:"text"`
-	Audience []string `json:"audience" firestore:"audience"`
-	Bingo    bool     `json:"bingo" firestore:"bingo"`
+	Text      string   `json:"text" firestore:"text"`
+	Audience  []string `json:"audience" firestore:"audience"`
+	Bingo     bool     `json:"bingo" firestore:"bingo"`
+	Operation string   `json:"operation" firestore:"operation"`
 }
 
 // SetText sets the text of the broadcast message
@@ -28,9 +29,9 @@ func (m *Message) SetAudience(a ...string) {
 
 // Game is the master structure for the game
 type Game struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	Active bool   `json:"active"`
+	ID     string `json:"id" firestore:"id"`
+	Name   string `json:"name" firestore:"name"`
+	Active bool   `json:"active" firestore:"active"`
 	Master Master `json:"master" firestore:"-"`
 }
 
@@ -128,7 +129,7 @@ func (g Game) JSON() (string, error) {
 // Master is the collection of all of the people who have selected which
 // element in the game
 type Master struct {
-	Records []Record `json:"record"`
+	Records []Record `json:"record" firestore:"records"`
 }
 
 // Load adds the master list of phrases to the game.
@@ -234,10 +235,10 @@ func (ps *Players) Add(p Player) {
 
 // Board is an individual board that the players use to play bingo
 type Board struct {
-	ID            string   `json:"id"`
-	Game          string   `json:"game"`
-	Player        Player   `json:"player"`
-	BingoDeclared bool     `json:"bingodeclared"`
+	ID            string   `json:"id" firestore:"id"`
+	Game          string   `json:"game" firestore:"game"`
+	Player        Player   `json:"player" firestore:"player"`
+	BingoDeclared bool     `json:"bingodeclared" firestore:"bingo_declared"`
 	Phrases       []Phrase `json:"phrases" firestore:"-"`
 }
 

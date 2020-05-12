@@ -14,7 +14,6 @@ export class MasterComponent implements OnInit {
   constructor(public data:DataService, public game:GameService) { }
 
   ngOnInit(): void {
-    let self = this;
      this.records = this.data.getRecords(this.game.game.id)
      this.records.subscribe();
   }

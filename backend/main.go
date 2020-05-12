@@ -21,6 +21,7 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	http.HandleFunc("/healthz", handleHealth)
 	http.HandleFunc("/api/board", handleGetBoard)
+	http.HandleFunc("/api/board/delete", handleDeleteBoard)
 	http.HandleFunc("/api/record", handleRecordSelect)
 	http.HandleFunc("/api/game", handleGetGame)
 	http.HandleFunc("/api/game/new", handleNewGame)
@@ -96,6 +97,7 @@ func getEmailFromString(arr string) string {
 	}
 	return email
 }
+
 func handleGetBoard(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("/api/board called\n")
 	email, ok := r.URL.Query()["email"]
@@ -133,6 +135,27 @@ func handleGetBoard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeResponse(w, http.StatusOK, json)
+
+}
+
+func handleDeleteBoard(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("/api/board/delete called\n")
+	b, ok := r.URL.Query()["b"]
+
+	if !ok || len(b[0]) < 1 || b[0] == "undefined" {
+		msg := "{\"error\":\"b is missing\"}"
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	if err := deleteBoard(b[0]); err != nil {
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	msg := fmt.Sprintf("{\"msg\":\"ok\"}")
+	writeResponse(w, http.StatusOK, msg)
 
 }
 
@@ -356,6 +379,40 @@ func getBoard(bid string) (Board, error) {
 	}
 
 	return b, nil
+}
+
+func deleteBoard(bid string) error {
+	b, err := getBoard(bid)
+	if err != nil {
+		return fmt.Errorf("could not retrieve board from firestore: %s", err)
+	}
+
+	game, err := getActiveGame()
+	if err != nil {
+		return fmt.Errorf("failed to get active game: %v", err)
+	}
+
+	b.log(fmt.Sprintf("Cleaning from cache %s", bid))
+	b.log(fmt.Sprintf("Cleaning from cache %s", b.Player.Email))
+	delete(boards, bid)
+	delete(boards, b.Player.Email)
+
+	if err := a.DeleteBoard(bid); err != nil {
+		return fmt.Errorf("could not get board from firestore: %s", err)
+	}
+
+	messages := []Message{}
+	m := Message{}
+	m.SetText("Your game is being reset")
+	m.SetAudience(b.Player.Email)
+	m.Operation = "reset"
+	messages = append(messages, m)
+
+	if err := a.AddMessagesToGame(game, messages); err != nil {
+		return fmt.Errorf("could not send message: %s", err)
+	}
+
+	return nil
 }
 
 func getNewGame(name string) (Game, error) {

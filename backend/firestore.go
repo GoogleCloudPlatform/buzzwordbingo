@@ -274,6 +274,23 @@ func (a *Agent) GetBoard(id string) (Board, error) {
 	return b, nil
 }
 
+// DeleteBoard delete a specifc board from firestore
+func (a *Agent) DeleteBoard(id string) error {
+	var err error
+	client, err = a.getClient()
+	if err != nil {
+		return fmt.Errorf("failed to create client: %v", err)
+	}
+
+	a.log("Deleting board")
+	_, err = client.Collection("boards").Doc(id).Delete(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to delete board: %v", err)
+	}
+
+	return nil
+}
+
 func (a *Agent) loadBoardWithPhrases(b Board) (Board, error) {
 	var err error
 	client, err = a.getClient()

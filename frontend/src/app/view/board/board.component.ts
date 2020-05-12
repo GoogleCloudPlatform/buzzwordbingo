@@ -27,9 +27,10 @@ export class BoardComponent implements OnInit {
   public messages: Observable<any[]>;
   public bingo:boolean=false;
 
-  constructor(public data:DataService, public auth:AuthService, public game:GameService, router:Router) {
+  constructor(public data:DataService, public auth:AuthService, public game:GameService, public router:Router) {
     let self = this;
     if (!auth.isAuth()){
+      localStorage.clear();
       router.navigateByUrl('/login');
     }
 
@@ -47,7 +48,7 @@ export class BoardComponent implements OnInit {
 
   ngOnInit(): void {
     this.messages = this.data.getMessages(this.game.game.id);
-    this.messages.subscribe(ms=>{this.listenForBingo(ms)})
+    this.messages.subscribe(ms=>{this.listenForBingo(ms),this.listenForReset(ms)})
   }
 
 
@@ -64,6 +65,33 @@ export class BoardComponent implements OnInit {
     let board = document.querySelector(".header-container");
     board.classList.add("header-bingo");
   }
+
+  listenForReset(messages:Message[]){
+    let self = this;
+    let msg:Message = messages[messages.length-1] as Message;
+    if (!msg || typeof msg == "undefined"){
+      return;
+    }
+    let halt:boolean = true;
+    msg.audience.forEach(function(aud){
+      if( (aud == self.auth.getPlayer().email) ){
+        halt = false;
+      }
+      if( (aud == "all") ){
+        halt = false;
+      }
+    })
+
+    if (halt){
+      return;
+    }
+
+    if (msg.operation == "reset"){
+      this.router.navigateByUrl('/login');
+    }
+  }
+
+
 
   listenForBingo(messages:Message[]){
     let self = this;

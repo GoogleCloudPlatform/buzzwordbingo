@@ -30,4 +30,8 @@ export class DataService {
     return this.firestore.collection("games").doc(id).collection("records").valueChanges();
   }
 
+  getBoards(id) { 
+    return this.firestore.collection("boards", ref=>ref.where("game","==", id)).valueChanges();
+  }
+
 }

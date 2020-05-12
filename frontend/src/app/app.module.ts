@@ -15,6 +15,7 @@ import { ReplacePipe } from './replace.pipe';
 import { AdminComponent } from './view/admin/admin.component';
 import { ToolbarComponent } from './view/toolbar/toolbar.component';
 import { MasterComponent } from './view/master/master.component';
+import { AdminBoardsComponent } from './view/admin-boards/admin-boards.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import { MasterComponent } from './view/master/master.component';
     MessagesComponent,
     AdminComponent,
     ToolbarComponent,
-    MasterComponent
+    MasterComponent,
+    AdminBoardsComponent
   ],
   imports: [
     BrowserModule,
