@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { share } from 'rxjs/operators';
 import {GameService, Game} from '../service/game.service'
+import {Router} from '@angular/router';
 
 export class Player{
   name:string
@@ -21,7 +22,7 @@ export class AuthService {
   private isAdministrator:boolean=false;
   private playerUrl: string = environment.player_url;
 
-  constructor(private http: HttpClient, public game:GameService) { 
+  constructor(private http: HttpClient, public game:GameService, private router: Router) { 
     let player = JSON.parse(localStorage.getItem('player'));
     if (player != null){
       this.setPlayer(player.name, player.email)
@@ -56,6 +57,14 @@ export class AuthService {
 
   identifyPlayer () {
     return this.http.get(this.playerUrl);
+  }
+
+  logout (reason:string="logged out") {
+    localStorage.clear();
+    console.log("logged out, reason:", reason )
+    localStorage.clear();
+    this.router.navigateByUrl('/login');
+    return 
   }
 
 }

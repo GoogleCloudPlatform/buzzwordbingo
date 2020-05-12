@@ -205,12 +205,11 @@ func handleResetActiveGame(w http.ResponseWriter, r *http.Request) {
 }
 
 func resetGame() (Game, error) {
-	game, err := a.ResetActiveGame()
+
+	game, err := getActiveGame()
 	if err != nil {
 		return Game{}, err
 	}
-	boards = make(map[string]Board)
-	games = make(map[string]Game)
 
 	if game.ID != "" {
 		messages := []Message{}
@@ -223,6 +222,13 @@ func resetGame() (Game, error) {
 		if err := a.AddMessagesToGame(game, messages); err != nil {
 			return game, fmt.Errorf("could not send message to reset: %s", err)
 		}
+	}
+	boards = make(map[string]Board)
+	games = make(map[string]Game)
+
+	game, err = a.ResetActiveGame()
+	if err != nil {
+		return Game{}, err
 	}
 
 	return game, nil
@@ -332,6 +338,7 @@ func getBoardForPlayer(p Player) (Board, error) {
 		boards[game.ID+"_"+p.Email] = b
 
 	}
+
 	b.Player = p
 	m := Message{}
 	m.SetText("<strong>%s</strong> rejoined the game.", b.Player.Name)

@@ -325,6 +325,7 @@ func (a *Agent) DeleteBoard(id string) error {
 }
 
 func (a *Agent) loadBoardWithPhrases(b Board) (Board, error) {
+	fmt.Printf("Boardin %v\n", b)
 	var err error
 	client, err = a.getClient()
 	if err != nil {
@@ -332,7 +333,7 @@ func (a *Agent) loadBoardWithPhrases(b Board) (Board, error) {
 	}
 
 	a.log("Adding phrases to existing board")
-	iter := client.Collection("boards").Doc(b.ID).Collection("phrases").OrderBy("DisplayOrder", firestore.Asc).Documents(ctx)
+	iter := client.Collection("boards").Doc(b.ID).Collection("phrases").OrderBy("displayorder", firestore.Asc).Documents(ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -345,6 +346,7 @@ func (a *Agent) loadBoardWithPhrases(b Board) (Board, error) {
 		doc.DataTo(&p)
 		b.Phrases = append(b.Phrases, p)
 	}
+	fmt.Printf("Board out %v\n", b)
 
 	return b, nil
 }
@@ -424,7 +426,7 @@ func (a *Agent) UpdatePhrase(b Board, p Phrase, r Record) error {
 
 	a.log("Updating board to bingo")
 	bingoref := client.Collection("boards").Doc(b.ID)
-	update := map[string]interface{}{"BingoDeclared": b.BingoDeclared}
+	update := map[string]interface{}{"bingodeclared": b.BingoDeclared}
 	batch.Set(bingoref, update, firestore.MergeAll)
 
 	a.log("Committing Batch")
@@ -576,8 +578,8 @@ func (a *Agent) GetBoardForPlayer(id string, email string) (Board, error) {
 		return b, fmt.Errorf("failed to create client: %v", err)
 	}
 
-	a.log("get board from player")
-	iter := client.Collection("boards").Where("Game", "==", id).Where("Player.Email", "==", email).Documents(ctx)
+	a.log("get board for player")
+	iter := client.Collection("boards").Where("game", "==", id).Where("player.email", "==", email).Documents(ctx)
 
 	for {
 		doc, err := iter.Next()

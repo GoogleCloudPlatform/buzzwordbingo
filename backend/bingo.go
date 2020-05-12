@@ -238,7 +238,7 @@ type Board struct {
 	ID            string   `json:"id" firestore:"id"`
 	Game          string   `json:"game" firestore:"game"`
 	Player        Player   `json:"player" firestore:"player"`
-	BingoDeclared bool     `json:"bingodeclared" firestore:"bingo_declared"`
+	BingoDeclared bool     `json:"bingodeclared" firestore:"bingodeclared"`
 	Phrases       []Phrase `json:"phrases" firestore:"-"`
 }
 
@@ -376,7 +376,7 @@ type Phrase struct {
 	Selected     bool   `json:"selected" firestore:"selected"`
 	Row          string `json:"row" firestore:"-"`
 	Column       string `json:"column" firestore:"-"`
-	DisplayOrder int    `json:"display_order" firestore:"display_order"`
+	DisplayOrder int    `json:"displayorder" firestore:"displayorder"`
 }
 
 // Position returns the combined Row and Column of the Phrase

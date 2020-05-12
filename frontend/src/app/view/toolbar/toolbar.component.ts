@@ -20,8 +20,7 @@ export class ToolbarComponent implements OnInit {
   }
 
   logout(){
-    localStorage.clear();
-    this.router.navigateByUrl('/login');
+    this.auth.logout("user chose to logout")
   }
 
 }

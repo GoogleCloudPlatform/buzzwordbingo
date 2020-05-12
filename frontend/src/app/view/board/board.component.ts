@@ -30,8 +30,7 @@ export class BoardComponent implements OnInit {
   constructor(public data:DataService, public auth:AuthService, public game:GameService, public router:Router) {
     let self = this;
     if (!auth.isAuth()){
-      localStorage.clear();
-      router.navigateByUrl('/login');
+      auth.logout("not authed")
     }
 
     this.player = auth.getPlayer(); 
@@ -93,7 +92,7 @@ export class BoardComponent implements OnInit {
     }
 
     if (msg.operation == "reset"){
-      this.router.navigateByUrl('/login');
+     this.auth.logout("reset message received for " + this.boardid )
     }
   }
 
