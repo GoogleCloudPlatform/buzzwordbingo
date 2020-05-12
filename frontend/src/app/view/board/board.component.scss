@@ -1,5 +1,5 @@
 .main{
-    background-color: #260252;
+    
     max-width: 1000px;
     margin: 0 auto;
     display: flex;
@@ -7,6 +7,7 @@
     justify-content: space-between;
 
     .phrases{
+        background-color: #260252;
         padding: 0;
         width: 60%;
         display: flex;
@@ -14,6 +15,8 @@
         align-items: flex-start;
         color:#FFF;
         box-sizing: border-box;
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
         
 
         .header-container{
@@ -41,11 +44,13 @@
             
             header{
                 color: #fff;
+                text-shadow: 0px 0px 3px purple;
             }
         }
     }
 
     .board-messages{
+        background-color: #260252;
         width: 30%;
         height: 690px;
         color: #fcf0fb;
