@@ -533,7 +533,7 @@ func recordSelect(boardID string, phraseID string) error {
 	if bingo {
 		m2 := Message{}
 		m2.SetText("<strong>%s</strong> just got <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
-		m2.SetAudience("all")
+		m2.SetAudience("all", b.Player.Email)
 		m2.Bingo = bingo
 		messages = append(messages, m2)
 
