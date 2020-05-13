@@ -158,7 +158,6 @@ func (m *Master) Select(ph Phrase, pl Player) Record {
 
 		if v.Phrase.ID == ph.ID {
 			if v.Players.IsMember(pl) {
-				fmt.Printf("Was member, removing.  \n")
 				new := v.Players.Remove(pl)
 				v.Players = new
 
@@ -168,7 +167,6 @@ func (m *Master) Select(ph Phrase, pl Player) Record {
 				m.Records[i] = v
 				return v
 			}
-			fmt.Printf("Was not member, adding.  \n")
 			v.Phrase.Selected = true
 			v.Players = append(v.Players, pl)
 			m.Records[i] = v

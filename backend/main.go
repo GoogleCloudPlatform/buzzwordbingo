@@ -31,15 +31,21 @@ func main() {
 	http.HandleFunc("/api/player/identify", handleGetIAPUsername)
 	http.HandleFunc("/api/player/isadmin", handleGetIsAdmin)
 
-	log.Printf("Starting server on port %s\n", port)
+	weblog(fmt.Sprintf("Starting server on port %s\n", port))
 	if err := http.ListenAndServe(port, nil); err != nil {
 		log.Fatal(err)
 	}
 
 }
 
+func weblog(msg string) {
+	if noisy {
+		log.Printf("Webserver: %s", msg)
+	}
+}
+
 func handleGetIsAdmin(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("/api/player/isadmin called\n")
+	weblog("/api/player/isadmin called")
 	email, ok := r.URL.Query()["email"]
 
 	if !ok || len(email[0]) < 1 || email[0] == "undefined" {
@@ -61,7 +67,7 @@ func handleGetIsAdmin(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetIAPUsername(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("/api/player/identify called\n")
+	weblog("/api/player/identify called")
 	p := Player{}
 
 	arr := r.Header.Get("X-Goog-Authenticated-User-Email")
@@ -100,7 +106,7 @@ func getEmailFromString(arr string) string {
 }
 
 func handleGetBoard(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("/api/board called\n")
+	weblog("/api/board called")
 	email, ok := r.URL.Query()["email"]
 
 	if !ok || len(email[0]) < 1 || email[0] == "undefined" {
@@ -140,7 +146,7 @@ func handleGetBoard(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleDeleteBoard(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("/api/board/delete called\n")
+	weblog("/api/board/delete called")
 	b, ok := r.URL.Query()["b"]
 
 	if !ok || len(b[0]) < 1 || b[0] == "undefined" {
@@ -161,7 +167,7 @@ func handleDeleteBoard(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleNewGame(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("/api/game/new called\n")
+	weblog("/api/game/new called")
 
 	name, ok := r.URL.Query()["name"]
 
@@ -190,7 +196,7 @@ func handleNewGame(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleResetActiveGame(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("/api/game/reset called\n")
+	weblog("/api/game/reset called")
 
 	game, err := resetGame()
 	if err != nil {
@@ -235,7 +241,7 @@ func resetGame() (Game, error) {
 }
 
 func handleActiveGame(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("/api/game/active called\n")
+	weblog("/api/game/active called")
 
 	game, err := getActiveGame()
 	if err != nil {
@@ -256,7 +262,7 @@ func handleActiveGame(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetGame(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("/api/game called\n")
+	weblog("/api/game called")
 
 	id, ok := r.URL.Query()["id"]
 
@@ -285,7 +291,7 @@ func handleGetGame(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleRecordSelect(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("/api/record called\n")
+	weblog("/api/record called")
 	p, ok := r.URL.Query()["p"]
 
 	if !ok || len(p[0]) < 1 {
@@ -572,7 +578,7 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 func writeResponse(w http.ResponseWriter, code int, msg string) {
 
 	if code != http.StatusOK {
-		log.Printf(msg)
+		weblog(fmt.Sprintf(msg))
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")

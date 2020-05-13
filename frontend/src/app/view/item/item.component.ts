@@ -113,7 +113,6 @@ export class ItemComponent implements OnInit {
 
   public disable(){
     this.disabled = true;
-    console.log("Disable!");
     let item:HTMLElement = document.querySelector("#id_"+ this.phrase.id);
     if (!this.phrase.selected){
       item.classList.add("disabled");

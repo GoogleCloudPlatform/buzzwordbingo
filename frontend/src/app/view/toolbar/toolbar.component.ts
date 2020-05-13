@@ -13,7 +13,6 @@ export class ToolbarComponent implements OnInit {
 
   constructor(public auth:AuthService, public router:Router) {
     this.isAdmin = auth.isAdmin()
-    console.log("Isadmin");
    }
 
   ngOnInit(): void {

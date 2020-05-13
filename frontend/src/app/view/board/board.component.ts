@@ -59,7 +59,7 @@ export class BoardComponent implements OnInit {
 
   declareBingo(){
     this.bingo=true;
-      console.log("Bingo Declared", this.itemComponents.length);
+      console.log("Bingo Declared");
       this.showBingo()
       this.itemComponents.forEach(function(child){
         child.disable();
@@ -74,7 +74,6 @@ export class BoardComponent implements OnInit {
   listenForReset(messages:Message[]){
     let self = this;
     let msg:Message = messages[messages.length-1] as Message;
-    console.log(messages, msg)
     if (!msg || typeof msg == "undefined"){
       return;
     }
