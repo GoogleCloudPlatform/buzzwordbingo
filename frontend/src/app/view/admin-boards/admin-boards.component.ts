@@ -15,7 +15,7 @@ export class AdminBoardsComponent implements OnInit {
 
   ngOnInit(): void {
     this.boards = this.data.getBoards(this.game.game.id)
-    this.boards.subscribe(ref=>console.log(ref));
+    this.boards.subscribe();
   }
 
   reset(bid:string){
