@@ -22,9 +22,18 @@ export class LoginComponent implements OnInit {
   }
 
   submitPlayer(){
-    console.log("called")
+
+
+
     let nameInput:HTMLInputElement = document.querySelector("#name") as HTMLInputElement;
     let emailInput:HTMLInputElement = document.querySelector("#email") as HTMLInputElement;
+    if (nameInput.value == ""){
+      let alert:HTMLInputElement = document.querySelector(".alert") as HTMLInputElement;
+      alert.style.display = "block";
+      return;
+    }
+
+
     this.auth.setPlayer(nameInput.value, emailInput.value);
     this.router.navigateByUrl('/game');
 

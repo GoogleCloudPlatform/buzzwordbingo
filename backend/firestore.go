@@ -286,13 +286,14 @@ func (a *Agent) DeleteBoard(id string) error {
 		return fmt.Errorf("failed to create client: %v", err)
 	}
 	batch := client.Batch()
-
-	a.log("removing messages from game")
+	a.log("Deleting board")
+	bref := client.Collection("boards").Doc(id)
+	batch.Delete(bref)
+	a.log("removing phrases from board")
 	ref := client.Collection("boards").Doc(id).Collection("phrases")
 	for {
 		// Get a batch of documents
-		iter := ref.Limit(25).Documents(ctx)
-		numDeleted := 0
+		iter := ref.Limit(100).Documents(ctx)
 
 		for {
 			doc, err := iter.Next()
@@ -303,25 +304,18 @@ func (a *Agent) DeleteBoard(id string) error {
 				return fmt.Errorf("failed to clean phrases from firestore: %v", err)
 			}
 
+			a.log(fmt.Sprintf("removing phrase %s from board", doc.Ref.ID))
 			batch.Delete(doc.Ref)
-			numDeleted++
+		}
+		_, err = batch.Commit(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to clean messages from firestore: %v", err)
 		}
 
-		if numDeleted == 0 {
-			break
-		}
+		return nil
 
 	}
 
-	a.log("Deleting board")
-	bref := client.Collection("boards").Doc(id)
-	batch.Delete(bref)
-	_, err = batch.Commit(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to clean messages from firestore: %v", err)
-	}
-
-	return nil
 }
 
 func (a *Agent) loadBoardWithPhrases(b Board) (Board, error) {

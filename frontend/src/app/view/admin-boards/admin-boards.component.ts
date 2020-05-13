@@ -19,6 +19,7 @@ export class AdminBoardsComponent implements OnInit {
   }
 
   reset(bid:string){
+    console.log("Reset called")
     this.game.resetboard(bid);
   }
 

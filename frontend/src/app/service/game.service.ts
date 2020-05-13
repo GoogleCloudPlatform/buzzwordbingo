@@ -94,7 +94,7 @@ export class GameService {
   }
 
   resetboard (bid:string) {
-    return this.http.get(this.resetUrl + "?b=" + bid).subscribe();
+    return this.http.get(this.resetUrl + "?b=" + bid).subscribe(val=>console.log("reset result",val));
   }
 
 }

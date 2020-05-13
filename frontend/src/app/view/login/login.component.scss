@@ -22,6 +22,14 @@
         width: 150px;
         margin: 3px 30px 0px 30px;
     }
+
+    .alert{
+        width: 416px;
+        margin: 3px 30px 0px 30px;
+        background-color: red;
+        padding: 5px 2px;
+        display:none;
+    }
     
     input{
         width: 400px;
@@ -34,6 +42,14 @@
         border-style: solid;
         border: 1px solid #CCC;
         
+    }
+
+    input:read-only{
+        color: #666;
+        cursor: default;
+        background-color: #f5ceec;
+        user-select: none;
+        outline: none;
     }
 
     button{

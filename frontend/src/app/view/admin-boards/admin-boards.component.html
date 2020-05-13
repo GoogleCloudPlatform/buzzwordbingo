@@ -2,8 +2,8 @@
 <div class="boards">
     <div *ngFor="let board of boards | async">
         <div>
-        <span [innerHTML]="board.player.name"></span>
-        <button (click)="reset(board.id)">Reset</button>
+        <span class="name" [innerHTML]="board.player.name"></span>
+        <button class="reset" (click)="reset(board.id)">Reset</button>
         </div>
     </div>
 </div>

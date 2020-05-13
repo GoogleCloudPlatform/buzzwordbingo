@@ -74,6 +74,7 @@ export class BoardComponent implements OnInit {
   listenForReset(messages:Message[]){
     let self = this;
     let msg:Message = messages[messages.length-1] as Message;
+    console.log(messages, msg)
     if (!msg || typeof msg == "undefined"){
       return;
     }
