@@ -1,9 +1,18 @@
 :host{
     background-color: #260252;
     color: #fff;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 6px;
 }
 
 .name{
     display: inline-block;
     width: 200px;
+    font-weight: 100;
+    margin-left: 20px;
+}
+
+.bingo{
+    font-weight: 900;
 }

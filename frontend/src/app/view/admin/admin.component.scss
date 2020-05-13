@@ -5,11 +5,15 @@
     flex-wrap: wrap;
 
     .master{
-        width: 650px; 
+        width: 500px; 
     }
 
     .admin-messages{
-        width: 350px;
+        background-color: #260252;
+        color: #fff;
+        margin: 20px;
+        border-radius: 6px;
+        width: 340px;
         height: 700px;
     }
 
