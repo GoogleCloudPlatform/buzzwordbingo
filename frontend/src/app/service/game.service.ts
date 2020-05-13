@@ -36,6 +36,7 @@ export class Message  {
   bingo:boolean
   audience:string[]  
   operation:string 
+  id:string
   
   public isAudience(email:string):boolean{
     this.audience.forEach(function(aud:string) {			

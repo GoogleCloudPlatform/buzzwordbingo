@@ -59,10 +59,16 @@ export class AuthService {
     return this.http.get(this.playerUrl);
   }
 
-  logout (reason:string="logged out") {
+  logout (reason:string="logged out", ignoreid:string="") {
     localStorage.clear();
     console.log("logged out, reason:", reason )
     localStorage.clear();
+
+    if (ignoreid != ""){
+      localStorage.setItem(ignoreid, "true");
+    }
+
+
     this.router.navigateByUrl('/login');
     return 
   }

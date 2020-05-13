@@ -198,6 +198,7 @@ func (a *Agent) AddMessagesToGame(g Game, m []Message) error {
 	for _, v := range m {
 		a.log("Adding message to game")
 		timestamp := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
+		v.ID = timestamp
 		ref := client.Collection("games").Doc(g.ID).Collection("messages").Doc(timestamp)
 		batch.Set(ref, v)
 	}

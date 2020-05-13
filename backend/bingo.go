@@ -11,6 +11,7 @@ import (
 
 // Message is a message that will be broadcast from the server to all players
 type Message struct {
+	ID        string   `json:"id" firestore:"id"`
 	Text      string   `json:"text" firestore:"text"`
 	Audience  []string `json:"audience" firestore:"audience"`
 	Bingo     bool     `json:"bingo" firestore:"bingo"`
