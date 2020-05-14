@@ -403,11 +403,15 @@ func getBoardForPlayer(p Player) (Board, error) {
 func getBoard(bid string) (Board, error) {
 	b := Board{}
 	var ok bool
-	var err error
+
+	game, err := getActiveGame()
+	if err != nil {
+		return b, fmt.Errorf("could not get active game for board: %s", err)
+	}
 
 	b, ok = boards[bid]
 	if !ok {
-		b, err = a.GetBoard(bid)
+		b, err = a.GetBoard(bid, game.ID)
 		if err != nil {
 			return b, fmt.Errorf("could not get board from firestore: %s", err)
 		}
@@ -426,7 +430,7 @@ func deleteBoard(bid string) error {
 
 	game, err := getActiveGame()
 	if err != nil {
-		return fmt.Errorf("failed to get active game: %v", err)
+		return fmt.Errorf("failed to get active game to delete board: %v", err)
 	}
 
 	b.log(fmt.Sprintf("Cleaning from cache %s", bid))
@@ -434,7 +438,7 @@ func deleteBoard(bid string) error {
 	delete(boards, bid)
 	delete(boards, game.ID+"_"+b.Player.Email)
 
-	if err := a.DeleteBoard(bid); err != nil {
+	if err := a.DeleteBoard(bid, game.ID); err != nil {
 		return fmt.Errorf("could not get board from firestore: %s", err)
 	}
 
