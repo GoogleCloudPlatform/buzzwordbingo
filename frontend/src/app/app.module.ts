@@ -1,4 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgModule } from '@angular/core';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -14,8 +15,10 @@ import { MessagesComponent } from './view/messages/messages.component';
 import { ReplacePipe } from './replace.pipe';
 import { AdminComponent } from './view/admin/admin.component';
 import { ToolbarComponent } from './view/toolbar/toolbar.component';
-import { MasterComponent } from './view/master/master.component';
 import { AdminBoardsComponent } from './view/admin-boards/admin-boards.component';
+import { AdminMasterComponent } from './view/admin-master/admin-master.component';
+import { AdminPhrasesComponent } from './view/admin-phrases/admin-phrases.component';
+import { AdminPhraseFormComponent } from './view/admin-phrase-form/admin-phrase-form.component';
 
 @NgModule({
   declarations: [
@@ -27,11 +30,15 @@ import { AdminBoardsComponent } from './view/admin-boards/admin-boards.component
     MessagesComponent,
     AdminComponent,
     ToolbarComponent,
-    MasterComponent,
-    AdminBoardsComponent
+    AdminBoardsComponent,
+    AdminMasterComponent,
+    AdminPhrasesComponent,
+    AdminPhraseFormComponent
   ],
   imports: [
     BrowserModule,
+    FormsModule,
+    ReactiveFormsModule,
     AppRoutingModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFirestoreModule,

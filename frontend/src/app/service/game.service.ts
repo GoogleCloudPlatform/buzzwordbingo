@@ -20,7 +20,7 @@ export class Record{
 
 export class Phrase{
   id:number
-  phrase:string
+  text:string
   selected:boolean
   tid:string
 }

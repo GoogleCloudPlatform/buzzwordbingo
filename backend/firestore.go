@@ -77,7 +77,7 @@ func (a *Agent) GetPhrases() ([]Phrase, error) {
 		dataMap := doc.Data()
 
 		phrase.ID = dataMap["id"].(string)
-		phrase.Text = dataMap["phrase"].(string)
+		phrase.Text = dataMap["text"].(string)
 
 		p = append(p, phrase)
 	}
