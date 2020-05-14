@@ -75,6 +75,7 @@ export class GameService {
   private gameActiveUrl: string = environment.game_active_url;
   private adminUrl: string = environment.admin_url;
   private resetUrl: string = environment.reset_url;
+  private newGameUrl: string = environment.newgame_url;
 
   getBoard (email:string, name:string): Observable<Board> {
     if (email == "undefined") return
@@ -96,6 +97,10 @@ export class GameService {
 
   resetboard (bid:string) {
     return this.http.get(this.resetUrl + "?b=" + bid).subscribe();
+  }
+
+  newGame (name:string) {
+    return this.http.get(this.newGameUrl + "?name=" + name).subscribe();
   }
 
 }

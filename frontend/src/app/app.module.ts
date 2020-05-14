@@ -19,6 +19,7 @@ import { AdminBoardsComponent } from './view/admin-boards/admin-boards.component
 import { AdminMasterComponent } from './view/admin-master/admin-master.component';
 import { AdminPhrasesComponent } from './view/admin-phrases/admin-phrases.component';
 import { AdminPhraseFormComponent } from './view/admin-phrase-form/admin-phrase-form.component';
+import { AdminGameComponent } from './view/admin-game/admin-game.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,8 @@ import { AdminPhraseFormComponent } from './view/admin-phrase-form/admin-phrase-
     AdminBoardsComponent,
     AdminMasterComponent,
     AdminPhrasesComponent,
-    AdminPhraseFormComponent
+    AdminPhraseFormComponent,
+    AdminGameComponent
   ],
   imports: [
     BrowserModule,

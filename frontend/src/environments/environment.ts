@@ -19,6 +19,7 @@ export const environment = {
   player_url: 'http://127.0.0.1:8080/api/player/identify',
   admin_url: 'http://127.0.0.1:8080/api/player/isadmin',
   reset_url: 'http://127.0.0.1:8080/api/board/delete',
+  newgame_url: 'http://127.0.0.1:8080/api/game/new',
 };
 
 /*
