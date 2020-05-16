@@ -5,16 +5,31 @@
     flex-wrap: wrap;
 
     .master{
-        width: 500px; 
+        margin:0 20px 0 0;
+        width: 25%;
+    }
+
+    .boards{
+        margin:0 20px 0 0;
+        width: 35%;
     }
 
     .admin-messages{
+        margin:0;
         background-color: #260252;
         color: #fff;
-        margin: 20px;
-        border-radius: 6px;
-        width: 340px;
-        height: 700px;
+        width: 27%;
+        max-height: 700px;
+    }
+
+    .phrases{
+        margin:10px 0;
+        width: 100%
+    }
+
+    .game{
+        margin:10px 0;
+        width: 100%
     }
 
 }

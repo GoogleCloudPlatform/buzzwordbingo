@@ -26,7 +26,7 @@ export class AdminMasterComponent implements OnInit {
   }
 
   isActive(record:Record):boolean{
-    if (record.players != null){
+    if (record.players != null && record.players.length > 0){
       return true
     }
     return false;

@@ -8,10 +8,17 @@ import { DataService, Phrase} from '../../service/data.service'
 })
 export class AdminPhraseFormComponent implements OnInit {
   @Input() phrase: Phrase;
+  timeout = null;
   constructor(public data: DataService) { }
 
   ngOnInit(): void {
   }
+
+  keyup(){
+    let self = this;
+    clearTimeout(this.timeout);
+
+    this.timeout = setTimeout(function () {self.onPhraseSubmit()}, 1000);}
 
   onPhraseSubmit(){
     this.data.updatePhrase(this.phrase);

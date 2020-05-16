@@ -23,4 +23,5 @@ export class AdminBoardsComponent implements OnInit {
     this.game.resetboard(bid);
   }
 
+
 }

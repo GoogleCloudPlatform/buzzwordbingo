@@ -6,22 +6,31 @@
     border-radius: 6px;
 }
 
-.record{
-    display: flex;
-    flex-wrap: wrap;
-    padding: 3px; 
-    color: #fff;
-    .count{
-        margin-right: 3px;
-        text-align: right;
-        width: 30px;
+
+.records{
+    border-spacing: 0;
+    border-collapse: separate;
+    .record{
+        color: #fff;
+        
+        font-size: 12px;
+        .text{
+            margin: 0;  
+            padding: 3px 10px 3px 2px;
+        }
+        .count{
+            margin: 0;
+            text-align: right;
+        }
     }
-
+    .active{
+        font-weight: 900;
+        background-color: #f5e389;
+        color: #c18a00;
+    }
 }
 
-.active{
-    font-weight: 900;
-    background-color: #f5e389;
-    color: #fcb500;
-}
+
+
+
 

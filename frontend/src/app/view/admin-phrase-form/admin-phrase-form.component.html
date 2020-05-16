@@ -1,4 +1,3 @@
 <form> 
-  <input type="text" class="form-control" required placeholder="type phrase here" [(ngModel)]="phrase.text" name="text">
-  <button class="" (click)="onPhraseSubmit()">Submit</button>
+  <input type="text" class="form-control" required placeholder="type phrase here" (keyup)="keyup()" [(ngModel)]="phrase.text" name="text">
 </form>

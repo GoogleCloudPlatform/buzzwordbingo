@@ -1,10 +1,9 @@
 <h2>Players</h2>
-<div class="boards">
-    <div *ngFor="let board of boards | async">
-        <div [class.bingo]="board.bingodeclared">
-            <button class="reset" (click)="reset(board.id)">Reset</button>
-            <span class="name" [innerHTML]="board.player.name"></span>
-            <span *ngIf="board.bingodeclared">BINGO</span>
-        </div>
-    </div>
-</div>
+<table class="boards">
+    <tr *ngFor="let board of boards | async" [class.bingo]="board.bingodeclared">
+        <td class="name">{{board.player.name}}</td>
+        <td>{{board.player.email}}</td>
+        <td *ngIf="board.bingodeclared">BINGO</td>
+        <td><button class="reset" (click)="reset(board.id)">Reset</button></td>
+    </tr>
+</table>
