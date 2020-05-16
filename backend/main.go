@@ -6,17 +6,27 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/compute/v1"
 )
 
 var (
 	randseedfunc = randomseed
-	a            = Agent{ProjectID: "bingo-collab"}
+	a            = Agent{}
 	port         = ":8080"
 	boards       = make(map[string]Board)
 	games        = make(map[string]Game)
 )
 
 func main() {
+
+	id, err := getProjectID()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	a.ProjectID = id
 
 	fs := wrapHandler(http.FileServer(http.Dir("./static")))
 	http.HandleFunc("/", fs)
@@ -620,4 +630,12 @@ func wrapHandler(h http.Handler) http.HandlerFunc {
 			http.Redirect(w, r, "/index.html", http.StatusFound)
 		}
 	}
+}
+
+func getProjectID() (string, error) {
+	credentials, err := google.FindDefaultCredentials(ctx, compute.ComputeScope)
+	if err != nil {
+		return "", fmt.Errorf("could not determine this project id: %v", err)
+	}
+	return credentials.ProjectID, nil
 }
