@@ -23,8 +23,6 @@ export class LoginComponent implements OnInit {
 
   submitPlayer(){
 
-
-
     let nameInput:HTMLInputElement = document.querySelector("#name") as HTMLInputElement;
     let emailInput:HTMLInputElement = document.querySelector("#email") as HTMLInputElement;
     if (nameInput.value == ""){

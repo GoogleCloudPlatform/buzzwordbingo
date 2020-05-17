@@ -2,3 +2,4 @@ backend/vendor
 backend/static
 creds
 .DS_Store
+temp

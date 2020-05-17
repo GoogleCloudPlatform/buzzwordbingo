@@ -15,7 +15,7 @@ export class AuthGuard implements CanActivate {
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
       
-    return this.game.isAdmin(this.auth.getPlayer().email).pipe(share());
+    return this.game.isAdmin().pipe(share());
   }
   
 }

@@ -12,11 +12,7 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-var (
-	client *firestore.Client
-	ctx    = context.Background()
-	noisy  = true
-)
+var ()
 
 // I stole this code from firestore/collref.go basically it generates the ids
 // so I can use batch sets instead of adds for anything

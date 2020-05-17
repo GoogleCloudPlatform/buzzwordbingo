@@ -1,32 +1,47 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
+	"cloud.google.com/go/firestore"
 	"golang.org/x/oauth2/google"
+	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/compute/v1"
+	"google.golang.org/api/idtoken"
 )
 
 var (
-	randseedfunc = randomseed
-	a            = Agent{}
-	port         = ":8080"
-	boards       = make(map[string]Board)
-	games        = make(map[string]Game)
+	randseedfunc  = randomseed
+	a             = Agent{}
+	port          = ":8080"
+	boards        = make(map[string]Board)
+	games         = make(map[string]Game)
+	client        *firestore.Client
+	ctx           = context.Background()
+	noisy         = true
+	projectID     = ""
+	projectNumber = ""
 )
 
 func main() {
-
-	id, err := getProjectID()
+	var err error
+	projectID, err = getProjectID()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	a.ProjectID = id
+	projectNumber, err = getProjectNumber(projectID)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	a.ProjectID = projectID
 
 	fs := wrapHandler(http.FileServer(http.Dir("./static")))
 	http.HandleFunc("/", fs)
@@ -56,36 +71,39 @@ func weblog(msg string) {
 
 func handleGetIsAdmin(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/player/isadmin called")
-	email, ok := r.URL.Query()["email"]
-
-	if !ok || len(email[0]) < 1 || email[0] == "undefined" {
-		msg := "{\"error\":\"email is missing\"}"
-		writeResponse(w, http.StatusInternalServerError, msg)
-		return
-	}
-
-	result, err := a.IsAdmin(email[0])
+	isAdm, err := isAdmin(r)
 	if err != nil {
 		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
 		writeResponse(w, http.StatusInternalServerError, msg)
 		return
 	}
 
-	msg := fmt.Sprintf("%t", result)
+	msg := fmt.Sprintf("%t", isAdm)
 	writeResponse(w, http.StatusOK, msg)
 
+}
+
+func isAdmin(r *http.Request) (bool, error) {
+	email, err := getPlayerEmail(r)
+	if err != nil {
+		return false, err
+	}
+	result, err := a.IsAdmin(email)
+	if err != nil {
+		return false, err
+	}
+	return result, nil
 }
 
 func handleGetIAPUsername(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/player/identify called")
 	p := Player{}
 
-	arr := r.Header.Get("X-Goog-Authenticated-User-Email")
-	email := getEmailFromString(arr)
-
-	if email == "" {
-		username := os.Getenv("USER")
-		email = fmt.Sprintf("%s@google.com_", username)
+	email, err := getPlayerEmail(r)
+	if err != nil {
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
 	}
 
 	p.Email = email
@@ -98,6 +116,40 @@ func handleGetIAPUsername(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeResponse(w, http.StatusOK, json)
+
+}
+
+func getPlayerEmail(r *http.Request) (string, error) {
+	email, err := getValidatedEmail(r)
+	if err != nil {
+		return "", err
+	}
+
+	// If it's not behind IAP, it's developemnt
+	if email == "" {
+		username := os.Getenv("USER")
+		email = fmt.Sprintf("%s@example.com", username)
+	}
+
+	return email, nil
+}
+
+func getValidatedEmail(r *http.Request) (string, error) {
+	arr := r.Header.Get("X-Goog-Authenticated-User-Email")
+	email := getEmailFromString(arr)
+
+	if email == "" {
+		return "", nil
+	}
+
+	jwt := r.Header.Get("X-Goog-IAP-JWT-Assertion")
+
+	payload, err := validateJWTFromAppEngine(jwt, projectNumber, projectID)
+	if err != nil {
+		return "", fmt.Errorf("could not validate IAP JWT: %s", err)
+	}
+
+	return payload.Email, nil
 
 }
 
@@ -117,10 +169,9 @@ func getEmailFromString(arr string) string {
 
 func handleGetBoard(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/board called")
-	email, ok := r.URL.Query()["email"]
-
-	if !ok || len(email[0]) < 1 || email[0] == "undefined" {
-		msg := "{\"error\":\"email is missing\"}"
+	email, err := getPlayerEmail(r)
+	if err != nil {
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
 		writeResponse(w, http.StatusInternalServerError, msg)
 		return
 	}
@@ -134,7 +185,7 @@ func handleGetBoard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	p := Player{}
-	p.Email = email[0]
+	p.Email = email
 	p.Name = name[0]
 
 	board, err := getBoardForPlayer(p)
@@ -157,6 +208,20 @@ func handleGetBoard(w http.ResponseWriter, r *http.Request) {
 
 func handleDeleteBoard(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/board/delete called")
+
+	isAdm, err := isAdmin(r)
+	if err != nil {
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	if !isAdm {
+		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
+		writeResponse(w, http.StatusForbidden, msg)
+		return
+	}
+
 	b, ok := r.URL.Query()["b"]
 
 	if !ok || len(b[0]) < 1 || b[0] == "undefined" {
@@ -178,6 +243,19 @@ func handleDeleteBoard(w http.ResponseWriter, r *http.Request) {
 
 func handleNewGame(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/game/new called")
+
+	isAdm, err := isAdmin(r)
+	if err != nil {
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	if !isAdm {
+		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
+		writeResponse(w, http.StatusForbidden, msg)
+		return
+	}
 
 	name, ok := r.URL.Query()["name"]
 
@@ -207,6 +285,19 @@ func handleNewGame(w http.ResponseWriter, r *http.Request) {
 
 func handleResetActiveGame(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/game/reset called")
+
+	isAdm, err := isAdmin(r)
+	if err != nil {
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	if !isAdm {
+		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
+		writeResponse(w, http.StatusForbidden, msg)
+		return
+	}
 
 	game, err := resetGame()
 	if err != nil {
@@ -638,4 +729,35 @@ func getProjectID() (string, error) {
 		return "", fmt.Errorf("could not determine this project id: %v", err)
 	}
 	return credentials.ProjectID, nil
+}
+
+func getProjectNumber(projectID string) (string, error) {
+
+	c, err := google.DefaultClient(ctx, cloudresourcemanager.CloudPlatformScope)
+	if err != nil {
+		return "", fmt.Errorf("could not get cloudresourcemanager client: %v", err)
+	}
+
+	svc, err := cloudresourcemanager.New(c)
+	if err != nil {
+		return "", fmt.Errorf("could not get cloudresourcemanager service: %v", err)
+	}
+
+	resp, err := svc.Projects.Get(projectID).Context(ctx).Do()
+	if err != nil {
+		return "", fmt.Errorf("could not get project data: %v", err)
+	}
+
+	return strconv.Itoa(int(resp.ProjectNumber)), nil
+}
+
+func validateJWTFromAppEngine(iapJWT, projectNumber, projectID string) (*idtoken.Payload, error) {
+	aud := fmt.Sprintf("/projects/%s/apps/%s", projectNumber, projectID)
+
+	payload, err := idtoken.Validate(ctx, iapJWT, aud)
+	if err != nil {
+		return nil, fmt.Errorf("idtoken.Validate: %v", err)
+	}
+
+	return payload, nil
 }

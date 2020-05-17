@@ -36,7 +36,7 @@ export class AuthService {
     this.player.admin = admin;
     this.isAuthed = true;
     localStorage.setItem('player', JSON.stringify(this.player));
-    this.game.isAdmin(email).pipe(share()).subscribe(val=>{this.isAdministrator = val})
+    this.game.isAdmin().pipe(share()).subscribe(val=>{this.isAdministrator = val})
   } 
 
   getPlayer():Player{

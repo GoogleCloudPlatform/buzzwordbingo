@@ -77,14 +77,13 @@ export class GameService {
   private resetUrl: string = environment.reset_url;
   private newGameUrl: string = environment.newgame_url;
 
-  getBoard (email:string, name:string): Observable<Board> {
-    if (email == "undefined") return
-    return this.http.get<Board>(this.boardUrl +"?email="+email+"&name="+name).pipe(share());
+  getBoard (name:string): Observable<Board> {
+    if (name == "undefined") return
+    return this.http.get<Board>(this.boardUrl +"?name="+name).pipe(share());
   }
 
-  isAdmin (email:string): Observable<boolean> {
-    if (email == "undefined") return
-    return this.http.get<boolean>(this.adminUrl +"?email="+email);
+  isAdmin (): Observable<boolean> {
+    return this.http.get<boolean>(this.adminUrl);
   }
 
   getActiveGame () {
