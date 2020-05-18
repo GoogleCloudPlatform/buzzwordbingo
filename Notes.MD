@@ -78,4 +78,17 @@ Things to do.
     deploy to appengine
     config iap
     deploy using cloud build.     
+
+
+
+Techs Used
+Angular
+Firestore
+Go
+Identity Aware Proxy
+App Engine
+Cloud Build
+Memorystore
+
+
     

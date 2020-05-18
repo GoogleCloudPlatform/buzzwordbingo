@@ -12,8 +12,6 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-var ()
-
 // I stole this code from firestore/collref.go basically it generates the ids
 // so I can use batch sets instead of adds for anything
 const alphanum = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
