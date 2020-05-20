@@ -18,7 +18,8 @@ export class AdminPhraseFormComponent implements OnInit {
     let self = this;
     clearTimeout(this.timeout);
 
-    this.timeout = setTimeout(function () {self.onPhraseSubmit()}, 1000);}
+    this.timeout = setTimeout(function () {self.onPhraseSubmit()}, 1000);
+  }
 
   onPhraseSubmit(){
     this.data.updatePhrase(this.phrase);
