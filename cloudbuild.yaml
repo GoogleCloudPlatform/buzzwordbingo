@@ -25,7 +25,6 @@ steps:
     - name: debian
       entrypoint: "cp"
       args: ['vendorfix/validate.go', 'backend/vendor/google.gloang.org/api/idtoken/validate.go',]  
-      dir: "backend"   
     - name: gcr.io/cloud-builders/gcloud
       args: ['app', 'deploy', '-q']
       dir: "backend"
