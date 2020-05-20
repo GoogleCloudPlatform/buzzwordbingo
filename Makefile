@@ -1,9 +1,9 @@
 BASEDIR = $(shell pwd)
-PROJECT=bingo-collab
-NAME=bingocollab
+PROJECT=groupbuzzwordbingo
+NAME=groupbuzzwordbingo
 REGION=us-central1
 GAEREGION=us-central
-SAACCOUNT=firebase-adminsdk-cffyr
+SAACCOUNT=firestore-developer-account
 PROJECTNUMBER=$(shell gcloud projects list --filter="$(PROJECT)" --format="value(PROJECT_NUMBER)")
 
 env:
@@ -17,7 +17,8 @@ frontend: clean
 	cd frontend && ng build --prod
 
 
-deploy: env clean frontend
+deploy: env
+	cp vendorfix/validate.go backend/vendor/google.golang.org/api/idtoken/validate.go 
 	cd backend && gcloud app deploy -q
 
 dev: fixvendor
@@ -41,6 +42,10 @@ init:
 	cd backend && go mod vendor
 
 serviceaccount: env
+	@echo ~~~~~~~~~~~~~ Create service account for Development   
+	-gcloud iam service-accounts create $(SAACCOUNT) \
+    --description "A service account for development of frontend of a bingo game" \
+    --display-name "Bingo App" --project $(PROJECT)
 	@echo ~~~~~~~~~~~~~ Download key for service account. 
 	-gcloud iam service-accounts keys create creds/creds.json \
   	--iam-account $(SAACCOUNT)@$(PROJECT).iam.gserviceaccount.com  	
@@ -70,9 +75,19 @@ cloudbuild: env
 	-cd builder && make build    
 
 memorystore: env
-	-gcloud redis instances create $(NAME) --size=5 --region=$(REGION)
+	-gcloud redis instances create $(NAME) --size=1 --region=$(REGION)
 	-gcloud compute networks vpc-access connectors create $(NAME)connector \
 	--network default --region $(REGION) --range 10.8.0.0/28 	
 
 listvpc:
 	gcloud beta redis instances describe $(NAME)redis --region $(REGION)
+
+secure: env
+	gcloud services enable cloudresourcemanager.googleapis.com
+	gcloud services enable iap.googleapis.com
+	gcloud iap web enable --resource-type=app-engine \
+	--oauth2-client-id $(BINGO_OAUTH_ID) \
+	--oauth2-client-secret $(BINGO_OAUTH_SECRET)
+	gcloud iap web add-iam-policy-binding  \
+      --member='allAuthenticatedUsers' \
+      --role='roles/iap.httpsResourceAccessor' 	

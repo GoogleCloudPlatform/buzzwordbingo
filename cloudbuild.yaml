@@ -19,10 +19,10 @@ steps:
     - name: 'gcr.io/$PROJECT_ID/ng:latest'
       args: ["build", "--prod"]
       dir: "frontend"
-    - name: debian
+    - name: mirror.gcr.io/library/golang
       args: ['go', 'mod', 'vendor']  
       dir: "backend" 
-    - name: mirror.gcr.io/library/golang
+    - name: debian
       entrypoint: "cp"
       args: ['vendorfix/validate.go', 'backend/vendor/google.gloang.org/api/idtoken/validate.go',]  
       dir: "backend"   

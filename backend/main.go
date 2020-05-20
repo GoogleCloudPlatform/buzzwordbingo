@@ -467,29 +467,8 @@ func getBoardForPlayer(p Player) (Board, error) {
 
 	bingo := b.Bingo()
 	if bingo {
-		m2 := Message{}
-		m2.SetText("<strong>You</strong> already had <em><strong>BINGO</strong></em> on your board.")
-		m2.SetAudience(b.Player.Email)
-		m2.Bingo = bingo
-		messages = append(messages, m2)
-
-		reports := game.CheckBoard(b)
-		if reports.IsDubious() {
-			b.log("REPORTED BINGO IS DUBIOUS")
-			m3 := Message{}
-			m3.SetText("<strong>%s</strong> might have just redeclared a dubious <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
-			m3.SetAudience("admin", b.Player.Email)
-			m3.Bingo = bingo
-			messages = append(messages, m3)
-
-			for _, v := range reports {
-				mr := Message{}
-				mr.SetText("<strong>%s</strong> was selected by %d of %d other players", v.Phrase.Text, v.Count, v.Total-1)
-				mr.SetAudience("admin", b.Player.Email)
-				mr.Bingo = bingo
-				messages = append(messages, mr)
-			}
-		}
+		msg := generateBingoMessages(b, game, false)
+		messages = append(messages, msg...)
 	}
 
 	if err := a.AddMessagesToGame(game, messages); err != nil {
@@ -497,6 +476,44 @@ func getBoardForPlayer(p Player) (Board, error) {
 	}
 
 	return b, nil
+}
+
+func generateBingoMessages(b Board, g Game, first bool) []Message {
+
+	bingoMsg := "<strong>You</strong> already had <em><strong>BINGO</strong></em> on your board."
+	dubiousMsg := fmt.Sprintf("<strong>%s</strong> might have just redeclared a dubious <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
+
+	if first {
+		bingoMsg = fmt.Sprintf("<strong>%s</strong> just got <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
+		dubiousMsg = fmt.Sprintf("<strong>%s</strong> might have just declared a dubious <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
+	}
+
+	messages := []Message{}
+
+	m1 := Message{}
+	m1.SetText(bingoMsg)
+	m1.SetAudience(b.Player.Email)
+	m1.Bingo = true
+	messages = append(messages, m1)
+
+	reports := g.CheckBoard(b)
+	if reports.IsDubious() {
+		b.log("REPORTED BINGO IS DUBIOUS")
+		m2 := Message{}
+		m2.SetText(dubiousMsg)
+		m2.SetAudience("admin", b.Player.Email)
+		m2.Bingo = true
+		messages = append(messages, m2)
+
+		for _, v := range reports {
+			mr := Message{}
+			mr.SetText("<strong>%s</strong> was selected by %d of %d other players", v.Phrase.Text, v.Count, v.Total-1)
+			mr.SetAudience("admin", b.Player.Email)
+			mr.Bingo = true
+			messages = append(messages, mr)
+		}
+	}
+	return messages
 }
 
 func getBoard(bid string) (Board, error) {
@@ -534,13 +551,12 @@ func deleteBoard(bid string) error {
 		return fmt.Errorf("failed to get active game to delete board: %v", err)
 	}
 
-	b.log(fmt.Sprintf("Cleaning from cache %s", bid))
-	b.log(fmt.Sprintf("Cleaning from cache %s", b.Player.Email))
-	delete(boards, bid)
-	delete(boards, game.ID+"_"+b.Player.Email)
+	if err := cache.DeleteBoard(b); err != nil {
+		return fmt.Errorf("could not delete board from cache: %s", err)
+	}
 
 	if err := a.DeleteBoard(bid, game.ID); err != nil {
-		return fmt.Errorf("could not get board from firestore: %s", err)
+		return fmt.Errorf("could not delete board from firestore: %s", err)
 	}
 
 	messages := []Message{}
@@ -635,29 +651,8 @@ func recordSelect(boardID string, phraseID string) error {
 	messages = append(messages, m)
 
 	if bingo {
-		m2 := Message{}
-		m2.SetText("<strong>%s</strong> just got <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
-		m2.SetAudience("all", b.Player.Email)
-		m2.Bingo = bingo
-		messages = append(messages, m2)
-
-		reports := g.CheckBoard(b)
-		if reports.IsDubious() {
-			b.log("REPORTED BINGO IS DUBIOUS")
-			m3 := Message{}
-			m3.SetText("<strong>%s</strong> might have just declared a dubious <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
-			m3.SetAudience("admin", b.Player.Email)
-			m3.Bingo = bingo
-			messages = append(messages, m3)
-
-			for _, v := range reports {
-				mr := Message{}
-				mr.SetText("<strong>%s</strong> was selected by %d of %d other players", v.Phrase.Text, v.Count, v.Total-1)
-				mr.SetAudience("admin", b.Player.Email)
-				mr.Bingo = bingo
-				messages = append(messages, mr)
-			}
-		}
+		msg := generateBingoMessages(b, g, false)
+		messages = append(messages, msg...)
 	}
 
 	if err := a.AddMessagesToGame(g, messages); err != nil {

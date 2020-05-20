@@ -2,11 +2,18 @@ package main
 
 import (
 	"fmt"
+	"log"
 )
 
 var ErrCacheMiss = fmt.Errorf("item is not in cache")
 
 type Cache struct {
+}
+
+func (c *Cache) log(msg string) {
+	if noisy {
+		log.Printf("Cache: %s\n", msg)
+	}
 }
 
 func (c *Cache) Clear() error {
@@ -46,4 +53,12 @@ func (c *Cache) GetBoard(key string) (Board, error) {
 	}
 
 	return b, nil
+}
+
+func (c *Cache) DeleteBoard(board Board) error {
+	delete(boards, board.ID)
+	delete(boards, board.Game+"_"+board.Player.Email)
+	c.log(fmt.Sprintf("Cleaning from cache %s", board.ID))
+	c.log(fmt.Sprintf("Cleaning from cache %s", board.Game+"_"+board.Player.Email))
+	return nil
 }
