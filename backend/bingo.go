@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"math/rand"
 	"strconv"
@@ -385,6 +386,6 @@ func (p Phrase) Position() string {
 
 func (b Board) log(msg string) {
 	if noisy {
-		fmt.Printf("Bingo: %s\n", msg)
+		log.Printf("Bingo: %s\n", msg)
 	}
 }

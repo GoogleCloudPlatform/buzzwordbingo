@@ -1,6 +1,6 @@
 BASEDIR = $(shell pwd)
-PROJECT=bingogroup
-NAME=bingogroup
+PROJECT=bingo-collab
+NAME=bingocollab
 REGION=us-central1
 GAEREGION=us-central
 SAACCOUNT=firebase-adminsdk-cffyr
@@ -24,7 +24,7 @@ dev: fixvendor
 	(trap 'kill 0' SIGINT; \
 	cd $(BASEDIR)/backend && \
 	export GOOGLE_APPLICATION_CREDENTIALS=$(BASEDIR)/creds/creds.json && \
-	go run main.go firestore.go bingo.go & \
+	go run main.go firestore.go bingo.go cache.go & \
 	cd $(BASEDIR)/frontend && ng serve --open )
 
 fixvendor:
@@ -34,7 +34,7 @@ fixvendor:
 server: fixvendor
 	cd $(BASEDIR)/backend && \
 	export GOOGLE_APPLICATION_CREDENTIALS=$(BASEDIR)/creds/creds.json && \
-	go run main.go firestore.go bingo.go 
+	go run main.go firestore.go bingo.go cache.go
 
 init:
 	cd frontend && npm install
@@ -57,11 +57,11 @@ services: env
 	-gcloud services enable firestore.googleapis.com
 	-gcloud services enable iap.googleapis.com
 
-appengine:
+appengine: env
 	@echo ~~~~~~~~~~~~~ Intialize AppEngine on $(PROJECT)
 	-gcloud app create --region $(GAEREGION)	
 
-cloudbuild:
+cloudbuild: env
 	@echo ~~~~~~~~~~~~~ Enable Cloud Build service account to deploy to AppEngine on $(PROJECT)
 	-gcloud projects add-iam-policy-binding $(PROJECT) \
   	--member serviceAccount:$(PROJECTNUMBER)@cloudbuild.gserviceaccount.com \
@@ -69,7 +69,7 @@ cloudbuild:
 	@echo ~~~~~~~~~~~~~ Create Angular builder for Cloud Build 
 	-cd builder && make build    
 
-memorystore:
+memorystore: env
 	-gcloud redis instances create $(NAME) --size=5 --region=$(REGION)
 	-gcloud compute networks vpc-access connectors create $(NAME)connector \
 	--network default --region $(REGION) --range 10.8.0.0/28 	

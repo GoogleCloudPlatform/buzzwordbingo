@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -34,7 +35,7 @@ type Agent struct {
 
 func (a *Agent) log(msg string) {
 	if noisy {
-		fmt.Printf("Firestore: %s\n", msg)
+		log.Printf("Firestore: %s\n", msg)
 	}
 }
 
@@ -381,7 +382,7 @@ func (a *Agent) ResetActiveGame() (Game, error) {
 }
 
 // GetBoardForPlayer returns the board for a given player
-func (a *Agent) GetBoardForPlayer(id string, email string) (Board, error) {
+func (a *Agent) GetBoardForPlayer(id string, p Player) (Board, error) {
 	b := Board{}
 	var err error
 	client, err = a.getClient()
@@ -390,7 +391,7 @@ func (a *Agent) GetBoardForPlayer(id string, email string) (Board, error) {
 	}
 
 	a.log("get board for player")
-	iter := client.Collection("games").Doc(id).Collection("boards").Where("game", "==", id).Where("player.email", "==", email).Documents(ctx)
+	iter := client.Collection("games").Doc(id).Collection("boards").Where("game", "==", id).Where("player.email", "==", p.Email).Documents(ctx)
 
 	for {
 		doc, err := iter.Next()
