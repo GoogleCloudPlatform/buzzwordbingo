@@ -9,10 +9,10 @@ import (
 	"strconv"
 
 	"cloud.google.com/go/firestore"
-	"github.com/tpryan/google-api-go-client/idtoken"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/compute/v1"
+	"google.golang.org/api/idtoken"
 )
 
 var (
