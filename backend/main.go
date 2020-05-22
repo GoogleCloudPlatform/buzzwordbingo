@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"cloud.google.com/go/firestore"
 	"golang.org/x/oauth2/google"
@@ -414,13 +415,27 @@ func getValidatedEmail(r *http.Request) (string, error) {
 
 	jwt := r.Header.Get("X-Goog-IAP-JWT-Assertion")
 
-	payload, err := validateJWT(jwt, projectNumber, projectID)
+	_, err := validateJWT(jwt, projectNumber, projectID)
 	if err != nil {
 		return "", fmt.Errorf("could not validate IAP JWT: %s", err)
 	}
 
-	return payload.Email, nil
+	return getEmailFromString(arr), nil
 
+}
+
+func getEmailFromString(arr string) string {
+	email := ""
+	if len(arr) > 0 {
+
+		iapstrings := strings.Split(arr, ":")
+		if len(iapstrings) < 2 {
+			return email
+		}
+
+		email = iapstrings[1]
+	}
+	return email
 }
 
 func getBoardForPlayer(p Player) (Board, error) {
