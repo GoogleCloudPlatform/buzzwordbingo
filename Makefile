@@ -1,9 +1,9 @@
 BASEDIR = $(shell pwd)
-PROJECT=groupbuzzwordbingo
-NAME=groupbuzzwordbingo
+PROJECT=bingo-collab
+NAME=bingocollab
 REGION=us-central1
 GAEREGION=us-central
-SAACCOUNT=firestore-developer-account
+SAACCOUNT=bingo-developer-account
 PROJECTNUMBER=$(shell gcloud projects list --filter="$(PROJECT)" --format="value(PROJECT_NUMBER)")
 
 env:
@@ -21,7 +21,7 @@ deploy: env
 	cp vendorfix/validate.go backend/vendor/google.golang.org/api/idtoken/validate.go 
 	cd backend && gcloud app deploy -q
 
-dev: fixvendor
+dev: 
 	(trap 'kill 0' SIGINT; \
 	cd $(BASEDIR)/backend && \
 	export GOOGLE_APPLICATION_CREDENTIALS=$(BASEDIR)/creds/creds.json && \
@@ -49,6 +49,12 @@ serviceaccount: env
 	@echo ~~~~~~~~~~~~~ Download key for service account. 
 	-gcloud iam service-accounts keys create creds/creds.json \
   	--iam-account $(SAACCOUNT)@$(PROJECT).iam.gserviceaccount.com  	
+
+sapermissions: env
+	@echo ~~~~~~~~~~~~~ Grant Service account permissions
+	-gcloud projects add-iam-policy-binding $(PROJECT) \
+  	--member serviceAccount:$(SAACCOUNT)@$(PROJECT).iam.gserviceaccount.com \
+  	--role roles/project.viewer
 
 project: env services appengine cloudbuild memorystore
 	

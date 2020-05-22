@@ -409,6 +409,7 @@ func getPlayerEmail(r *http.Request) (string, error) {
 func getValidatedEmail(r *http.Request) (string, error) {
 	arr := r.Header.Get("X-Goog-Authenticated-User-Email")
 
+	email := getEmailFromString(arr)
 	if arr == "" {
 		return "", nil
 	}
@@ -420,7 +421,8 @@ func getValidatedEmail(r *http.Request) (string, error) {
 		return "", fmt.Errorf("could not validate IAP JWT: %s", err)
 	}
 
-	return getEmailFromString(arr), nil
+	// TODO: Get rid of this and use the jwt token when it is done correctly
+	return email, nil
 
 }
 
