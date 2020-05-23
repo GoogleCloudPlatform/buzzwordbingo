@@ -569,3 +569,50 @@ func (a *Agent) UpdatePhrase(b Board, p Phrase, r Record) error {
 
 	return nil
 }
+
+// GetGamesForPlayer fetches the list of all games a user in currently in.
+func (a *Agent) GetGamesForPlayer(email string) (Games, error) {
+
+	g := []Game{}
+
+	var err error
+	client, err = a.getClient()
+	if err != nil {
+		return g, fmt.Errorf("Failed to create client: %v", err)
+	}
+
+	gameids := []string{}
+	a.log("Getting Boards for player")
+	iter := client.CollectionGroup("boards").Where("player.email", "==", email).Documents(ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return g, fmt.Errorf("Failed to iterate: %v", err)
+		}
+		datamap := doc.Data()
+		gameids = append(gameids, datamap["game"].(string))
+	}
+
+	refs := []*firestore.DocumentRef{}
+	for _, v := range gameids {
+		refs = append(refs, client.Collection("games").Doc(v))
+	}
+
+	a.log("Getting Games for boards")
+	snapshots, err := client.GetAll(ctx, refs)
+	if err != nil {
+		return g, fmt.Errorf("Failed to get games: %v", err)
+	}
+
+	for _, v := range snapshots {
+		game := Game{}
+		v.DataTo(&game)
+		game.ID = v.Ref.ID
+		g = append(g, game)
+	}
+
+	return g, nil
+}

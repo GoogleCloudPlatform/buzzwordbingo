@@ -32,7 +32,7 @@ fixvendor:
 	@echo Copying fix library not working. 
 	cp $(BASEDIR)/vendorfix/validate.go	$(BASEDIR)/backend/vendor/google.golang.org/api/idtoken/validate.go
 
-server: fixvendor
+server: 
 	cd $(BASEDIR)/backend && \
 	export GOOGLE_APPLICATION_CREDENTIALS=$(BASEDIR)/creds/creds.json && \
 	go run main.go firestore.go bingo.go cache.go

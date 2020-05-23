@@ -5,9 +5,19 @@ import (
 	"log"
 )
 
+// ErrCacheMiss error indicates that an item is not in the cache
 var ErrCacheMiss = fmt.Errorf("item is not in cache")
 
+func NewCache() Cache {
+	c := Cache{}
+	c.Init()
+	return c
+}
+
+// Cache abstracts all of the operations of caching for the application
 type Cache struct {
+	boards map[string]Board
+	games  map[string]Game
 }
 
 func (c *Cache) log(msg string) {
@@ -16,29 +26,38 @@ func (c *Cache) log(msg string) {
 	}
 }
 
+// Init starts the cache off
+func (c *Cache) Init() {
+	c.boards = make(map[string]Board)
+	c.games = make(map[string]Game)
+}
+
+// Clear removes all items from the cache.
 func (c *Cache) Clear() error {
-	boards = make(map[string]Board)
-	games = make(map[string]Game)
+	c.Init()
 
 	return nil
 }
 
+// SaveBoard records a board into the cache.
 func (c *Cache) SaveBoard(b Board) error {
-	boards[b.ID] = b
-	boards[b.Game+"_"+b.Player.Email] = b
+	c.boards[b.ID] = b
+	c.boards[b.Game+"_"+b.Player.Email] = b
 
 	return nil
 }
 
+// SaveGame records a game in the cache.
 func (c *Cache) SaveGame(g Game) error {
-	games[g.ID] = g
-	games["active"] = g
+	c.games[g.ID] = g
+	c.games["active"] = g
 
 	return nil
 }
 
+// GetGame retrieves an game from the cache
 func (c *Cache) GetGame(key string) (Game, error) {
-	g, ok := games[key]
+	g, ok := c.games[key]
 	if !ok {
 		return Game{}, ErrCacheMiss
 	}
@@ -46,8 +65,9 @@ func (c *Cache) GetGame(key string) (Game, error) {
 	return g, nil
 }
 
+// GetBoard retrieves an board from the cache
 func (c *Cache) GetBoard(key string) (Board, error) {
-	b, ok := boards[key]
+	b, ok := c.boards[key]
 	if !ok {
 		return Board{}, ErrCacheMiss
 	}
@@ -55,9 +75,10 @@ func (c *Cache) GetBoard(key string) (Board, error) {
 	return b, nil
 }
 
+// DeleteBoard will remove a board from the cache completely.
 func (c *Cache) DeleteBoard(board Board) error {
-	delete(boards, board.ID)
-	delete(boards, board.Game+"_"+board.Player.Email)
+	delete(c.boards, board.ID)
+	delete(c.boards, board.Game+"_"+board.Player.Email)
 	c.log(fmt.Sprintf("Cleaning from cache %s", board.ID))
 	c.log(fmt.Sprintf("Cleaning from cache %s", board.Game+"_"+board.Player.Email))
 	return nil

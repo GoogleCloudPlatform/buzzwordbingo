@@ -47,6 +47,18 @@ func (g *Game) NewBoard(p Player) Board {
 
 }
 
+type Games []Game
+
+func (g Games) JSON() (string, error) {
+	bytes, err := json.Marshal(g)
+	if err != nil {
+		return "", fmt.Errorf("could not marshal json for response: %s", err)
+	}
+
+	return string(bytes), nil
+}
+
+// Report represents a report of all of the selected phraes.
 type Report struct {
 	Phrase  Phrase  `json:"phrase"`
 	Percent float32 `json:"percent"`
@@ -54,8 +66,10 @@ type Report struct {
 	Total   int     `json:"total"`
 }
 
+// Reports are a slice of reports.
 type Reports []Report
 
+// IsDubious checks to see if any of the boards claiming bingo match everyone else
 func (r Reports) IsDubious() bool {
 	threshold := float32(.5)
 	count := 2
@@ -73,6 +87,7 @@ func (r Reports) IsDubious() bool {
 	return false
 }
 
+// ChecksBoard checks a particular board against the master records
 func (g *Game) CheckBoard(b Board) Reports {
 
 	results := Reports{}
@@ -94,6 +109,7 @@ func (g *Game) CheckBoard(b Board) Reports {
 	return results
 }
 
+// FindRecord retrieves the report of a particular phrase
 func (g Game) FindRecord(p Phrase) Record {
 	for _, v := range g.Master.Records {
 		if v.Phrase.ID == p.ID {
@@ -103,6 +119,7 @@ func (g Game) FindRecord(p Phrase) Record {
 	return Record{}
 }
 
+// Count Players returns the count of all players who have selected phrases/
 func (g *Game) CountPlayers() int {
 	counter := make(map[string]bool)
 

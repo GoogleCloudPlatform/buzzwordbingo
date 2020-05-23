@@ -19,16 +19,15 @@ import (
 var (
 	randseedfunc  = randomseed
 	a             = Agent{}
-	cache         = Cache{}
+	cache         = NewCache()
 	port          = ":8080"
-	boards        = make(map[string]Board)
-	games         = make(map[string]Game)
 	ctx           = context.Background()
 	noisy         = true
 	projectID     = ""
 	projectNumber = ""
 	client        *firestore.Client
-	errNotAdmin   = fmt.Errorf("not an admin")
+	// ErrNotAdmin is an error that indicates that the user is not an admin
+	ErrNotAdmin = fmt.Errorf("not an admin")
 )
 
 func main() {
@@ -53,6 +52,7 @@ func main() {
 	http.HandleFunc("/api/record", handleRecordSelect)
 	http.HandleFunc("/api/game", handleGetGame)
 	http.HandleFunc("/api/game/new", handleNewGame)
+	http.HandleFunc("/api/game/list", handleGetGames)
 	http.HandleFunc("/api/game/active", handleActiveGame)
 	http.HandleFunc("/api/game/reset", handleResetActiveGame)
 	http.HandleFunc("/api/player/identify", handleGetIAPUsername)
@@ -107,17 +107,46 @@ func handleGetBoard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	gid, err := getFirstQuery("g", r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
 	p := Player{}
 	p.Email = email
 	p.Name = name
 
-	board, err := getBoardForPlayer(p)
+	g, err := getGame(gid)
+	if err != nil {
+		writeError(w, err.Error())
+	}
+
+	board, err := getBoardForPlayer(p, g)
 	if err != nil {
 		writeError(w, err.Error())
 		return
 	}
 
 	writeJSON(w, board)
+	return
+}
+
+func handleGetGames(w http.ResponseWriter, r *http.Request) {
+	weblog("/api/game/list called")
+	email, err := getPlayerEmail(r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	games, err := a.GetGamesForPlayer(email)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	writeJSON(w, games)
 	return
 }
 
@@ -268,6 +297,7 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// JSONProducer is an interface that spits out a JSON string version of itself
 type JSONProducer interface {
 	JSON() (string, error)
 }
@@ -400,7 +430,7 @@ func getPlayerEmail(r *http.Request) (string, error) {
 	// If it's not behind IAP, it's developemnt
 	if email == "" {
 		username := os.Getenv("USER")
-		email = fmt.Sprintf("%s@example.com", username)
+		email = fmt.Sprintf("%s@google.com", username)
 	}
 
 	return email, nil
@@ -440,19 +470,15 @@ func getEmailFromString(arr string) string {
 	return email
 }
 
-func getBoardForPlayer(p Player) (Board, error) {
+func getBoardForPlayer(p Player, g Game) (Board, error) {
+	var err error
 	b := Board{}
 	messages := []Message{}
 
-	game, err := getActiveGame()
-	if err != nil {
-		return b, fmt.Errorf("failed to get active game: %v", err)
-	}
-
-	b, err = cache.GetBoard(game.ID + "_" + p.Email)
+	b, err = cache.GetBoard(g.ID + "_" + p.Email)
 	if err != nil {
 		if err == ErrCacheMiss {
-			b, err = a.GetBoardForPlayer(game.ID, p)
+			b, err = a.GetBoardForPlayer(g.ID, p)
 			if err != nil {
 				return b, fmt.Errorf("error getting board for player: %v", err)
 			}
@@ -467,7 +493,7 @@ func getBoardForPlayer(p Player) (Board, error) {
 	m.SetAudience("admin", b.Player.Email)
 
 	if b.ID == "" {
-		b = game.NewBoard(p)
+		b = g.NewBoard(p)
 		b, err = a.SaveBoard(b)
 		if err != nil {
 			return b, fmt.Errorf("error saving board for player: %v", err)
@@ -484,11 +510,11 @@ func getBoardForPlayer(p Player) (Board, error) {
 
 	bingo := b.Bingo()
 	if bingo {
-		msg := generateBingoMessages(b, game, false)
+		msg := generateBingoMessages(b, g, false)
 		messages = append(messages, msg...)
 	}
 
-	if err := a.AddMessagesToGame(game, messages); err != nil {
+	if err := a.AddMessagesToGame(g, messages); err != nil {
 		return b, fmt.Errorf("could not send message to notify player of bingo: %s", err)
 	}
 
@@ -613,7 +639,7 @@ func getGame(id string) (Game, error) {
 	game, err := cache.GetGame(id)
 	if err != nil {
 		if err == ErrCacheMiss {
-			game, err = a.GetActiveGame()
+			game, err = a.GetGame(id)
 			if err != nil {
 				return Game{}, fmt.Errorf("error getting game: %v", err)
 			}
