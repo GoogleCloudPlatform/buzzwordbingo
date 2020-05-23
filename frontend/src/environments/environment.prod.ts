@@ -16,4 +16,5 @@ export const environment = {
   admin_url: '/api/player/isadmin',
   reset_url: '/api/board/delete',
   newgame_url: '/api/game/new',
+  host_url: '',
 };

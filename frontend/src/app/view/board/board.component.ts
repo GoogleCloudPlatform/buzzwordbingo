@@ -3,7 +3,7 @@ import { Observable, of } from 'rxjs';
 import { DataService, Phrase} from '../../service/data.service'
 import {AuthService, Player} from '../../service/auth.service'
 import {GameService, Board, Message} from '../../service/game.service'
-import {Router} from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import {ItemComponent} from '../item/item.component'
 
 
@@ -19,6 +19,7 @@ export class BoardComponent implements OnInit {
   private itemComponent: ItemComponent;
   public itemComponents: ItemComponent[] = [];
 
+  public id:string;
   public board: Observable<any>;
   public phrases: Observable<any[]>;
   public currentState:any = {};
@@ -27,18 +28,18 @@ export class BoardComponent implements OnInit {
   public messages: Observable<any[]>;
   public bingo:boolean=false;
 
-  constructor(public data:DataService, public auth:AuthService, public game:GameService, public router:Router) {
+  constructor(public data:DataService, public auth:AuthService, public game:GameService, public router:Router, route: ActivatedRoute,) {
     let self = this;
     if (!auth.isAuth()){
       auth.logout("not authed")
     }
-
+    this.id = route.snapshot.paramMap.get('id');
     this.player = auth.getPlayer(); 
     
     
     
     if (this.player.email != "undefined"){
-      this.board = game.getBoard(this.player.name);
+      this.board = game.getBoard(this.player.name, this.id);
     }
     
     this.board.subscribe(val=>{this.boardid=val.id; if (val.bingodeclared){this.declareBingo()}})

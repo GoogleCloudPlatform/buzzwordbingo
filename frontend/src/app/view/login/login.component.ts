@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Observable, of  } from 'rxjs';
 import {Router} from '@angular/router';
 import {AuthService, Player} from '../../service/auth.service'
+import { GameService, Game } from 'src/app/service/game.service';
 
 
 @Component({
@@ -12,10 +13,11 @@ import {AuthService, Player} from '../../service/auth.service'
 export class LoginComponent implements OnInit {
 
   public identity:Observable<any>;
+  public games:any;
 
-  constructor(private auth:AuthService, private router: Router) { 
+  constructor(private auth:AuthService, private router: Router, public game:GameService) { 
     this.identity =auth.identifyPlayer();
-
+    this.game.getGamesForPlayer().subscribe(val=>{this.games=val} );
   }
 
   ngOnInit(): void {
@@ -31,9 +33,18 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-
     this.auth.setPlayer(nameInput.value, emailInput.value);
-    this.router.navigateByUrl('/game');
+    let gameid = "";
+    this.games.forEach(v => { 
+      if (v.active){
+        gameid = v.id;
+        return
+      }
+    });
+      
+    
+
+    this.router.navigateByUrl('/game/' + gameid);
 
   }
 

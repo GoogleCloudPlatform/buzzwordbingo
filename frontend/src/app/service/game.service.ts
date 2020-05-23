@@ -76,19 +76,17 @@ export class GameService {
   private adminUrl: string = environment.admin_url;
   private resetUrl: string = environment.reset_url;
   private newGameUrl: string = environment.newgame_url;
+  private hostUrl: string = environment.host_url;
 
-  getBoard (name:string): Observable<Board> {
+  getBoard (name:string, g:string): Observable<Board> {
     if (name == "undefined") return
-    return this.http.get<Board>(this.boardUrl +"?name="+name).pipe(share());
+    return this.http.get<Board>(this.boardUrl +"?name="+name + "&g="+g).pipe(share());
   }
 
   isAdmin (): Observable<boolean> {
     return this.http.get<boolean>(this.adminUrl);
   }
 
-  getActiveGame () {
-    return this.http.get(this.gameActiveUrl).pipe(share()).subscribe(val=>{this.game=val; localStorage.setItem('game', JSON.stringify(val));});
-  }
 
   record (pid:string, bid:string) {
     return this.http.get(this.recordUrl + "?p="+pid + "&b=" + bid).subscribe();
@@ -100,6 +98,10 @@ export class GameService {
 
   newGame (name:string) {
     return this.http.get(this.newGameUrl + "?name=" + name).subscribe();
+  }
+
+  getGamesForPlayer(){
+    return this.http.get(this.hostUrl +  "/api/game/list").pipe(share());
   }
 
 }

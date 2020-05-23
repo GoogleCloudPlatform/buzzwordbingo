@@ -90,5 +90,15 @@ App Engine
 Cloud Build
 Memorystore
 
+User screen
+    start game
+    Join game 
+
+Admin screen
+    Admin screen
+    Invite people to game
+    Get game link    
+
+
 
     
