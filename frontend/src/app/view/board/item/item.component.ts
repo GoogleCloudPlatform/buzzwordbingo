@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { Phrase} from '../../service/data.service'
-import {GameService, Board} from '../../service/game.service'
+import { Phrase} from '../../../service/data.service'
+import {GameService, Board} from '../../../service/game.service'
 
 
 @Component({

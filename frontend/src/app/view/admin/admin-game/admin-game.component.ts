@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { GameService} from '../../service/game.service'
-import { AuthService} from '../../service/auth.service'
+import { GameService} from '../../../service/game.service'
+import { AuthService} from '../../../service/auth.service'
 
 @Component({
   selector: 'app-admin-game',

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { DataService, Phrase} from '../../service/data.service'
-import {GameService, Board, Message, Record} from '../../service/game.service'
+import { DataService, Phrase} from '../../../service/data.service'
+import {GameService, Board, Message, Record} from '../../../service/game.service'
 
 @Component({
   selector: 'app-admin-boards',

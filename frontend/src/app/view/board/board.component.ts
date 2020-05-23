@@ -4,7 +4,7 @@ import { DataService, Phrase} from '../../service/data.service'
 import {AuthService, Player} from '../../service/auth.service'
 import {GameService, Board, Message} from '../../service/game.service'
 import { Router, ActivatedRoute } from '@angular/router';
-import {ItemComponent} from '../item/item.component'
+import {ItemComponent} from './item/item.component'
 
 
 

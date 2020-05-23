@@ -5,7 +5,7 @@ import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BoardComponent } from './view/board/board.component';
-import { ItemComponent } from './view/item/item.component';
+import { ItemComponent } from './view/board/item/item.component';
 import { HttpClientModule }    from '@angular/common/http';
 import { environment } from "src/environments/environment";
 import { AngularFireModule } from "@angular/fire";
@@ -15,11 +15,11 @@ import { MessagesComponent } from './view/messages/messages.component';
 import { ReplacePipe } from './replace.pipe';
 import { AdminComponent } from './view/admin/admin.component';
 import { ToolbarComponent } from './view/toolbar/toolbar.component';
-import { AdminBoardsComponent } from './view/admin-boards/admin-boards.component';
-import { AdminMasterComponent } from './view/admin-master/admin-master.component';
-import { AdminPhrasesComponent } from './view/admin-phrases/admin-phrases.component';
-import { AdminPhraseFormComponent } from './view/admin-phrase-form/admin-phrase-form.component';
-import { AdminGameComponent } from './view/admin-game/admin-game.component';
+import { AdminBoardsComponent } from './view/admin/admin-boards/admin-boards.component';
+import { AdminMasterComponent } from './view/admin/admin-master/admin-master.component';
+import { AdminPhrasesComponent } from './view/admin/admin-phrases/admin-phrases.component';
+import { AdminPhraseFormComponent } from './view/admin/admin-phrases/admin-phrase-form/admin-phrase-form.component';
+import { AdminGameComponent } from './view/admin/admin-game/admin-game.component';
 
 @NgModule({
   declarations: [
