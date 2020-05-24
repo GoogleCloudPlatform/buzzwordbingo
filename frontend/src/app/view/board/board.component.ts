@@ -29,19 +29,17 @@ export class BoardComponent implements OnInit {
   public bingo:boolean=false;
 
   constructor(public data:DataService, public auth:AuthService, public game:GameService, public router:Router, route: ActivatedRoute,) {
-    let self = this;
     if (!auth.isAuth()){
       auth.logout("not authed")
     }
     this.id = route.snapshot.paramMap.get('id');
     this.player = auth.getPlayer(); 
     
-    
-    
-    if (this.player.email != "undefined"){
-      this.board = game.getBoard(this.player.name, this.id);
+    if (this.player.email == "undefined"){
+      auth.logout("not authed")
     }
     
+    this.board = game.getBoard(this.player.name, this.id);
     this.board.subscribe(val=>{this.boardid=val.id; if (val.bingodeclared){this.declareBingo()}})
 
    }

@@ -187,18 +187,6 @@ func handleDeleteBoard(w http.ResponseWriter, r *http.Request) {
 func handleNewGame(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/game/new called")
 
-	isAdm, err := isAdmin(r)
-	if err != nil {
-		writeError(w, err.Error())
-		return
-	}
-
-	if !isAdm {
-		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
-		writeResponse(w, http.StatusForbidden, msg)
-		return
-	}
-
 	name, err := getFirstQuery("name", r)
 	if err != nil {
 		writeError(w, err.Error())
