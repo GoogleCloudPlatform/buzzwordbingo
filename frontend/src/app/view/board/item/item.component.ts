@@ -13,6 +13,7 @@ import {GameService, Board} from '../../../service/game.service'
 export class ItemComponent implements OnInit {
   @Input() phrase: Phrase;
   @Input() boardid: string;
+  @Input() board: Board;
   @Input() currentState:any;
   @Input() position: number;
   @Input() bingo:boolean = false;
@@ -55,7 +56,7 @@ export class ItemComponent implements OnInit {
     
     this.selectDisplay();
     this.phraseEmitter.emit(this.phrase);
-    this.game.record(this.phrase.id, this.boardid);
+    this.game.record(this.phrase.id, this.board.game, this.board.id);
   }
 
 

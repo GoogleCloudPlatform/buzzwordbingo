@@ -13,6 +13,7 @@
             [phrase]='phrase' [boardid]='boardid' 
             (phraseEmitter)="recievePhrase($event)" 
             (readyEmitter)="receiveChild($event)" 
+            [board]="(board | async)"
             [position]="i+1" [currentState]='currentState'>
         </app-item>
     </div>

@@ -53,8 +53,6 @@ func main() {
 	http.HandleFunc("/api/game", handleGetGame)
 	http.HandleFunc("/api/game/new", handleNewGame)
 	http.HandleFunc("/api/game/list", handleGetGames)
-	http.HandleFunc("/api/game/active", handleActiveGame)
-	http.HandleFunc("/api/game/reset", handleResetActiveGame)
 	http.HandleFunc("/api/player/identify", handleGetIAPUsername)
 	http.HandleFunc("/api/player/isadmin", handleGetIsAdmin)
 
@@ -171,7 +169,13 @@ func handleDeleteBoard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := deleteBoard(b); err != nil {
+	g, err := getFirstQuery("g", r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if err := deleteBoard(b, g); err != nil {
 		writeError(w, err.Error())
 		return
 	}
@@ -211,44 +215,6 @@ func handleNewGame(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func handleResetActiveGame(w http.ResponseWriter, r *http.Request) {
-	weblog("/api/game/reset called")
-
-	isAdm, err := isAdmin(r)
-	if err != nil {
-		writeError(w, err.Error())
-		return
-	}
-
-	if !isAdm {
-		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
-		writeResponse(w, http.StatusForbidden, msg)
-		return
-	}
-
-	game, err := resetGame()
-	if err != nil {
-		writeError(w, err.Error())
-		return
-	}
-
-	writeSuccess(w, fmt.Sprintf("Game %s Reset", game.ID))
-
-}
-
-func handleActiveGame(w http.ResponseWriter, r *http.Request) {
-	weblog("/api/game/active called")
-
-	game, err := getActiveGame()
-	if err != nil {
-		writeError(w, err.Error())
-		return
-	}
-
-	writeJSON(w, game)
-
-}
-
 func handleGetGame(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/game called")
 
@@ -283,7 +249,13 @@ func handleRecordSelect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := recordSelect(bid, pid); err != nil {
+	gid, err := getFirstQuery("g", r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if err := recordSelect(bid, gid, pid); err != nil {
 		writeError(w, err.Error())
 		return
 	}
@@ -559,10 +531,10 @@ func generateBingoMessages(b Board, g Game, first bool) []Message {
 	return messages
 }
 
-func getBoard(bid string) (Board, error) {
+func getBoard(bid string, gid string) (Board, error) {
 	b := Board{}
 
-	game, err := getActiveGame()
+	game, err := getGame(gid)
 	if err != nil {
 		return b, fmt.Errorf("could not get active game for board: %s", err)
 	}
@@ -583,13 +555,13 @@ func getBoard(bid string) (Board, error) {
 	return b, nil
 }
 
-func deleteBoard(bid string) error {
-	b, err := getBoard(bid)
+func deleteBoard(bid, gid string) error {
+	b, err := getBoard(bid, gid)
 	if err != nil {
 		return fmt.Errorf("could not retrieve board from firestore: %s", err)
 	}
 
-	game, err := getActiveGame()
+	game, err := getGame(b.Game)
 	if err != nil {
 		return fmt.Errorf("failed to get active game to delete board: %v", err)
 	}
@@ -626,10 +598,6 @@ func getNewGame(name string) (Game, error) {
 	return game, nil
 }
 
-func getActiveGame() (Game, error) {
-	return getGame("active")
-}
-
 func getGame(id string) (Game, error) {
 	game, err := cache.GetGame(id)
 	if err != nil {
@@ -647,12 +615,12 @@ func getGame(id string) (Game, error) {
 	return game, nil
 }
 
-func recordSelect(boardID string, phraseID string) error {
+func recordSelect(boardID, gameID, phraseID string) error {
 	p := Phrase{}
 	p.ID = phraseID
 	messages := []Message{}
 
-	b, err := getBoard(boardID)
+	b, err := getBoard(boardID, gameID)
 	if err != nil {
 		return fmt.Errorf("could not get board id(%s): %s", boardID, err)
 	}
@@ -698,30 +666,6 @@ func recordSelect(boardID string, phraseID string) error {
 	}
 
 	return nil
-}
-
-func resetGame() (Game, error) {
-
-	game, err := getActiveGame()
-	if err != nil {
-		return Game{}, err
-	}
-
-	if game.ID != "" {
-		messages := []Message{}
-		m := Message{}
-		m.SetText("Your game is being reset")
-		m.SetAudience("all")
-		m.Operation = "reset"
-		messages = append(messages, m)
-
-		if err := a.AddMessagesToGame(game, messages); err != nil {
-			return game, fmt.Errorf("could not send message to reset: %s", err)
-		}
-	}
-	cache.Clear()
-
-	return a.ResetActiveGame()
 }
 
 func weblog(msg string) {
