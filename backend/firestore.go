@@ -105,10 +105,6 @@ func (a *Agent) GetPhrases() ([]Phrase, error) {
 func (a *Agent) NewGame(name string) (Game, error) {
 	g := Game{}
 
-	if err := a.DeActivateGames(); err != nil {
-		return g, fmt.Errorf("failed to deactivate games: %v", err)
-	}
-
 	phrases, err := a.GetPhrases()
 	if err != nil {
 		return g, fmt.Errorf("failed to get phrases client: %v", err)

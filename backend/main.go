@@ -618,11 +618,6 @@ func deleteBoard(bid string) error {
 
 func getNewGame(name string) (Game, error) {
 
-	_, err := resetGame()
-	if err != nil {
-		return Game{}, err
-	}
-
 	game, err := a.NewGame(name)
 	if err != nil {
 		return game, fmt.Errorf("failed to get new game: %v", err)

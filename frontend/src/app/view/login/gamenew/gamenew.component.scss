@@ -1,0 +1,15 @@
+@import "../../../../assets/variables.scss";
+
+.main{
+    background-color: $interface-bg-color;
+    color: $interface-text-color;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 6px;
+
+    h2{
+        margin-top:0;
+        padding-top:0;
+    }
+
+}

@@ -97,7 +97,7 @@ export class GameService {
   }
 
   newGame (name:string) {
-    return this.http.get(this.newGameUrl + "?name=" + name).subscribe();
+    return this.http.get(this.newGameUrl + "?name=" + name);
   }
 
   getGamesForPlayer(){
