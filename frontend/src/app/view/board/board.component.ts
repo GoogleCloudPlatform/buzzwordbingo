@@ -47,7 +47,7 @@ export class BoardComponent implements OnInit {
    }
 
   ngOnInit(): void {
-    this.messages = this.data.getMessages(this.game.game.id);
+    this.messages = this.data.getMessages(this.id);
     this.messages.subscribe(ms=>{this.listenForBingo(ms),this.listenForReset(ms)})
   }
 

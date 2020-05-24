@@ -1,7 +1,8 @@
+<app-toolbar></app-toolbar>
 <div class="main">
-    <app-admin-master class="master"></app-admin-master>
-    <app-admin-boards class="boards"></app-admin-boards>
+    <app-admin-master class="master" [id]=id></app-admin-master>
+    <app-admin-boards class="boards" [id]=id></app-admin-boards>
     <app-messages class="admin-messages" [messages]='messages' [target]='message_target'></app-messages>
-    <app-admin-phrases class="phrases"></app-admin-phrases>
+    <app-admin-phrases class="phrases" [id]=id></app-admin-phrases>
     <app-admin-game class="game"></app-admin-game>
 </div>

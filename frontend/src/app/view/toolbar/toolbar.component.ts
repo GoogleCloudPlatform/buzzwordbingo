@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from 'src/app/service/auth.service';
-import {Router} from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-toolbar',
@@ -10,9 +10,12 @@ import {Router} from '@angular/router';
 export class ToolbarComponent implements OnInit {
 
   isAdmin:boolean = false;
+  public games:any;
+  public id:string;
 
-  constructor(public auth:AuthService, public router:Router) {
+  constructor(public auth:AuthService, public router:Router, route: ActivatedRoute,) {
     this.isAdmin = auth.isAdmin()
+    this.id = route.snapshot.paramMap.get('id');
    }
 
   ngOnInit(): void {

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {GameService, Board, Message} from '../../service/game.service';
 import { DataService, Phrase} from '../../service/data.service'
 import { Observable, of } from 'rxjs';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-admin',
@@ -9,12 +10,15 @@ import { Observable, of } from 'rxjs';
   styleUrls: ['./admin.component.scss']
 })
 export class AdminComponent implements OnInit {
+  public id:string;
   public messages: Observable<any[]>;
   message_target:string = "admin";
-  constructor(public data:DataService, public game:GameService) { }
+  constructor(public data:DataService, public game:GameService, public router:Router, route: ActivatedRoute,) {
+    this.id = route.snapshot.paramMap.get('id');
+   }
 
   ngOnInit(): void {
-    this.messages = this.data.getMessages(this.game.game.id);
+    this.messages = this.data.getMessages(this.id);
     this.messages.subscribe()
   }
 

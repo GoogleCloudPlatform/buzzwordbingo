@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { DataService, Phrase} from '../../../service/data.service'
 import {GameService, Board, Message, Record} from '../../../service/game.service'
@@ -9,12 +9,12 @@ import {GameService, Board, Message, Record} from '../../../service/game.service
   styleUrls: ['./admin-boards.component.scss']
 })
 export class AdminBoardsComponent implements OnInit {
-
+  @Input() id:string;
   public boards: Observable<any[]>;
   constructor(public data:DataService, public game:GameService) { }
 
   ngOnInit(): void {
-    this.boards = this.data.getBoards(this.game.game.id)
+    this.boards = this.data.getBoards(this.id)
     this.boards.subscribe();
   }
 

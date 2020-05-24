@@ -15,7 +15,7 @@ const routes: Routes = [
   { path: 'game/:id', component: BoardComponent },
   { path: 'gamepicker', component: GamepickerComponent },
   { path: 'gamenew', component:  GamenewComponent},
-  { path: 'admin', component: AdminComponent, canActivate: [AuthGuard] },
+  { path: 'admin/:id', component: AdminComponent, canActivate: [AuthGuard] },
 ];
 
 @NgModule({
