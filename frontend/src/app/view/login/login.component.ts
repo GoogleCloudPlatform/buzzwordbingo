@@ -34,17 +34,25 @@ export class LoginComponent implements OnInit {
     }
 
     this.auth.setPlayer(nameInput.value, emailInput.value);
-    let gameid = "";
+    let gameids = [];
     this.games.forEach(v => { 
       if (v.active){
-        gameid = v.id;
+        gameids.push(v.id);
         return
       }
     });
       
+    if (gameids.length == 0){
+      this.router.navigateByUrl('/gamenew');
+      return;
+    } else if (gameids.length == 1){
+      this.router.navigateByUrl('/game/' + gameids[0]);
+      return;
+    } else{
+      this.router.navigateByUrl('/gamepicker');
+      return;
+    }
     
-
-    this.router.navigateByUrl('/game/' + gameid);
 
   }
 

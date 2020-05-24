@@ -20,6 +20,8 @@ import { AdminMasterComponent } from './view/admin/admin-master/admin-master.com
 import { AdminPhrasesComponent } from './view/admin/admin-phrases/admin-phrases.component';
 import { AdminPhraseFormComponent } from './view/admin/admin-phrases/admin-phrase-form/admin-phrase-form.component';
 import { AdminGameComponent } from './view/admin/admin-game/admin-game.component';
+import { GamepickerComponent } from './view/login/gamepicker/gamepicker.component';
+import { GamenewComponent } from './view/login/gamenew/gamenew.component';
 
 @NgModule({
   declarations: [
@@ -35,7 +37,9 @@ import { AdminGameComponent } from './view/admin/admin-game/admin-game.component
     AdminMasterComponent,
     AdminPhrasesComponent,
     AdminPhraseFormComponent,
-    AdminGameComponent
+    AdminGameComponent,
+    GamepickerComponent,
+    GamenewComponent
   ],
   imports: [
     BrowserModule,
