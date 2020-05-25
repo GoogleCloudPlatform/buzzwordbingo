@@ -102,17 +102,18 @@ func (a *Agent) GetPhrases() ([]Phrase, error) {
 }
 
 // NewGame will create a new game in the database and initialize it.
-func (a *Agent) NewGame(name string) (Game, error) {
+func (a *Agent) NewGame(name string, p Player) (Game, error) {
 	g := Game{}
 
 	phrases, err := a.GetPhrases()
 	if err != nil {
-		return g, fmt.Errorf("failed to get phrases client: %v", err)
+		return g, fmt.Errorf("failed to get phrases: %v", err)
 	}
 
+	g.Admins = append(g.Admins, p)
 	g.Name = name
 	g.Active = true
-	g.Master.Load(phrases)
+	g.master.Load(phrases)
 
 	client, err = a.getClient()
 
@@ -120,18 +121,13 @@ func (a *Agent) NewGame(name string) (Game, error) {
 		return g, fmt.Errorf("failed to create client: %v", err)
 	}
 
+	batch := client.Batch()
 	a.log("Creating new game")
-	doc, _, err := client.Collection("games").Add(ctx, g)
-	if err != nil {
-		return g, fmt.Errorf("failed to add game to firestore: %v", err)
-	}
-
-	g.ID = doc.ID
+	gref := client.Collection("games").Doc(uniqueID())
+	batch.Set(gref, g)
 
 	a.log("Adding phrases to new game")
-	batch := client.Batch()
-
-	for _, v := range g.Master.Records {
+	for _, v := range g.master.Records {
 		ref := client.Collection("games").Doc(g.ID).Collection("records").Doc(v.Phrase.ID)
 		batch.Set(ref, v)
 	}
@@ -140,7 +136,8 @@ func (a *Agent) NewGame(name string) (Game, error) {
 	m.SetText("Game has begun!")
 	m.SetAudience("all")
 
-	mref := client.Collection("games").Doc(g.ID).Collection("messages").Doc("00001")
+	timestamp := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
+	mref := client.Collection("games").Doc(g.ID).Collection("messages").Doc(timestamp)
 	batch.Set(mref, m)
 
 	_, err = batch.Commit(ctx)
@@ -178,6 +175,11 @@ func (a *Agent) GetGame(id string) (Game, error) {
 		return g, fmt.Errorf("failed to load players for game: %v", err)
 	}
 
+	g, err = a.loadGameWithAdmins(g)
+	if err != nil {
+		return g, fmt.Errorf("failed to load admins for game: %v", err)
+	}
+
 	return g, nil
 }
 
@@ -200,7 +202,7 @@ func (a *Agent) loadGameWithRecords(g Game) (Game, error) {
 		}
 		r := Record{}
 		doc.DataTo(&r)
-		g.Master.Records = append(g.Master.Records, r)
+		g.master.Records = append(g.master.Records, r)
 	}
 
 	return g, nil
@@ -226,6 +228,31 @@ func (a *Agent) loadGameWithPlayers(g Game) (Game, error) {
 		p := Player{}
 		doc.DataTo(&p)
 		g.Players = append(g.Players, p)
+	}
+
+	return g, nil
+}
+
+func (a *Agent) loadGameWithAdmins(g Game) (Game, error) {
+	var err error
+	client, err = a.getClient()
+	if err != nil {
+		return g, fmt.Errorf("failed to create client: %v", err)
+	}
+
+	a.log("Loading players from game")
+	iter := client.Collection("games").Doc(g.ID).Collection("admins").Documents(ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return g, fmt.Errorf("failed getting game records: %v", err)
+		}
+		p := Player{}
+		doc.DataTo(&p)
+		g.Admins = append(g.Admins, p)
 	}
 
 	return g, nil
@@ -273,6 +300,11 @@ func (a *Agent) SaveGame(g Game) error {
 
 	for _, v := range g.Players {
 		ref := client.Collection("games").Doc(g.ID).Collection("players").Doc(v.Email)
+		batch.Set(ref, v)
+	}
+
+	for _, v := range g.Admins {
+		ref := client.Collection("games").Doc(g.ID).Collection("admins").Doc(v.Email)
 		batch.Set(ref, v)
 	}
 

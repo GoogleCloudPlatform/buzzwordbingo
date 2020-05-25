@@ -70,38 +70,32 @@ export class GameService {
       this.game = game;
     }
   }
-  private boardUrl: string = environment.board_url;
-  private recordUrl: string = environment.record_url;
-  private gameActiveUrl: string = environment.game_active_url;
-  private adminUrl: string = environment.admin_url;
-  private resetUrl: string = environment.reset_url;
-  private newGameUrl: string = environment.newgame_url;
   private hostUrl: string = environment.host_url;
 
   getBoard (name:string, g:string): Observable<Board> {
     if (name == "undefined") return
-    return this.http.get<Board>(this.boardUrl +"?name="+name + "&g="+g).pipe(share());
+    return this.http.get<Board>(this.hostUrl +"/api/board?name="+name + "&g="+g).pipe(share());
   }
 
   isAdmin (): Observable<boolean> {
-    return this.http.get<boolean>(this.adminUrl);
+    return this.http.get<boolean>(this.hostUrl+ "/api/player/isadmin");
   }
 
 
   record (pid:string, gid:string,  bid:string) {
-    return this.http.get(this.recordUrl + "?p="+pid + "&g=" + gid + "&b=" + bid).subscribe();
+    return this.http.get(this.hostUrl + "/api/record?p="+pid + "&g=" + gid + "&b=" + bid).subscribe();
   }
 
   resetboard (bid:string, gid:string) {
-    return this.http.get(this.resetUrl + "?b=" + bid + "&g=" + gid).subscribe();
+    return this.http.get(this.hostUrl + "/api/board/delete?b=" + bid + "&g=" + gid).subscribe();
   }
 
   newGame (name:string) {
-    return this.http.get(this.newGameUrl + "?name=" + name);
+    return this.http.get(this.hostUrl + "/api/game/new?name=" + name);
   }
 
-  getGame (id:string) {
-    return this.http.get(this.hostUrl +  "/api/game?id="+id).pipe(share());
+  getGame (gid:string) {
+    return this.http.get(this.hostUrl +  "/api/game?g="+gid).pipe(share());
   }
 
   getGamesForPlayer(){

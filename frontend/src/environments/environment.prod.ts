@@ -9,12 +9,5 @@ export const environment = {
     messagingSenderId: "1038359390820",
     appId: "1:1038359390820:web:392b2bf41e62ba61a14d71"
   },
-  board_url: '/api/board',
-  record_url: '/api/record',
-  game_active_url: '/api/game/active',
-  player_url: '/api/player/identify',
-  admin_url: '/api/player/isadmin',
-  reset_url: '/api/board/delete',
-  newgame_url: '/api/game/new',
   host_url: '',
 };

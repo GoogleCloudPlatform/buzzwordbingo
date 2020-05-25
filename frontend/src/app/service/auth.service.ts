@@ -20,7 +20,7 @@ export class AuthService {
   private identity:any= new Player;
   private isAuthed:boolean=false;
   private isAdministrator:boolean=false;
-  private playerUrl: string = environment.player_url;
+  private hostUrl: string = environment.host_url;
 
   constructor(private http: HttpClient, public game:GameService, private router: Router) { 
     let player = JSON.parse(localStorage.getItem('player'));
@@ -56,7 +56,7 @@ export class AuthService {
   }
 
   identifyPlayer () {
-    return this.http.get(this.playerUrl);
+    return this.http.get(this.hostUrl + "/api/player/identify");
   }
 
   logout (reason:string="logged out", ignoreid:string="") {

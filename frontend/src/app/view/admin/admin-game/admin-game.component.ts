@@ -12,7 +12,7 @@ export class AdminGameComponent implements OnInit {
 
   gameName:string="";
 
-  constructor(public game: GameService,public auth: AuthService, private router: Router) { }
+  constructor(private game: GameService, private router: Router) { }
 
   ngOnInit(): void {
   }

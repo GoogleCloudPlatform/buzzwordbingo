@@ -13,13 +13,6 @@ export const environment = {
     messagingSenderId: "1038359390820",
     appId: "1:1038359390820:web:392b2bf41e62ba61a14d71"
   },
-  board_url: 'http://127.0.0.1:8080/api/board',
-  record_url: 'http://127.0.0.1:8080/api/record',
-  game_active_url: 'http://127.0.0.1:8080/api/game/active',
-  player_url: 'http://127.0.0.1:8080/api/player/identify',
-  admin_url: 'http://127.0.0.1:8080/api/player/isadmin',
-  reset_url: 'http://127.0.0.1:8080/api/board/delete',
-  newgame_url: 'http://127.0.0.1:8080/api/game/new',
   host_url: 'http://127.0.0.1:8080',
 };
 

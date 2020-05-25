@@ -53,6 +53,7 @@ func main() {
 	http.HandleFunc("/api/game", handleGetGame)
 	http.HandleFunc("/api/game/new", handleNewGame)
 	http.HandleFunc("/api/game/list", handleGetGames)
+	http.HandleFunc("/api/game/isadmin", handleGetIsGameAdmin)
 	http.HandleFunc("/api/player/identify", handleGetIAPUsername)
 	http.HandleFunc("/api/player/isadmin", handleGetIsAdmin)
 
@@ -66,6 +67,25 @@ func main() {
 func handleGetIsAdmin(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/player/isadmin called")
 	isAdm, err := isAdmin(r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	writeResponse(w, http.StatusOK, fmt.Sprintf("%t", isAdm))
+
+}
+
+func handleGetIsGameAdmin(w http.ResponseWriter, r *http.Request) {
+	weblog("/api/game/isadmin called")
+
+	gid, err := getFirstQuery("g", r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	isAdm, err := isGameAdmin(r, gid)
 	if err != nil {
 		writeError(w, err.Error())
 		return
@@ -193,7 +213,13 @@ func handleNewGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	game, err := getNewGame(name)
+	email, err := getPlayerEmail(r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	game, err := getNewGame(name, email)
 	if err != nil {
 		writeError(w, err.Error())
 		return
@@ -206,13 +232,13 @@ func handleNewGame(w http.ResponseWriter, r *http.Request) {
 func handleGetGame(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/game called")
 
-	id, err := getFirstQuery("id", r)
+	g, err := getFirstQuery("g", r)
 	if err != nil {
 		writeError(w, err.Error())
 		return
 	}
 
-	game, err := getGame(id)
+	game, err := getGame(g)
 	if err != nil {
 		writeError(w, err.Error())
 		return
@@ -375,6 +401,27 @@ func isAdmin(r *http.Request) (bool, error) {
 		return false, err
 	}
 	result, err := a.IsAdmin(email)
+	if err != nil {
+		return false, err
+	}
+	return result, nil
+}
+
+func isGameAdmin(r *http.Request, gid string) (bool, error) {
+	email, err := getPlayerEmail(r)
+	if err != nil {
+		return false, err
+	}
+
+	game, err := getGame(gid)
+	if err != nil {
+		return false, err
+	}
+
+	p := Player{}
+	p.Email = email
+
+	result := game.IsAdmin(p)
 	if err != nil {
 		return false, err
 	}
@@ -576,9 +623,12 @@ func deleteBoard(bid, gid string) error {
 	return nil
 }
 
-func getNewGame(name string) (Game, error) {
+func getNewGame(name, email string) (Game, error) {
 
-	game, err := a.NewGame(name)
+	p := Player{}
+	p.Email = email
+
+	game, err := a.NewGame(name, p)
 	if err != nil {
 		return game, fmt.Errorf("failed to get new game: %v", err)
 	}
@@ -619,7 +669,7 @@ func recordSelect(boardID, gameID, phraseID string) error {
 	}
 
 	p = b.Select(p)
-	r := g.Master.Select(p, b.Player)
+	r := g.Select(p, b.Player)
 	bingo := b.Bingo()
 
 	if err := cache.SaveGame(g); err != nil {
