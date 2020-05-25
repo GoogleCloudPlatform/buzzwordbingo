@@ -6,6 +6,7 @@ import { AdminComponent } from './view/admin/admin.component';
 import { AuthGuard } from '../app/auth/auth.guard';
 import { GamepickerComponent } from './view/login/gamepicker/gamepicker.component';
 import { GamenewComponent } from './view/login/gamenew/gamenew.component';
+import { ManageComponent } from './view/manage/manage.component';
 
 
 const routes: Routes = [
@@ -15,6 +16,7 @@ const routes: Routes = [
   { path: 'game/:id', component: BoardComponent },
   { path: 'gamepicker', component: GamepickerComponent },
   { path: 'gamenew', component:  GamenewComponent},
+  { path: 'manage/:id', component:  ManageComponent},
   { path: 'admin/:id', component: AdminComponent, canActivate: [AuthGuard] },
 ];
 

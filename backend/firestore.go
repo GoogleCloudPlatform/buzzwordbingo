@@ -110,6 +110,7 @@ func (a *Agent) NewGame(name string, p Player) (Game, error) {
 		return g, fmt.Errorf("failed to get phrases: %v", err)
 	}
 
+	g.ID = uniqueID()
 	g.Admins = append(g.Admins, p)
 	g.Name = name
 	g.Active = true
@@ -123,7 +124,8 @@ func (a *Agent) NewGame(name string, p Player) (Game, error) {
 
 	batch := client.Batch()
 	a.log("Creating new game")
-	gref := client.Collection("games").Doc(uniqueID())
+
+	gref := client.Collection("games").Doc(g.ID)
 	batch.Set(gref, g)
 
 	a.log("Adding phrases to new game")
@@ -131,6 +133,9 @@ func (a *Agent) NewGame(name string, p Player) (Game, error) {
 		ref := client.Collection("games").Doc(g.ID).Collection("records").Doc(v.Phrase.ID)
 		batch.Set(ref, v)
 	}
+
+	aref := client.Collection("games").Doc(g.ID).Collection("admins").Doc(p.Email)
+	batch.Set(aref, p)
 
 	m := Message{}
 	m.SetText("Game has begun!")

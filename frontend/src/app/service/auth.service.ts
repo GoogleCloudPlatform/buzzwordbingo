@@ -19,6 +19,7 @@ export class AuthService {
   private player:Player= new Player;
   private identity:any= new Player;
   private isAuthed:boolean=false;
+  private isGameAdministrator:boolean=false;
   private isAdministrator:boolean=false;
   private hostUrl: string = environment.host_url;
 
@@ -37,6 +38,7 @@ export class AuthService {
     this.isAuthed = true;
     localStorage.setItem('player', JSON.stringify(this.player));
     this.game.isAdmin().pipe(share()).subscribe(val=>{this.isAdministrator = val})
+
   } 
 
   getPlayer():Player{
@@ -53,6 +55,16 @@ export class AuthService {
 
   isAdmin():boolean{
     return this.isAdministrator;
+  }
+
+  checkGameAdmin(gid:string){
+    this.game.isGameAdmin(gid).pipe(share()).subscribe(val=>{this.isGameAdministrator = val, console.log("checkGameAdminCalled",val )})
+  }
+
+  isGameAdmin():boolean{
+      console.log("IsGameAdminCalled",this.isGameAdministrator )
+
+    return this.isGameAdministrator;
   }
 
   identifyPlayer () {

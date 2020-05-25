@@ -22,6 +22,7 @@ import { AdminPhraseFormComponent } from './view/admin/admin-phrases/admin-phras
 import { AdminGameComponent } from './view/admin/admin-game/admin-game.component';
 import { GamepickerComponent } from './view/login/gamepicker/gamepicker.component';
 import { GamenewComponent } from './view/login/gamenew/gamenew.component';
+import { ManageComponent } from './view/manage/manage.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import { GamenewComponent } from './view/login/gamenew/gamenew.component';
     AdminPhraseFormComponent,
     AdminGameComponent,
     GamepickerComponent,
-    GamenewComponent
+    GamenewComponent,
+    ManageComponent
   ],
   imports: [
     BrowserModule,

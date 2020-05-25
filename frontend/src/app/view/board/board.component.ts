@@ -42,7 +42,7 @@ export class BoardComponent implements OnInit {
     
     this.board = gameService.getBoard(this.player.name, this.id);
     this.board.subscribe(val=>{this.boardid=val.id; if (val.bingodeclared){this.declareBingo()}})
-    gameService.getGame(this.id).subscribe(val=>{console.log(val);let g:Game = val as Game; this.game=observableOf(g)});
+    gameService.getGame(this.id).subscribe(val=>{let g:Game = val as Game; this.game=observableOf(g)});
    }
 
   ngOnInit(): void {
