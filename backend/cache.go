@@ -8,6 +8,7 @@ import (
 // ErrCacheMiss error indicates that an item is not in the cache
 var ErrCacheMiss = fmt.Errorf("item is not in cache")
 
+// NewCache returns an initialized cache ready to go.
 func NewCache() Cache {
 	c := Cache{}
 	c.Init()
