@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"cloud.google.com/go/firestore"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/compute/v1"
@@ -18,16 +17,15 @@ import (
 
 var (
 	randseedfunc  = randomseed
-	a             = Agent{}
+	a             Agent
 	cache         = NewCache()
 	port          = ":8080"
-	ctx           = context.Background()
 	noisy         = true
 	projectID     = ""
 	projectNumber = ""
-	client        *firestore.Client
 	// ErrNotAdmin is an error that indicates that the user is not an admin
 	ErrNotAdmin = fmt.Errorf("not an admin")
+	ctx         = context.Background()
 )
 
 func main() {
@@ -42,7 +40,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	a.ProjectID = projectID
+	a, err = NewAgent(ctx, projectID)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	fs := wrapHandler(http.FileServer(http.Dir("./static")))
 	http.HandleFunc("/", fs)

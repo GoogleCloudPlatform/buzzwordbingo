@@ -28,9 +28,24 @@ func uniqueID() string {
 	return string(b)
 }
 
+// NewAgent intializes and returns a fresh agent.
+func NewAgent(ctx context.Context, projectID string) (Agent, error) {
+	var err error
+	a := Agent{}
+	a.ProjectID = projectID
+	a.ctx = ctx
+	a.client, err = firestore.NewClient(a.ctx, a.ProjectID)
+	if err != nil {
+		return a, fmt.Errorf("Failed to create client: %v", err)
+	}
+	return a, nil
+}
+
 // Agent is a go between for the main application and firestore.
 type Agent struct {
 	ProjectID string
+	ctx       context.Context
+	client    *firestore.Client
 }
 
 func (a *Agent) log(msg string) {
@@ -39,24 +54,11 @@ func (a *Agent) log(msg string) {
 	}
 }
 
-func (a *Agent) getClient() (*firestore.Client, error) {
-	if client != nil {
-		return client, nil
-	}
-	a.log("Getting New Client")
-	return firestore.NewClient(context.Background(), a.ProjectID)
-}
-
 // IsAdmin tests if a give player is in the admin group by email
 func (a *Agent) IsAdmin(email string) (bool, error) {
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return false, fmt.Errorf("failed to create client: %v", err)
-	}
 
 	a.log("See if user exists")
-	doc, err := client.Collection("admins").Doc(email).Get(ctx)
+	doc, err := a.client.Collection("admins").Doc(email).Get(a.ctx)
 	if err != nil {
 		if strings.Contains(err.Error(), "code = NotFound") {
 			return false, nil
@@ -73,14 +75,8 @@ func (a *Agent) GetPhrases() ([]Phrase, error) {
 
 	p := []Phrase{}
 
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return p, fmt.Errorf("Failed to create client: %v", err)
-	}
-
 	a.log("Getting Phrases")
-	iter := client.Collection("phrases").Documents(ctx)
+	iter := a.client.Collection("phrases").Documents(a.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -103,14 +99,8 @@ func (a *Agent) GetPhrases() ([]Phrase, error) {
 
 // UpdateMasterPhrase updates a phrase in the master collection of phrases
 func (a *Agent) UpdateMasterPhrase(p Phrase) error {
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return fmt.Errorf("Failed to create client: %v", err)
-	}
 
-	_, err = client.Collection("phrases").Doc(p.ID).Set(ctx, p)
-	if err != nil {
+	if _, err := a.client.Collection("phrases").Doc(p.ID).Set(a.ctx, p); err != nil {
 		return fmt.Errorf("failed to update phrase: %v", err)
 	}
 
@@ -132,25 +122,19 @@ func (a *Agent) NewGame(name string, p Player) (Game, error) {
 	g.Active = true
 	g.master.Load(phrases)
 
-	client, err = a.getClient()
-
-	if err != nil {
-		return g, fmt.Errorf("failed to create client: %v", err)
-	}
-
-	batch := client.Batch()
+	batch := a.client.Batch()
 	a.log("Creating new game")
 
-	gref := client.Collection("games").Doc(g.ID)
+	gref := a.client.Collection("games").Doc(g.ID)
 	batch.Set(gref, g)
 
 	a.log("Adding phrases to new game")
 	for _, v := range g.master.Records {
-		ref := client.Collection("games").Doc(g.ID).Collection("records").Doc(v.Phrase.ID)
+		ref := a.client.Collection("games").Doc(g.ID).Collection("records").Doc(v.Phrase.ID)
 		batch.Set(ref, v)
 	}
 
-	aref := client.Collection("games").Doc(g.ID).Collection("admins").Doc(p.Email)
+	aref := a.client.Collection("games").Doc(g.ID).Collection("admins").Doc(p.Email)
 	batch.Set(aref, p)
 
 	m := Message{}
@@ -158,10 +142,10 @@ func (a *Agent) NewGame(name string, p Player) (Game, error) {
 	m.SetAudience("all")
 
 	timestamp := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
-	mref := client.Collection("games").Doc(g.ID).Collection("messages").Doc(timestamp)
+	mref := a.client.Collection("games").Doc(g.ID).Collection("messages").Doc(timestamp)
 	batch.Set(mref, m)
 
-	_, err = batch.Commit(ctx)
+	_, err = batch.Commit(a.ctx)
 	if err != nil {
 		return g, fmt.Errorf("failed to add records to database: %v", err)
 	}
@@ -172,14 +156,9 @@ func (a *Agent) NewGame(name string, p Player) (Game, error) {
 // GetGame gets a given game from the database
 func (a *Agent) GetGame(id string) (Game, error) {
 	g := Game{}
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return g, fmt.Errorf("failed to create client: %v", err)
-	}
 
 	a.log("Getting existing game")
-	doc, err := client.Collection("games").Doc(id).Get(ctx)
+	doc, err := a.client.Collection("games").Doc(id).Get(a.ctx)
 	if err != nil {
 		return g, fmt.Errorf("failed to get game: %v", err)
 	}
@@ -210,14 +189,9 @@ func (a *Agent) GetGame(id string) (Game, error) {
 }
 
 func (a *Agent) loadGameWithRecords(g Game) (Game, error) {
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return g, fmt.Errorf("failed to create client: %v", err)
-	}
 
 	a.log("Loading records from game")
-	iter := client.Collection("games").Doc(g.ID).Collection("records").Documents(ctx)
+	iter := a.client.Collection("games").Doc(g.ID).Collection("records").Documents(a.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -235,14 +209,9 @@ func (a *Agent) loadGameWithRecords(g Game) (Game, error) {
 }
 
 func (a *Agent) loadGameWithPlayers(g Game) (Game, error) {
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return g, fmt.Errorf("failed to create client: %v", err)
-	}
 
 	a.log("Loading players from game")
-	iter := client.Collection("games").Doc(g.ID).Collection("players").Documents(ctx)
+	iter := a.client.Collection("games").Doc(g.ID).Collection("players").Documents(a.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -260,14 +229,9 @@ func (a *Agent) loadGameWithPlayers(g Game) (Game, error) {
 }
 
 func (a *Agent) loadGameWithBoards(g Game) (Game, error) {
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return g, fmt.Errorf("failed to create client: %v", err)
-	}
 
 	a.log("Loading boards from game")
-	iter := client.Collection("games").Doc(g.ID).Collection("boards").Documents(ctx)
+	iter := a.client.Collection("games").Doc(g.ID).Collection("boards").Documents(a.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -285,14 +249,9 @@ func (a *Agent) loadGameWithBoards(g Game) (Game, error) {
 }
 
 func (a *Agent) loadGameWithAdmins(g Game) (Game, error) {
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return g, fmt.Errorf("failed to create client: %v", err)
-	}
 
 	a.log("Loading players from game")
-	iter := client.Collection("games").Doc(g.ID).Collection("admins").Documents(ctx)
+	iter := a.client.Collection("games").Doc(g.ID).Collection("admins").Documents(a.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -312,23 +271,16 @@ func (a *Agent) loadGameWithAdmins(g Game) (Game, error) {
 // AddMessagesToGame broadcasts a message to the game players
 func (a *Agent) AddMessagesToGame(g Game, m []Message) error {
 
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return fmt.Errorf("Failed to create client: %v", err)
-	}
-
-	batch := client.Batch()
+	batch := a.client.Batch()
 	for _, v := range m {
 		a.log("Adding message to game")
 		timestamp := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
 		v.ID = timestamp
-		ref := client.Collection("games").Doc(g.ID).Collection("messages").Doc(timestamp)
+		ref := a.client.Collection("games").Doc(g.ID).Collection("messages").Doc(timestamp)
 		batch.Set(ref, v)
 	}
 
-	_, err = batch.Commit(ctx)
-	if err != nil {
+	if _, err := batch.Commit(a.ctx); err != nil {
 		return fmt.Errorf("failed to send messages : %v", err)
 	}
 
@@ -338,29 +290,22 @@ func (a *Agent) AddMessagesToGame(g Game, m []Message) error {
 // SaveGame records a game to firestore.
 func (a *Agent) SaveGame(g Game) error {
 
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return fmt.Errorf("Failed to create client: %v", err)
-	}
-
 	a.log("Save game")
-	batch := client.Batch()
-	gref := client.Collection("games").Doc(g.ID)
+	batch := a.client.Batch()
+	gref := a.client.Collection("games").Doc(g.ID)
 	batch.Set(gref, g)
 
 	for _, v := range g.Players {
-		ref := client.Collection("games").Doc(g.ID).Collection("players").Doc(v.Email)
+		ref := a.client.Collection("games").Doc(g.ID).Collection("players").Doc(v.Email)
 		batch.Set(ref, v)
 	}
 
 	for _, v := range g.Admins {
-		ref := client.Collection("games").Doc(g.ID).Collection("admins").Doc(v.Email)
+		ref := a.client.Collection("games").Doc(g.ID).Collection("admins").Doc(v.Email)
 		batch.Set(ref, v)
 	}
 
-	_, err = batch.Commit(ctx)
-	if err != nil {
+	if _, err := batch.Commit(a.ctx); err != nil {
 		return fmt.Errorf("failed to save game to database: %v", err)
 	}
 
@@ -370,14 +315,9 @@ func (a *Agent) SaveGame(g Game) error {
 // GetBoardForPlayer returns the board for a given player
 func (a *Agent) GetBoardForPlayer(id string, p Player) (Board, error) {
 	b := Board{}
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return b, fmt.Errorf("failed to create client: %v", err)
-	}
 
 	a.log("get board for player")
-	iter := client.Collection("games").Doc(id).Collection("boards").Where("game", "==", id).Where("player.email", "==", p.Email).Documents(ctx)
+	iter := a.client.Collection("games").Doc(id).Collection("boards").Where("game", "==", id).Where("player.email", "==", p.Email).Documents(a.ctx)
 
 	for {
 		doc, err := iter.Next()
@@ -393,7 +333,7 @@ func (a *Agent) GetBoardForPlayer(id string, p Player) (Board, error) {
 	}
 
 	if b.ID != "" {
-		b, err = a.loadBoardWithPhrases(b)
+		b, err := a.loadBoardWithPhrases(b)
 		if err != nil {
 			return b, fmt.Errorf("failed to load phrases for board: %v", err)
 		}
@@ -406,14 +346,9 @@ func (a *Agent) GetBoardForPlayer(id string, p Player) (Board, error) {
 // GetBoard retrieves a specifc board from firestore
 func (a *Agent) GetBoard(bid, gid string) (Board, error) {
 	b := Board{}
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return b, fmt.Errorf("failed to create client: %v", err)
-	}
 
 	a.log("Getting board")
-	doc, err := client.Collection("games").Doc(gid).Collection("boards").Doc(bid).Get(ctx)
+	doc, err := a.client.Collection("games").Doc(gid).Collection("boards").Doc(bid).Get(a.ctx)
 	if err != nil {
 		return b, fmt.Errorf("failed to get board: %v", err)
 	}
@@ -428,14 +363,9 @@ func (a *Agent) GetBoard(bid, gid string) (Board, error) {
 }
 
 func (a *Agent) loadBoardWithPhrases(b Board) (Board, error) {
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return b, fmt.Errorf("failed to create client: %v", err)
-	}
 
 	a.log("Adding phrases to existing board")
-	iter := client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID).Collection("phrases").OrderBy("displayorder", firestore.Asc).Documents(ctx)
+	iter := a.client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID).Collection("phrases").OrderBy("displayorder", firestore.Asc).Documents(a.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -454,20 +384,15 @@ func (a *Agent) loadBoardWithPhrases(b Board) (Board, error) {
 
 // DeleteBoard delete a specifc board from firestore
 func (a *Agent) DeleteBoard(bid, gid string) error {
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return fmt.Errorf("failed to create client: %v", err)
-	}
-	batch := client.Batch()
+	batch := a.client.Batch()
 	a.log("Deleting board")
-	bref := client.Collection("games").Doc(gid).Collection("boards").Doc(bid)
+	bref := a.client.Collection("games").Doc(gid).Collection("boards").Doc(bid)
 	batch.Delete(bref)
 	a.log("removing phrases from board")
-	ref := client.Collection("games").Doc(gid).Collection("boards").Doc(bid).Collection("phrases")
+	ref := a.client.Collection("games").Doc(gid).Collection("boards").Doc(bid).Collection("phrases")
 	for {
 		// Get a batch of documents
-		iter := ref.Limit(100).Documents(ctx)
+		iter := ref.Limit(100).Documents(a.ctx)
 
 		for {
 			doc, err := iter.Next()
@@ -481,8 +406,7 @@ func (a *Agent) DeleteBoard(bid, gid string) error {
 			a.log(fmt.Sprintf("removing phrase %s from board", doc.Ref.ID))
 			batch.Delete(doc.Ref)
 		}
-		_, err = batch.Commit(ctx)
-		if err != nil {
+		if _, err := batch.Commit(a.ctx); err != nil {
 			return fmt.Errorf("failed to clean messages from firestore: %v", err)
 		}
 
@@ -494,31 +418,25 @@ func (a *Agent) DeleteBoard(bid, gid string) error {
 
 // SaveBoard persists a board to firestore
 func (a *Agent) SaveBoard(b Board) (Board, error) {
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return b, fmt.Errorf("failed to create client: %v", err)
-	}
 
 	if b.ID == "" {
 		b.ID = uniqueID()
 	}
 
 	a.log("Starting batch operation")
-	batch := client.Batch()
-	bref := client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID)
+	batch := a.client.Batch()
+	bref := a.client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID)
 	batch.Set(bref, b)
 
-	pref := client.Collection("games").Doc(b.Game).Collection("players").Doc(b.Player.Email)
+	pref := a.client.Collection("games").Doc(b.Game).Collection("players").Doc(b.Player.Email)
 	batch.Set(pref, b.Player)
 
 	for _, v := range b.Phrases {
-		ref := client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID).Collection("phrases").Doc(v.ID)
+		ref := a.client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID).Collection("phrases").Doc(v.ID)
 		batch.Set(ref, v)
 	}
 
-	_, err = batch.Commit(ctx)
-	if err != nil {
+	if _, err := batch.Commit(a.ctx); err != nil {
 		return b, fmt.Errorf("failed to add records to database: %v", err)
 	}
 
@@ -528,31 +446,25 @@ func (a *Agent) SaveBoard(b Board) (Board, error) {
 
 // SelectPhrase records clicks on the board and the game
 func (a *Agent) SelectPhrase(b Board, p Phrase, r Record) error {
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return fmt.Errorf("Failed to create client: %v", err)
-	}
 
 	a.log("Starting batch operation")
-	batch := client.Batch()
+	batch := a.client.Batch()
 
 	a.log("Updating phrase on board")
-	bref := client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID).Collection("phrases").Doc(p.ID)
+	bref := a.client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID).Collection("phrases").Doc(p.ID)
 	batch.Set(bref, p)
 
 	a.log("Updating game record")
-	gref := client.Collection("games").Doc(b.Game).Collection("records").Doc(r.Phrase.ID)
+	gref := a.client.Collection("games").Doc(b.Game).Collection("records").Doc(r.Phrase.ID)
 	batch.Set(gref, r)
 
 	a.log("Updating board to bingo")
-	bingoref := client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID)
+	bingoref := a.client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID)
 	update := map[string]interface{}{"bingodeclared": b.BingoDeclared}
 	batch.Set(bingoref, update, firestore.MergeAll)
 
 	a.log("Committing Batch")
-	_, err = batch.Commit(ctx)
-	if err != nil {
+	if _, err := batch.Commit(a.ctx); err != nil {
 		return fmt.Errorf("failed to update phrase: %v", err)
 	}
 
@@ -561,11 +473,6 @@ func (a *Agent) SelectPhrase(b Board, p Phrase, r Record) error {
 
 // UpdatePhrase updates a phrase on a particular game and all boards associated with it.
 func (a *Agent) UpdatePhrase(g Game, p Phrase) error {
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return fmt.Errorf("Failed to create client: %v", err)
-	}
 
 	b, err := a.GetBoardsForGame(g)
 	if err != nil {
@@ -573,19 +480,19 @@ func (a *Agent) UpdatePhrase(g Game, p Phrase) error {
 	}
 
 	a.log("Starting batch operation")
-	batch := client.Batch()
+	batch := a.client.Batch()
 	record := Record{}
 	record.Phrase = p
-	recoref := client.Collection("games").Doc(g.ID).Collection("records").Doc(p.ID)
+	recoref := a.client.Collection("games").Doc(g.ID).Collection("records").Doc(p.ID)
 	batch.Set(recoref, record)
 
 	for _, v := range b {
-		ref := client.Collection("games").Doc(g.ID).Collection("boards").Doc(v.ID).Collection("phrases").Doc(p.ID)
+		ref := a.client.Collection("games").Doc(g.ID).Collection("boards").Doc(v.ID).Collection("phrases").Doc(p.ID)
 		batch.Set(ref, p)
 	}
 
 	a.log("Committing Batch")
-	_, err = batch.Commit(ctx)
+	_, err = batch.Commit(a.ctx)
 	if err != nil {
 		return fmt.Errorf("failed to update phrase: %v", err)
 	}
@@ -598,14 +505,8 @@ func (a *Agent) GetBoardsForGame(g Game) ([]Board, error) {
 
 	b := []Board{}
 
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return b, fmt.Errorf("Failed to create client: %v", err)
-	}
-
 	a.log("Getting boards for game")
-	iter := client.Collection("games").Doc(g.ID).Collection("boards").Documents(ctx)
+	iter := a.client.Collection("games").Doc(g.ID).Collection("boards").Documents(a.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -630,15 +531,9 @@ func (a *Agent) GetGamesForPlayer(email string) (Games, error) {
 
 	g := []Game{}
 
-	var err error
-	client, err = a.getClient()
-	if err != nil {
-		return g, fmt.Errorf("Failed to create client: %v", err)
-	}
-
 	refs := []*firestore.DocumentRef{}
 	a.log("Getting Games for player")
-	iter := client.CollectionGroup("players").Where("email", "==", email).Documents(ctx)
+	iter := a.client.CollectionGroup("players").Where("email", "==", email).Documents(a.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -652,7 +547,7 @@ func (a *Agent) GetGamesForPlayer(email string) (Games, error) {
 	}
 
 	a.log("Getting Games for player")
-	snapshots, err := client.GetAll(ctx, refs)
+	snapshots, err := a.client.GetAll(a.ctx, refs)
 	if err != nil {
 		return g, fmt.Errorf("Failed to get games: %v", err)
 	}
