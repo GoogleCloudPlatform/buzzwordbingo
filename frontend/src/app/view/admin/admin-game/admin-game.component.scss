@@ -1,6 +1,8 @@
+@import "../../../../assets/variables.scss";
+
 :host{
-    background-color: #260252;
-    color: #fff;
+    background-color: $interface-bg-color;
+    color: $interface-text-color;
     padding: 20px;
     margin: 20px;
     border-radius: 6px;

@@ -1,6 +1,7 @@
+@import "../../../../assets/variables.scss";
 :host{
-    background-color: #260252;
-    color: #fff;
+    background-color: $interface-bg-color;
+    color: $interface-text-color;
     padding: 20px;
     margin: 20px;
     border-radius: 6px;
@@ -11,7 +12,7 @@
     border-spacing: 0;
     border-collapse: separate;
     .record{
-        color: #fff;
+        color: $interface-text-color;
         
         font-size: 12px;
         .text{
@@ -25,8 +26,8 @@
     }
     .active{
         font-weight: 900;
-        background-color: #f5e389;
-        color: #c18a00;
+        background-color: $record-bg-color;
+        color: $record-color;
     }
 }
 

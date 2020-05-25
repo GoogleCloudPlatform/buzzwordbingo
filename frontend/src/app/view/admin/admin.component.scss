@@ -1,3 +1,5 @@
+@import "../../../assets/variables.scss";
+
 .main{
     max-width: 1000px;
     margin: 0 auto;
@@ -16,8 +18,8 @@
 
     .admin-messages{
         margin:0;
-        background-color: #260252;
-        color: #fff;
+        background-color: $interface-bg-color;
+        color: $interface-text-color;
         width: 27%;
         max-height: 700px;
     }

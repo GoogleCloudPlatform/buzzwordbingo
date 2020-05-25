@@ -1,3 +1,4 @@
+@import "../../../../assets/variables.scss";
 :host {
     width: 20%;
     height: 115px;
@@ -30,7 +31,7 @@
 .phrase{
     box-sizing: border-box;
     margin: 0;
-    border: 1px solid #ccc;
+    border: 1px solid $border-color;
     cursor: pointer;
     height: 100%;
     width:100%;
@@ -44,7 +45,7 @@
 
 
 .disabled{
-    background-color: #474545;
+    background-color: $disabled-item-bg-color;
     cursor: default;
     
 }
@@ -62,7 +63,7 @@
     :host {
         width: 20%;
         height: 70px;
-        border: 1px solid #ccc;
+        border: 1px solid $border-color;
         margin-top: 0px;
        
     }    

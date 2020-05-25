@@ -47,11 +47,11 @@
         }
 
         .header-bingo{
-            background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQGkqPHJu90xdG12x9TNcPTduUXx1nZWQq4W2jnkEmmDGidD7pZ&usqp=CAU");
+            background-image: $bingo-header-bg-image;
             
             header{
                 color: $interface-text-color;
-                text-shadow: 0px 0px 3px purple;
+                text-shadow: 0px 0px 3px $bingo-header-text-shadow;
             }
         }
     }
@@ -60,7 +60,6 @@
         background-color: $interface-bg-color;
         width: 30%;
         height: 690px;
-        color: #fcf0fb;
     }
 
 }
