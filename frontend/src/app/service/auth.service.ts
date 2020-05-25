@@ -58,12 +58,10 @@ export class AuthService {
   }
 
   checkGameAdmin(gid:string){
-    this.game.isGameAdmin(gid).pipe(share()).subscribe(val=>{this.isGameAdministrator = val, console.log("checkGameAdminCalled",val )})
+    this.game.isGameAdmin(gid).pipe(share()).subscribe(val=>{this.isGameAdministrator = val})
   }
 
   isGameAdmin():boolean{
-      console.log("IsGameAdminCalled",this.isGameAdministrator )
-
     return this.isGameAdministrator;
   }
 

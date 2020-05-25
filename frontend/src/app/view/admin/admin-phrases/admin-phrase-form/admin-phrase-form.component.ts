@@ -1,5 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { DataService, Phrase} from '../../../../service/data.service'
+import { DataService} from '../../../../service/data.service'
+import { GameService, Phrase} from '../../../../service/game.service'
 
 @Component({
   selector: 'app-admin-phrase-form',
@@ -9,7 +10,7 @@ import { DataService, Phrase} from '../../../../service/data.service'
 export class AdminPhraseFormComponent implements OnInit {
   @Input() phrase: Phrase;
   timeout = null;
-  constructor(public data: DataService) { }
+  constructor(public gameService: GameService) { }
 
   ngOnInit(): void {
   }
@@ -17,12 +18,12 @@ export class AdminPhraseFormComponent implements OnInit {
   keyup(){
     let self = this;
     clearTimeout(this.timeout);
-
     this.timeout = setTimeout(function () {self.onPhraseSubmit()}, 1000);
   }
 
   onPhraseSubmit(){
-    this.data.updatePhrase(this.phrase);
+    clearTimeout(this.timeout);
+    this.gameService.updateMasterPhrase(this.phrase).subscribe();
   }
 
 }

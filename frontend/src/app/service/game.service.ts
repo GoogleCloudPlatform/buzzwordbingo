@@ -105,4 +105,10 @@ export class GameService {
     return this.http.get(this.hostUrl +  "/api/game/list").pipe(share());
   }
 
+  updateMasterPhrase(phrase:Phrase){
+    let url = `${this.hostUrl}/api/phrase/update?p=${phrase.id}&text=${phrase.text}`
+    console.log(url)
+    return this.http.get(url).pipe(share());
+  }
+
 }
