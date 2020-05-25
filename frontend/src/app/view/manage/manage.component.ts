@@ -13,16 +13,20 @@ export class ManageComponent implements OnInit {
   public id:string;
   public messages: Observable<any[]>;
   public game:Observable<Game>;
-
+  public inviteLink:string;
   message_target:string = "admin";
+
   constructor(public data:DataService, public gameService:GameService, public router:Router, route: ActivatedRoute,) {
     this.id = route.snapshot.paramMap.get('id');
     gameService.getGame(this.id).subscribe(val=>{let g:Game = val as Game; this.game=observableOf(g)});
-   }
+    this.inviteLink = "http://" + window.location.hostname + "/login";
+  }
 
   ngOnInit(): void {
     this.messages = this.data.getMessages(this.id);
     this.messages.subscribe()
   }
+
+
 
 }

@@ -1,7 +1,15 @@
 <app-toolbar></app-toolbar>
 
 <div class="main">
-    <h2>Manage {{(game | async)?.name}}</h2>
+    <div class="manage-header">
+        <h2>Manage {{(game | async)?.name}}</h2>
+        <p>Invite others to the game:</p>
+        <div class="invite-link">
+            <a href="{{inviteLink}}/{{(game | async)?.id}}">
+                {{inviteLink}}/{{(game | async)?.id}}
+            </a>
+        </div>
+    </div>
     <app-manage-master class="master" [id]=id></app-manage-master>
     <app-manage-boards class="boards" [id]=id></app-manage-boards>
     <app-messages class="manage-messages" [messages]='messages' [target]='message_target'></app-messages>
