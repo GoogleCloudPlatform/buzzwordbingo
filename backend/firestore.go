@@ -101,6 +101,22 @@ func (a *Agent) GetPhrases() ([]Phrase, error) {
 	return p, nil
 }
 
+// UpdateMasterPhrase updates a phrase in the master collection of phrases
+func (a *Agent) UpdateMasterPhrase(p Phrase) error {
+	var err error
+	client, err = a.getClient()
+	if err != nil {
+		return fmt.Errorf("Failed to create client: %v", err)
+	}
+
+	_, err = client.Collection("phrases").Doc(p.ID).Set(ctx, p)
+	if err != nil {
+		return fmt.Errorf("failed to update phrase: %v", err)
+	}
+
+	return nil
+}
+
 // NewGame will create a new game in the database and initialize it.
 func (a *Agent) NewGame(name string, p Player) (Game, error) {
 	g := Game{}
@@ -185,6 +201,11 @@ func (a *Agent) GetGame(id string) (Game, error) {
 		return g, fmt.Errorf("failed to load admins for game: %v", err)
 	}
 
+	g, err = a.loadGameWithBoards(g)
+	if err != nil {
+		return g, fmt.Errorf("failed to load boards for game: %v", err)
+	}
+
 	return g, nil
 }
 
@@ -233,6 +254,31 @@ func (a *Agent) loadGameWithPlayers(g Game) (Game, error) {
 		p := Player{}
 		doc.DataTo(&p)
 		g.Players = append(g.Players, p)
+	}
+
+	return g, nil
+}
+
+func (a *Agent) loadGameWithBoards(g Game) (Game, error) {
+	var err error
+	client, err = a.getClient()
+	if err != nil {
+		return g, fmt.Errorf("failed to create client: %v", err)
+	}
+
+	a.log("Loading boards from game")
+	iter := client.Collection("games").Doc(g.ID).Collection("boards").Documents(ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return g, fmt.Errorf("failed getting game boards: %v", err)
+		}
+		b := Board{}
+		doc.DataTo(&b)
+		g.Boards = append(g.Boards, b)
 	}
 
 	return g, nil
@@ -480,8 +526,8 @@ func (a *Agent) SaveBoard(b Board) (Board, error) {
 
 }
 
-// UpdatePhrase records clicks on the board and the game
-func (a *Agent) UpdatePhrase(b Board, p Phrase, r Record) error {
+// SelectPhrase records clicks on the board and the game
+func (a *Agent) SelectPhrase(b Board, p Phrase, r Record) error {
 	var err error
 	client, err = a.getClient()
 	if err != nil {
@@ -513,6 +559,72 @@ func (a *Agent) UpdatePhrase(b Board, p Phrase, r Record) error {
 	return nil
 }
 
+// UpdatePhrase updates a phrase on a particular game and all boards associated with it.
+func (a *Agent) UpdatePhrase(g Game, p Phrase) error {
+	var err error
+	client, err = a.getClient()
+	if err != nil {
+		return fmt.Errorf("Failed to create client: %v", err)
+	}
+
+	b, err := a.GetBoardsForGame(g)
+	if err != nil {
+		return fmt.Errorf("failed to get list of boards: %v", err)
+	}
+
+	a.log("Starting batch operation")
+	batch := client.Batch()
+	record := Record{}
+	record.Phrase = p
+	recoref := client.Collection("games").Doc(g.ID).Collection("records").Doc(p.ID)
+	batch.Set(recoref, record)
+
+	for _, v := range b {
+		ref := client.Collection("games").Doc(g.ID).Collection("boards").Doc(v.ID).Collection("phrases").Doc(p.ID)
+		batch.Set(ref, p)
+	}
+
+	a.log("Committing Batch")
+	_, err = batch.Commit(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to update phrase: %v", err)
+	}
+
+	return nil
+}
+
+// GetBoardsForGame gets all the boards for a give game.
+func (a *Agent) GetBoardsForGame(g Game) ([]Board, error) {
+
+	b := []Board{}
+
+	var err error
+	client, err = a.getClient()
+	if err != nil {
+		return b, fmt.Errorf("Failed to create client: %v", err)
+	}
+
+	a.log("Getting boards for game")
+	iter := client.Collection("games").Doc(g.ID).Collection("boards").Documents(ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return b, fmt.Errorf("Failed to iterate: %v", err)
+		}
+
+		board := Board{}
+		doc.DataTo(&board)
+		board.ID = doc.Ref.ID
+		b = append(b, board)
+
+	}
+
+	return b, nil
+}
+
 // GetGamesForPlayer fetches the list of all games a user in currently in.
 func (a *Agent) GetGamesForPlayer(email string) (Games, error) {
 
@@ -525,7 +637,7 @@ func (a *Agent) GetGamesForPlayer(email string) (Games, error) {
 	}
 
 	refs := []*firestore.DocumentRef{}
-	a.log("Getting Boards for player")
+	a.log("Getting Games for player")
 	iter := client.CollectionGroup("players").Where("email", "==", email).Documents(ctx)
 	for {
 		doc, err := iter.Next()

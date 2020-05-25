@@ -37,6 +37,7 @@ type Game struct {
 	Players Players `json:"players" firestore:"-"`
 	Admins  Players `json:"admins" firestore:"-"`
 	master  Master  `json:"master" firestore:"-"`
+	Boards  []Board `json:"boards" firestore:"-"`
 }
 
 // NewBoard creates a new board for a user.
@@ -46,7 +47,12 @@ func (g *Game) NewBoard(p Player) Board {
 	b.Player = p
 	b.Load(g.master.Phrases())
 	return b
+}
 
+func (g *Game) UpdatePhrase(p Phrase) {
+	i, r := g.FindRecord(p)
+	r.Phrase = p
+	g.master.Records[i] = r
 }
 
 // Games is a collection of game objects.
@@ -100,7 +106,7 @@ func (g *Game) CheckBoard(b Board) Reports {
 	for _, v := range b.Phrases {
 		if v.Selected && v.Text != "FREE" {
 
-			master := g.FindRecord(v)
+			_, master := g.FindRecord(v)
 			r := Report{}
 			r.Phrase = v
 			r.Percent = float32(len(master.Players)) / float32(total)
@@ -114,13 +120,13 @@ func (g *Game) CheckBoard(b Board) Reports {
 }
 
 // FindRecord retrieves the report of a particular phrase
-func (g Game) FindRecord(p Phrase) Record {
-	for _, v := range g.master.Records {
+func (g Game) FindRecord(p Phrase) (int, Record) {
+	for i, v := range g.master.Records {
 		if v.Phrase.ID == p.ID {
-			return v
+			return i, v
 		}
 	}
-	return Record{}
+	return -1, Record{}
 }
 
 // CountPlayers returns the count of all players who have selected phrases/
@@ -350,6 +356,16 @@ func (b *Board) Load(p []Phrase) {
 	}
 
 	b.Phrases = p
+}
+
+func (b *Board) UpdatePhrase(p Phrase) {
+	for i, v := range b.Phrases {
+		if p.ID == v.ID {
+			b.Phrases[i] = p
+			return
+		}
+	}
+	return
 }
 
 func calcColumnsRows(i int) (string, string) {

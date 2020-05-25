@@ -53,6 +53,8 @@ func main() {
 	http.HandleFunc("/api/game", handleGetGame)
 	http.HandleFunc("/api/game/new", handleNewGame)
 	http.HandleFunc("/api/game/list", handleGetGames)
+	http.HandleFunc("/api/game/phrase/update", handleUpdateGamePhrase)
+	http.HandleFunc("/api/phrase/update", handleUpdateMasterPhrase)
 	http.HandleFunc("/api/game/isadmin", handleGetIsGameAdmin)
 	http.HandleFunc("/api/player/identify", handleGetIAPUsername)
 	http.HandleFunc("/api/player/isadmin", handleGetIsAdmin)
@@ -92,6 +94,94 @@ func handleGetIsGameAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeResponse(w, http.StatusOK, fmt.Sprintf("%t", isAdm))
+
+}
+
+func handleUpdateGamePhrase(w http.ResponseWriter, r *http.Request) {
+	weblog("/api/game/phrase/update called")
+
+	gid, err := getFirstQuery("g", r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	pid, err := getFirstQuery("p", r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	text, err := getFirstQuery("text", r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	isAdm, err := isGameAdmin(r, gid)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if !isAdm {
+		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
+		writeResponse(w, http.StatusForbidden, msg)
+		return
+	}
+
+	phrase := Phrase{}
+	phrase.ID = pid
+	phrase.Text = text
+
+	if err := updateGamePhrases(gid, phrase); err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	writeSuccess(w, "ok")
+	return
+
+}
+
+func handleUpdateMasterPhrase(w http.ResponseWriter, r *http.Request) {
+	weblog("/api/phrase/update called")
+
+	pid, err := getFirstQuery("p", r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	text, err := getFirstQuery("text", r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	isAdm, err := isAdmin(r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if !isAdm {
+		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
+		writeResponse(w, http.StatusForbidden, msg)
+		return
+	}
+
+	phrase := Phrase{}
+	phrase.ID = pid
+	phrase.Text = text
+
+	if err := updateMasterPhrase(phrase); err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	writeSuccess(w, "ok")
+	return
 
 }
 
@@ -680,7 +770,7 @@ func recordSelect(boardID, gameID, phraseID string) error {
 		return fmt.Errorf("could not cache game: %s", err)
 	}
 
-	if err := a.UpdatePhrase(b, p, r); err != nil {
+	if err := a.SelectPhrase(b, p, r); err != nil {
 		return fmt.Errorf("record click to firestore: %s", err)
 	}
 
@@ -701,6 +791,46 @@ func recordSelect(boardID, gameID, phraseID string) error {
 
 	if err := a.AddMessagesToGame(g, messages); err != nil {
 		return fmt.Errorf("could not send message announce bingo on select: %s", err)
+	}
+
+	return nil
+}
+
+func updateMasterPhrase(phrase Phrase) error {
+
+	if err := a.UpdateMasterPhrase(phrase); err != nil {
+		return fmt.Errorf("error updating master phrase : %v", err)
+	}
+
+	return nil
+}
+
+func updateGamePhrases(gameID string, phrase Phrase) error {
+	g, err := getGame(gameID)
+	if err != nil {
+		return fmt.Errorf("could not get game id(%s): %s", g.ID, err)
+	}
+
+	g.UpdatePhrase(phrase)
+
+	if err := cache.SaveGame(g); err != nil {
+		return fmt.Errorf("error caching game : %v", err)
+	}
+
+	for _, v := range g.Boards {
+		b, err := getBoard(v.ID, g.ID)
+		if err != nil {
+			return fmt.Errorf("could not get board id(%s): %s", v.ID, err)
+		}
+		b.UpdatePhrase(phrase)
+
+		if err := cache.SaveBoard(b); err != nil {
+			return fmt.Errorf("error caching board : %v", err)
+		}
+	}
+
+	if err := a.UpdatePhrase(g, phrase); err != nil {
+		return fmt.Errorf("error saving update phrase : %v", err)
 	}
 
 	return nil
