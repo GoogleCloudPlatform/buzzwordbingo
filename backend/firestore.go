@@ -487,9 +487,9 @@ func (a *Agent) GetGamesForPlayer(email string) (Games, error) {
 		return g, fmt.Errorf("Failed to create client: %v", err)
 	}
 
-	gameids := []string{}
+	refs := []*firestore.DocumentRef{}
 	a.log("Getting Boards for player")
-	iter := client.CollectionGroup("players").Where("player.email", "==", email).Documents(ctx)
+	iter := client.CollectionGroup("players").Where("email", "==", email).Documents(ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -498,16 +498,11 @@ func (a *Agent) GetGamesForPlayer(email string) (Games, error) {
 		if err != nil {
 			return g, fmt.Errorf("Failed to iterate: %v", err)
 		}
-		datamap := doc.Data()
-		gameids = append(gameids, datamap["game"].(string))
+
+		refs = append(refs, doc.Ref.Parent.Parent)
 	}
 
-	refs := []*firestore.DocumentRef{}
-	for _, v := range gameids {
-		refs = append(refs, client.Collection("games").Doc(v))
-	}
-
-	a.log("Getting Games for boards")
+	a.log("Getting Games for player")
 	snapshots, err := client.GetAll(ctx, refs)
 	if err != nil {
 		return g, fmt.Errorf("Failed to get games: %v", err)
