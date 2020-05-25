@@ -173,6 +173,11 @@ func (a *Agent) GetGame(id string) (Game, error) {
 		return g, fmt.Errorf("failed to load records for game: %v", err)
 	}
 
+	g, err = a.loadGameWithPlayers(g)
+	if err != nil {
+		return g, fmt.Errorf("failed to load players for game: %v", err)
+	}
+
 	return g, nil
 }
 
@@ -196,6 +201,31 @@ func (a *Agent) loadGameWithRecords(g Game) (Game, error) {
 		r := Record{}
 		doc.DataTo(&r)
 		g.Master.Records = append(g.Master.Records, r)
+	}
+
+	return g, nil
+}
+
+func (a *Agent) loadGameWithPlayers(g Game) (Game, error) {
+	var err error
+	client, err = a.getClient()
+	if err != nil {
+		return g, fmt.Errorf("failed to create client: %v", err)
+	}
+
+	a.log("Loading players from game")
+	iter := client.Collection("games").Doc(g.ID).Collection("players").Documents(ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return g, fmt.Errorf("failed getting game records: %v", err)
+		}
+		p := Player{}
+		doc.DataTo(&p)
+		g.Players = append(g.Players, p)
 	}
 
 	return g, nil
@@ -236,11 +266,19 @@ func (a *Agent) SaveGame(g Game) error {
 		return fmt.Errorf("Failed to create client: %v", err)
 	}
 
-	// TODO: Add code to allow merging instead of overwrites.
 	a.log("Save game")
-	_, err = client.Collection("games").Doc(g.ID).Set(ctx, g)
+	batch := client.Batch()
+	gref := client.Collection("games").Doc(g.ID)
+	batch.Set(gref, g)
+
+	for _, v := range g.Players {
+		ref := client.Collection("games").Doc(g.ID).Collection("players").Doc(v.Email)
+		batch.Set(ref, v)
+	}
+
+	_, err = batch.Commit(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to get game: %v", err)
+		return fmt.Errorf("failed to save game to database: %v", err)
 	}
 
 	return nil
@@ -388,6 +426,9 @@ func (a *Agent) SaveBoard(b Board) (Board, error) {
 	bref := client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID)
 	batch.Set(bref, b)
 
+	pref := client.Collection("games").Doc(b.Game).Collection("players").Doc(b.Player.Email)
+	batch.Set(pref, b.Player)
+
 	for _, v := range b.Phrases {
 		ref := client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID).Collection("phrases").Doc(v.ID)
 		batch.Set(ref, v)
@@ -448,7 +489,7 @@ func (a *Agent) GetGamesForPlayer(email string) (Games, error) {
 
 	gameids := []string{}
 	a.log("Getting Boards for player")
-	iter := client.CollectionGroup("boards").Where("player.email", "==", email).Documents(ctx)
+	iter := client.CollectionGroup("players").Where("player.email", "==", email).Documents(ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {

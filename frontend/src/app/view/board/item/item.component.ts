@@ -24,6 +24,7 @@ export class ItemComponent implements OnInit {
   constructor(private game:GameService) { }
 
   ngOnInit(): void {
+    this.readyEmitter.emit(this);
   }
 
   ngAfterViewChecked(): void {
@@ -33,7 +34,7 @@ export class ItemComponent implements OnInit {
   }
 
   ngAfterViewInit():void{
-    this.readyEmitter.emit(this);
+    
   } 
 
   ngOnChange(){

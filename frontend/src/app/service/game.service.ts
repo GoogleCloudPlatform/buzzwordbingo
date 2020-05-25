@@ -92,12 +92,16 @@ export class GameService {
     return this.http.get(this.recordUrl + "?p="+pid + "&g=" + gid + "&b=" + bid).subscribe();
   }
 
-  resetboard (bid:string) {
-    return this.http.get(this.resetUrl + "?b=" + bid).subscribe();
+  resetboard (bid:string, gid:string) {
+    return this.http.get(this.resetUrl + "?b=" + bid + "&g=" + gid).subscribe();
   }
 
   newGame (name:string) {
     return this.http.get(this.newGameUrl + "?name=" + name);
+  }
+
+  getGame (id:string) {
+    return this.http.get(this.hostUrl +  "/api/game?id="+id).pipe(share());
   }
 
   getGamesForPlayer(){

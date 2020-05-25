@@ -1,3 +1,5 @@
+
+@import "../../../assets/variables.scss";
 .main{
     
     max-width: 1000px;
@@ -6,14 +8,19 @@
     flex-wrap: wrap;
     justify-content: space-between;
 
+    h2{
+        color:$interface-text-color;
+        width: 100%;
+    }
+
     .phrases{
-        background-color: #260252;
+        background-color: $interface-bg-color;
         padding: 0;
         width: 60%;
         display: flex;
         flex-wrap: wrap;
         align-items: flex-start;
-        color:#FFF;
+        color:$interface-text-color;
         box-sizing: border-box;
         border-top-left-radius: 6px;
         border-top-right-radius: 6px;
@@ -43,14 +50,14 @@
             background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQGkqPHJu90xdG12x9TNcPTduUXx1nZWQq4W2jnkEmmDGidD7pZ&usqp=CAU");
             
             header{
-                color: #fff;
+                color: $interface-text-color;
                 text-shadow: 0px 0px 3px purple;
             }
         }
     }
 
     .board-messages{
-        background-color: #260252;
+        background-color: $interface-bg-color;
         width: 30%;
         height: 690px;
         color: #fcf0fb;

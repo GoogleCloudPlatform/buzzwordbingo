@@ -1,4 +1,4 @@
-import { Component, OnInit, Input} from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectorRef, AfterContentChecked} from '@angular/core';
 import {GameService, Message} from '../../service/game.service'
 import { Observable } from 'rxjs';
 
@@ -13,13 +13,14 @@ export class MessagesComponent implements OnInit {
   @Input() target:string;
   
 
-  constructor() { }
+  constructor(private cdref: ChangeDetectorRef) { }
 
   ngOnInit(): void {
+    this.scrollDownWindow();
+    this.messages.subscribe(val=>{this.scrollDownWindow();})
   }
 
   ngAfterViewInit(): void {
-    this.scrollDownWindow();
   }
   ngOnChanges(): void {
     this.scrollDownWindow();
@@ -44,6 +45,8 @@ export class MessagesComponent implements OnInit {
     if (d) {
       d.scrollTop = d.scrollHeight;
     }
+    this.cdref.detectChanges();
   }
+
 
 }

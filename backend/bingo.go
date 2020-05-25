@@ -31,10 +31,11 @@ func (m *Message) SetAudience(a ...string) {
 
 // Game is the master structure for the game
 type Game struct {
-	ID     string `json:"id" firestore:"id"`
-	Name   string `json:"name" firestore:"name"`
-	Active bool   `json:"active" firestore:"active"`
-	Master Master `json:"master" firestore:"-"`
+	ID      string  `json:"id" firestore:"id"`
+	Name    string  `json:"name" firestore:"name"`
+	Active  bool    `json:"active" firestore:"active"`
+	Master  Master  `json:"master" firestore:"-"`
+	Players Players `json:"players" firestore:"-"`
 }
 
 // NewBoard creates a new board for a user.
@@ -87,7 +88,7 @@ func (r Reports) IsDubious() bool {
 	return false
 }
 
-// ChecksBoard checks a particular board against the master records
+// CheckBoard checks a particular board against the master records
 func (g *Game) CheckBoard(b Board) Reports {
 
 	results := Reports{}
@@ -119,19 +120,9 @@ func (g Game) FindRecord(p Phrase) Record {
 	return Record{}
 }
 
-// Count Players returns the count of all players who have selected phrases/
+// CountPlayers returns the count of all players who have selected phrases/
 func (g *Game) CountPlayers() int {
-	counter := make(map[string]bool)
-
-	for _, v := range g.Master.Records {
-		if v.Phrase.Selected {
-			for _, p := range v.Players {
-				counter[p.Email] = true
-			}
-		}
-	}
-
-	return len(counter)
+	return len(g.Players)
 }
 
 // JSON Returns the given Board struct as a JSON string

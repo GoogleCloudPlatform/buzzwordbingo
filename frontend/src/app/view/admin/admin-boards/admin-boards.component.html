@@ -4,6 +4,6 @@
         <td class="name">{{board.player.name}}</td>
         <td>{{board.player.email}}</td>
         <td *ngIf="board.bingodeclared">BINGO</td>
-        <td><button class="reset" (click)="reset(board.id)">Reset</button></td>
+        <td><button class="reset" (click)="reset(board.id, board.game)">Reset</button></td>
     </tr>
 </table>

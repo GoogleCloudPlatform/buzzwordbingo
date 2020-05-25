@@ -18,9 +18,9 @@ export class AdminBoardsComponent implements OnInit {
     this.boards.subscribe();
   }
 
-  reset(bid:string){
+  reset(bid:string, gid:string){
     console.log("Reset called")
-    this.game.resetboard(bid);
+    this.game.resetboard(bid, gid);
   }
 
 

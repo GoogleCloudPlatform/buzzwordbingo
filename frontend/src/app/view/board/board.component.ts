@@ -1,8 +1,8 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, of as observableOf } from 'rxjs';
 import { DataService, Phrase} from '../../service/data.service'
 import {AuthService, Player} from '../../service/auth.service'
-import {GameService, Board, Message} from '../../service/game.service'
+import {GameService, Board, Message, Game} from '../../service/game.service'
 import { Router, ActivatedRoute } from '@angular/router';
 import {ItemComponent} from './item/item.component'
 
@@ -27,8 +27,9 @@ export class BoardComponent implements OnInit {
   public boardid:string;
   public messages: Observable<any[]>;
   public bingo:boolean=false;
+  public game:Observable<any>;
 
-  constructor(public data:DataService, public auth:AuthService, public game:GameService, public router:Router, route: ActivatedRoute,) {
+  constructor(public data:DataService, public auth:AuthService, public gameService:GameService, public router:Router, route: ActivatedRoute,) {
     if (!auth.isAuth()){
       auth.logout("not authed")
     }
@@ -39,9 +40,9 @@ export class BoardComponent implements OnInit {
       auth.logout("not authed")
     }
     
-    this.board = game.getBoard(this.player.name, this.id);
+    this.board = gameService.getBoard(this.player.name, this.id);
     this.board.subscribe(val=>{this.boardid=val.id; if (val.bingodeclared){this.declareBingo()}})
-
+    gameService.getGame(this.id).subscribe(val=>{console.log(val);let g:Game = val as Game; this.game=observableOf(g)});
    }
 
   ngOnInit(): void {
