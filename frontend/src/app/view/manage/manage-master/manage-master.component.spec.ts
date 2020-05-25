@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AdminMasterComponent } from './admin-master.component';
+import { ManageMasterComponent } from './manage-master.component';
 
-describe('AdminMasterComponent', () => {
-  let component: AdminMasterComponent;
-  let fixture: ComponentFixture<AdminMasterComponent>;
+describe('ManageMasterComponent', () => {
+  let component: ManageMasterComponent;
+  let fixture: ComponentFixture<ManageMasterComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ AdminMasterComponent ]
+      declarations: [ ManageMasterComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(AdminMasterComponent);
+    fixture = TestBed.createComponent(ManageMasterComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

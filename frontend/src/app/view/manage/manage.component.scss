@@ -1,0 +1,43 @@
+@import "../../../assets/variables.scss";
+
+.main{
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    
+    h2{
+        width: 100%;
+        color: $interface-text-color;
+    }
+
+    .master{
+        margin:0 20px 0 0;
+        width: 25%;
+    }
+
+    .boards{
+        margin:0 20px 0 0;
+        width: 35%;
+    }
+
+    .manage-messages{
+        margin:0;
+        background-color: $interface-bg-color;
+        color: $interface-text-color;
+        width: 27%;
+        max-height: 700px;
+    }
+
+    .phrases{
+        margin:10px 0;
+        width: 100%
+    }
+
+    .game{
+        margin:10px 0;
+        width: 100%
+    }
+
+}
+

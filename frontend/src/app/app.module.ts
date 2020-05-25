@@ -15,8 +15,8 @@ import { MessagesComponent } from './view/messages/messages.component';
 import { ReplacePipe } from './replace.pipe';
 import { AdminComponent } from './view/admin/admin.component';
 import { ToolbarComponent } from './view/toolbar/toolbar.component';
-import { AdminBoardsComponent } from './view/admin/admin-boards/admin-boards.component';
-import { AdminMasterComponent } from './view/admin/admin-master/admin-master.component';
+import { ManageBoardsComponent } from './view/manage/manage-boards/manage-boards.component';
+import { ManageMasterComponent } from './view/manage/manage-master/manage-master.component';
 import { AdminPhrasesComponent } from './view/admin/admin-phrases/admin-phrases.component';
 import { AdminPhraseFormComponent } from './view/admin/admin-phrases/admin-phrase-form/admin-phrase-form.component';
 import { AdminGameComponent } from './view/admin/admin-game/admin-game.component';
@@ -34,8 +34,8 @@ import { ManageComponent } from './view/manage/manage.component';
     MessagesComponent,
     AdminComponent,
     ToolbarComponent,
-    AdminBoardsComponent,
-    AdminMasterComponent,
+    ManageBoardsComponent,
+    ManageMasterComponent,
     AdminPhrasesComponent,
     AdminPhraseFormComponent,
     AdminGameComponent,

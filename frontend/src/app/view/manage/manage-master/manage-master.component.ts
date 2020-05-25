@@ -4,11 +4,11 @@ import { DataService, Phrase} from '../../../service/data.service'
 import {GameService, Board, Message, Record} from '../../../service/game.service'
 
 @Component({
-  selector: 'app-admin-master',
-  templateUrl: './admin-master.component.html',
-  styleUrls: ['./admin-master.component.scss']
+  selector: 'app-manage-master',
+  templateUrl: './manage-master.component.html',
+  styleUrls: ['./manage-master.component.scss']
 })
-export class AdminMasterComponent implements OnInit {
+export class ManageMasterComponent implements OnInit {
   @Input() id:string;
   public records: Observable<any[]>;
   constructor(public data:DataService, public game:GameService) { }

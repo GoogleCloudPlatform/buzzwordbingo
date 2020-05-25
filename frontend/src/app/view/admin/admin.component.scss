@@ -6,6 +6,11 @@
     display: flex;
     flex-wrap: wrap;
 
+    h2{
+        width: 100%;
+        color: $interface-text-color;
+    }
+
     .master{
         margin:0 20px 0 0;
         width: 25%;

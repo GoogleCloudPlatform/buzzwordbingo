@@ -4,11 +4,11 @@ import { DataService, Phrase} from '../../../service/data.service'
 import {GameService, Board, Message, Record} from '../../../service/game.service'
 
 @Component({
-  selector: 'app-admin-boards',
-  templateUrl: './admin-boards.component.html',
-  styleUrls: ['./admin-boards.component.scss']
+  selector: 'app-manage-boards',
+  templateUrl: './manage-boards.component.html',
+  styleUrls: ['./manage-boards.component.scss']
 })
-export class AdminBoardsComponent implements OnInit {
+export class ManageBoardsComponent implements OnInit {
   @Input() id:string;
   public boards: Observable<any[]>;
   constructor(public data:DataService, public game:GameService) { }
