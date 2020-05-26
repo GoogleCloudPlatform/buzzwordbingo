@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable, of  } from 'rxjs';
-import {Router} from '@angular/router';
+import {Router, ActivatedRoute} from '@angular/router';
 import {AuthService, Player} from '../../service/auth.service'
 import { GameService, Game } from 'src/app/service/game.service';
 
@@ -12,10 +12,13 @@ import { GameService, Game } from 'src/app/service/game.service';
 })
 export class LoginComponent implements OnInit {
 
+  public id:string="";
   public identity:Observable<any>;
   public games:any;
 
-  constructor(private auth:AuthService, private router: Router, public game:GameService) { 
+  constructor(private auth:AuthService, public router:Router, route: ActivatedRoute, public game:GameService) { 
+    this.id = route.snapshot.paramMap.get('id');
+    console.log(this.id);
     this.identity =auth.identifyPlayer();
     this.game.getGamesForPlayer().subscribe(val=>{this.games=val} );
   }
@@ -41,6 +44,11 @@ export class LoginComponent implements OnInit {
         return
       }
     });
+
+    if (this.id != null){
+      this.router.navigateByUrl('/game/' + this.id);
+      return;
+    }
       
     if (gameids.length == 0){
       this.router.navigateByUrl('/gamenew');
