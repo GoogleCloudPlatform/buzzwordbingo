@@ -1,0 +1,5 @@
+<form> 
+    <input type="text" class="form-control" required 
+    placeholder="type phrase here" [(ngModel)]="record.phrase.text" 
+    (keyup)="keyup()" (keyup.enter)="onPhraseSubmit()" name="text">
+</form>

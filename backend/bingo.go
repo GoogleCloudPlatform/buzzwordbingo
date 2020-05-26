@@ -36,7 +36,7 @@ type Game struct {
 	Active  bool    `json:"active" firestore:"active"`
 	Players Players `json:"players" firestore:"-"`
 	Admins  Players `json:"admins" firestore:"-"`
-	master  Master  `json:"master" firestore:"-"`
+	Master  Master  `json:"master" firestore:"-"`
 	Boards  []Board `json:"boards" firestore:"-"`
 }
 
@@ -45,14 +45,14 @@ func (g *Game) NewBoard(p Player) Board {
 	b := Board{}
 	b.Game = g.ID
 	b.Player = p
-	b.Load(g.master.Phrases())
+	b.Load(g.Master.Phrases())
 	return b
 }
 
 func (g *Game) UpdatePhrase(p Phrase) {
 	i, r := g.FindRecord(p)
 	r.Phrase = p
-	g.master.Records[i] = r
+	g.Master.Records[i] = r
 }
 
 // Games is a collection of game objects.
@@ -121,7 +121,7 @@ func (g *Game) CheckBoard(b Board) Reports {
 
 // FindRecord retrieves the report of a particular phrase
 func (g Game) FindRecord(p Phrase) (int, Record) {
-	for i, v := range g.master.Records {
+	for i, v := range g.Master.Records {
 		if v.Phrase.ID == p.ID {
 			return i, v
 		}
@@ -141,7 +141,7 @@ func (g *Game) IsAdmin(p Player) bool {
 
 // Select marks a phrase as selected by one or more players
 func (g *Game) Select(ph Phrase, pl Player) Record {
-	return g.master.Select(ph, pl)
+	return g.Master.Select(ph, pl)
 }
 
 // JSON marshalls the content of a game to json.

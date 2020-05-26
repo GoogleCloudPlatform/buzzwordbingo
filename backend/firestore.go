@@ -120,7 +120,7 @@ func (a *Agent) NewGame(name string, p Player) (Game, error) {
 	g.Admins = append(g.Admins, p)
 	g.Name = name
 	g.Active = true
-	g.master.Load(phrases)
+	g.Master.Load(phrases)
 
 	batch := a.client.Batch()
 	a.log("Creating new game")
@@ -129,7 +129,7 @@ func (a *Agent) NewGame(name string, p Player) (Game, error) {
 	batch.Set(gref, g)
 
 	a.log("Adding phrases to new game")
-	for _, v := range g.master.Records {
+	for _, v := range g.Master.Records {
 		ref := a.client.Collection("games").Doc(g.ID).Collection("records").Doc(v.Phrase.ID)
 		batch.Set(ref, v)
 	}
@@ -202,7 +202,7 @@ func (a *Agent) loadGameWithRecords(g Game) (Game, error) {
 		}
 		r := Record{}
 		doc.DataTo(&r)
-		g.master.Records = append(g.master.Records, r)
+		g.Master.Records = append(g.Master.Records, r)
 	}
 
 	return g, nil
@@ -331,9 +331,9 @@ func (a *Agent) GetBoardForPlayer(id string, p Player) (Board, error) {
 		b.ID = doc.Ref.ID
 		break
 	}
-
 	if b.ID != "" {
-		b, err := a.loadBoardWithPhrases(b)
+		var err error
+		b, err = a.loadBoardWithPhrases(b)
 		if err != nil {
 			return b, fmt.Errorf("failed to load phrases for board: %v", err)
 		}
@@ -359,6 +359,7 @@ func (a *Agent) GetBoard(bid, gid string) (Board, error) {
 	if err != nil {
 		return b, fmt.Errorf("failed to load phrases for board: %v", err)
 	}
+
 	return b, nil
 }
 

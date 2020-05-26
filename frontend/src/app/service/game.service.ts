@@ -28,7 +28,12 @@ export class Phrase{
 export class Game  {
 	id:string 
 	name:string 
-	active:boolean   
+  active:boolean
+  master:Master   
+}
+
+export class Master {
+  records:Record[]
 }
 
 export class Message  {
@@ -107,6 +112,12 @@ export class GameService {
 
   updateMasterPhrase(phrase:Phrase){
     let url = `${this.hostUrl}/api/phrase/update?p=${phrase.id}&text=${phrase.text}`
+    console.log(url)
+    return this.http.get(url).pipe(share());
+  }
+
+  updateGamePhrase(gid:string, phrase:Phrase){
+    let url = `${this.hostUrl}/api/game/phrase/update?g=${gid}&p=${phrase.id}&text=${phrase.text}`
     console.log(url)
     return this.http.get(url).pipe(share());
   }

@@ -572,10 +572,11 @@ func getBoardForPlayer(p Player, g Game) (Board, error) {
 	var err error
 	b := Board{}
 	messages := []Message{}
-
+	weblog("Trying Cache")
 	b, err = cache.GetBoard(g.ID + "_" + p.Email)
 	if err != nil {
 		if err == ErrCacheMiss {
+			weblog("Cache Empty trying DB")
 			b, err = a.GetBoardForPlayer(g.ID, p)
 			if err != nil {
 				return b, fmt.Errorf("error getting board for player: %v", err)
@@ -585,7 +586,6 @@ func getBoardForPlayer(p Player, g Game) (Board, error) {
 			return b, fmt.Errorf("error caching board for player: %v", err)
 		}
 	}
-
 	m := Message{}
 	m.SetText("<strong>%s</strong> rejoined the game.", b.Player.Name)
 	m.SetAudience("admin", b.Player.Email)

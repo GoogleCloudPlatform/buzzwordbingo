@@ -1,0 +1,13 @@
+<h2>Phrases</h2>
+<p>You cannot change an exisiting game, you can only change these and then have them
+  be the master list for the next game. 
+</p>
+
+<div class="phrases">
+    <app-manage-phrase-form class="manage-phrase-form" [game]="(game | async)"
+    *ngFor="let record of (game | async)?.master.record" [record]='record'>
+        {{record.phrase.text}}
+    </app-manage-phrase-form>
+
+
+</div>    
