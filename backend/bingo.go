@@ -55,6 +55,16 @@ func (g *Game) UpdatePhrase(p Phrase) {
 	g.Master.Records[i] = r
 }
 
+func (g *Game) DeleteBoard(b Board) {
+	for i, v := range g.Boards {
+		if v.ID == b.ID {
+			g.Boards[i] = g.Boards[len(g.Boards)-1]
+			g.Boards[len(g.Boards)-1] = Board{}
+			g.Boards = g.Boards[:len(g.Boards)-1]
+		}
+	}
+}
+
 // Games is a collection of game objects.
 type Games []Game
 
@@ -361,6 +371,7 @@ func (b *Board) Load(p []Phrase) {
 func (b *Board) UpdatePhrase(p Phrase) {
 	for i, v := range b.Phrases {
 		if p.ID == v.ID {
+			p.DisplayOrder = v.DisplayOrder
 			b.Phrases[i] = p
 			return
 		}

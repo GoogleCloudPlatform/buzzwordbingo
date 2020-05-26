@@ -528,7 +528,7 @@ func getPlayerEmail(r *http.Request) (string, error) {
 	// If it's not behind IAP, it's developemnt
 	if email == "" {
 		username := os.Getenv("USER")
-		email = fmt.Sprintf("%s@google.com", username)
+		email = fmt.Sprintf("%s@example.com", username)
 	}
 
 	return email, nil
@@ -692,6 +692,12 @@ func deleteBoard(bid, gid string) error {
 		return fmt.Errorf("failed to get active game to delete board: %v", err)
 	}
 
+	game.DeleteBoard(b)
+
+	if err := cache.SaveGame(game); err != nil {
+		return fmt.Errorf("could not reset game in cache: %s", err)
+	}
+
 	if err := cache.DeleteBoard(b); err != nil {
 		return fmt.Errorf("could not delete board from cache: %s", err)
 	}
@@ -759,7 +765,9 @@ func recordSelect(boardID, gameID, phraseID string) error {
 		return fmt.Errorf("could not get game id(%s): %s", b.Game, err)
 	}
 
+	fmt.Print("Before: %+v\n", p)
 	p = b.Select(p)
+	fmt.Print("After: %+v\n", p)
 	r := g.Select(p, b.Player)
 	bingo := b.Bingo()
 
@@ -811,7 +819,7 @@ func updateGamePhrases(gameID string, phrase Phrase) error {
 	if err != nil {
 		return fmt.Errorf("could not get game id(%s): %s", g.ID, err)
 	}
-
+	// TODO: Compenstate for display order somewhere in there.
 	g.UpdatePhrase(phrase)
 
 	if err := cache.SaveGame(g); err != nil {
@@ -821,6 +829,9 @@ func updateGamePhrases(gameID string, phrase Phrase) error {
 	for _, v := range g.Boards {
 		b, err := getBoard(v.ID, g.ID)
 		if err != nil {
+			if strings.Contains(err.Error(), "failed to get board") {
+				continue
+			}
 			return fmt.Errorf("could not get board id(%s): %s", v.ID, err)
 		}
 		b.UpdatePhrase(phrase)
@@ -832,6 +843,16 @@ func updateGamePhrases(gameID string, phrase Phrase) error {
 
 	if err := a.UpdatePhrase(g, phrase); err != nil {
 		return fmt.Errorf("error saving update phrase : %v", err)
+	}
+
+	messages := []Message{}
+	m := Message{}
+	m.SetText("A square has been changed and reset for all players. ")
+	m.SetAudience("all")
+	messages = append(messages, m)
+
+	if err := a.AddMessagesToGame(g, messages); err != nil {
+		return fmt.Errorf("could not send message announce bingo on select: %s", err)
 	}
 
 	return nil

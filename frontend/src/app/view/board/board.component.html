@@ -10,7 +10,7 @@
             <header>O</header>
         </div>
         <app-item #items class="cell"
-            *ngFor="let phrase of (board | async)?.phrases; let i = index;" 
+            *ngFor="let phrase of phrases | async; let i = index;" 
             [phrase]='phrase' [boardid]='boardid' 
             (phraseEmitter)="recievePhrase($event)" 
             (readyEmitter)="receiveChild($event)" 

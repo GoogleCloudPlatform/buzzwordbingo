@@ -410,7 +410,6 @@ func (a *Agent) DeleteBoard(bid, gid string) error {
 		if _, err := batch.Commit(a.ctx); err != nil {
 			return fmt.Errorf("failed to clean messages from firestore: %v", err)
 		}
-
 		return nil
 
 	}
@@ -480,6 +479,8 @@ func (a *Agent) UpdatePhrase(g Game, p Phrase) error {
 		return fmt.Errorf("failed to get list of boards: %v", err)
 	}
 
+	phraseMap := map[string]interface{}{"text": p.Text, "selected": false}
+
 	a.log("Starting batch operation")
 	batch := a.client.Batch()
 	record := Record{}
@@ -488,8 +489,9 @@ func (a *Agent) UpdatePhrase(g Game, p Phrase) error {
 	batch.Set(recoref, record)
 
 	for _, v := range b {
+
 		ref := a.client.Collection("games").Doc(g.ID).Collection("boards").Doc(v.ID).Collection("phrases").Doc(p.ID)
-		batch.Set(ref, p)
+		batch.Set(ref, phraseMap, firestore.MergeAll)
 	}
 
 	a.log("Committing Batch")

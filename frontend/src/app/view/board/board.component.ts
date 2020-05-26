@@ -5,6 +5,7 @@ import {AuthService, Player} from '../../service/auth.service'
 import {GameService, Board, Message, Game} from '../../service/game.service'
 import { Router, ActivatedRoute } from '@angular/router';
 import {ItemComponent} from './item/item.component'
+import { map } from 'rxjs/operators';
 
 
 
@@ -41,7 +42,21 @@ export class BoardComponent implements OnInit {
     }
     
     this.board = gameService.getBoard(this.player.name, this.id);
-    this.board.subscribe(val=>{this.boardid=val.id; if (val.bingodeclared){this.declareBingo()}})
+    this.board.subscribe(val=>{
+        this.boardid=val.id; 
+        this.phrases = data.getGameBoard(this.id, this.boardid).pipe(map(val => {
+          let phrases:Phrase[] = val as Phrase[]
+          phrases= phrases.sort((a, b) => (a.displayorder > b.displayorder) ? 1 : -1)
+          return phrases;
+        }))
+        if (val.bingodeclared){
+          this.declareBingo()
+        }
+    })
+    
+    
+
+
     gameService.getGame(this.id).subscribe(val=>{let g:Game = val as Game; this.game=observableOf(g)});
    }
 

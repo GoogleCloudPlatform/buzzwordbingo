@@ -8,6 +8,7 @@ export class Phrase{
   text:string
   selected:boolean
   tid:string
+  displayorder:number
 }
 
 
@@ -42,6 +43,10 @@ export class DataService {
 
   getBoards(id) { 
     return this.firestore.collection("games").doc(id).collection("boards").valueChanges();
+  }
+
+  getGameBoard(gid:string, bid:string) { 
+    return this.firestore.collection("games").doc(gid).collection("boards").doc(bid).collection("phrases").valueChanges();
   }
 
 }
