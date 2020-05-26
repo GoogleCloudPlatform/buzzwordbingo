@@ -1,22 +1,21 @@
 @import "../../../assets/variables.scss";
 
 header{
-    width: 100%;
+    max-width: 1000px;
     margin: 0 auto;
     display: flex;
     flex-wrap: wrap;
     
     h1{
-        width: 60%;
+        width: 55%;
         font-family: $header-font;
-        font-size: 40px;
-        color: #FFF
+        font-size: 32px;
+        color: #FFF;
 
     }
 
     nav{
-        width: 40%;
-        
+        width: 44%;
         ul{
             display: flex;
             flex-wrap: wrap;
@@ -27,7 +26,7 @@ header{
             li{
                 a{
                     display: inline-block;
-                    width: 100px;
+                    width: 80px;
                     text-align: center;
                     padding: 5px 5px;
                     margin-right: 8px;
@@ -59,18 +58,25 @@ header{
         width: 600px;
         
         h1{
-            width: 200px;
-            font-size: 20px;
+            width: 100%;
+            font-size: 30px;
 
         }
         nav{
-            width: 300px;
+            padding: 0;
+            width: 100%;
             ul{
+                padding: 0;
+                margin: 0 0 20px 0;
+                justify-content: flex-start;
+                padding-top: 0px;
                 li{
+                    margin-right: 20px;
                     a{
                         width: 50px;
-                        font-size: 12px;
-                        padding: 2px 2px;
+                        font-size: 18px;
+                        padding: 0 2px;
+                        margin-left: 0;
                     }
                     
                 }
@@ -81,20 +87,23 @@ header{
 
 @media screen and (max-width: 600px) {
     header{
-        width: 375px;
+        width: 100%;
         h1{
-            width: 150px;
+            width: 100%;
             font-size: 20px;
         }
         nav{
-            width: 200px;
+            width: 100%;
             ul{
+                padding-left: 0;
+                justify-content: flex-start;
                 li{
+                    margin-right: 10px;
                     a{
-                        width: 30px;
-                        font-size: 10px;
-                        padding: x 2px;
-                        margin-left: 3px;
+                        width: 70px;
+                        font-size: 18px;
+                        padding: 0 2px;
+                        margin-left: 0;
                     }
                     
                 }

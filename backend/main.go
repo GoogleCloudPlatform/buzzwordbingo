@@ -528,7 +528,7 @@ func getPlayerEmail(r *http.Request) (string, error) {
 	// If it's not behind IAP, it's developemnt
 	if email == "" {
 		username := os.Getenv("USER")
-		email = fmt.Sprintf("%s@example.com", username)
+		email = fmt.Sprintf("%s@google.com", username)
 	}
 
 	return email, nil

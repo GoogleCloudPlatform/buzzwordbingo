@@ -2,7 +2,7 @@
 	<h1>🌈Unicorn Meeting Bingo🦄</h1>
 	<nav>
 		<ul>
-			<li><a *ngIf="auth.isAdmin()" routerLink="/game/{{id}}" routerLinkActive="active">Game</a></li>
+			<li><a *ngIf="auth.isAdmin() || auth.isGameAdmin()" routerLink="/game/{{id}}" routerLinkActive="active">Game</a></li>
 			<li *ngIf="auth.isAdmin()"><a routerLink="/admin/{{id}}" routerLinkActive="active">Admin</a></li>
 			<li *ngIf="auth.isGameAdmin()"><a routerLink="/manage/{{id}}" routerLinkActive="active">Manage</a></li>
 			<li><a *ngIf="auth.isAuth()" href="" (click)="logout()">Quit</a></li>
