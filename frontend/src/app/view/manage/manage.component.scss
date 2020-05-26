@@ -13,6 +13,11 @@
         padding: 20px;
         margin: 20px 0 ;
         border-radius: 6px;
+        display:flex;
+        flex-wrap: wrap;
+        h2{
+            width: 100%;
+        }
         .invite-link{
             a{
                 display: inline-block;
@@ -21,6 +26,10 @@
                 background-color: $link-text-bg-color;
             }
             
+        }
+
+        .manage-module{
+            width: 50%;
         }
     }
 

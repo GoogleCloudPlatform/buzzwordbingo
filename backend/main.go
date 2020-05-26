@@ -18,7 +18,7 @@ import (
 var (
 	randseedfunc  = randomseed
 	a             Agent
-	cache         = NewCache()
+	cache         Cache
 	port          = ":8080"
 	noisy         = true
 	projectID     = ""
@@ -45,6 +45,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	cache, err = NewCache()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	fs := wrapHandler(http.FileServer(http.Dir("./static")))
 	http.HandleFunc("/", fs)
 	http.HandleFunc("/healthz", handleHealth)
@@ -54,6 +59,7 @@ func main() {
 	http.HandleFunc("/api/game", handleGetGame)
 	http.HandleFunc("/api/game/new", handleNewGame)
 	http.HandleFunc("/api/game/list", handleGetGames)
+	http.HandleFunc("/api/game/deactivate", handleDeactivateGame)
 	http.HandleFunc("/api/game/phrase/update", handleUpdateGamePhrase)
 	http.HandleFunc("/api/phrase/update", handleUpdateMasterPhrase)
 	http.HandleFunc("/api/game/isadmin", handleGetIsGameAdmin)
@@ -339,6 +345,36 @@ func handleGetGame(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func handleDeactivateGame(w http.ResponseWriter, r *http.Request) {
+	weblog("/api/game/deactivate called")
+
+	g, err := getFirstQuery("g", r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	isAdm, err := isGameAdmin(r, g)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if !isAdm {
+		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
+		writeResponse(w, http.StatusForbidden, msg)
+		return
+	}
+
+	if err := deactivateGame(g); err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	writeSuccess(w, "ok")
+
+}
+
 func handleRecordSelect(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/record called")
 
@@ -529,6 +565,7 @@ func getPlayerEmail(r *http.Request) (string, error) {
 	if email == "" {
 		username := os.Getenv("USER")
 		email = fmt.Sprintf("%s@google.com", username)
+
 	}
 
 	return email, nil
@@ -733,11 +770,11 @@ func getNewGame(name, email string) (Game, error) {
 	return game, nil
 }
 
-func getGame(id string) (Game, error) {
-	game, err := cache.GetGame(id)
+func getGame(gid string) (Game, error) {
+	game, err := cache.GetGame(gid)
 	if err != nil {
 		if err == ErrCacheMiss {
-			game, err = a.GetGame(id)
+			game, err = a.GetGame(gid)
 			if err != nil {
 				return Game{}, fmt.Errorf("error getting game: %v", err)
 			}
@@ -748,6 +785,29 @@ func getGame(id string) (Game, error) {
 	}
 
 	return game, nil
+}
+
+func deactivateGame(gid string) error {
+	game, err := cache.GetGame(gid)
+	if err != nil {
+		if err == ErrCacheMiss {
+			game, err = a.GetGame(gid)
+			if err != nil {
+				return fmt.Errorf("error getting game: %v", err)
+			}
+		}
+	}
+	game.Active = false
+
+	if err := cache.SaveGame(game); err != nil {
+		return fmt.Errorf("error caching game : %v", err)
+	}
+
+	if err := a.SaveGame(game); err != nil {
+		return fmt.Errorf("error saving game to firestore : %v", err)
+	}
+
+	return nil
 }
 
 func recordSelect(boardID, gameID, phraseID string) error {
@@ -765,9 +825,7 @@ func recordSelect(boardID, gameID, phraseID string) error {
 		return fmt.Errorf("could not get game id(%s): %s", b.Game, err)
 	}
 
-	fmt.Print("Before: %+v\n", p)
 	p = b.Select(p)
-	fmt.Print("After: %+v\n", p)
 	r := g.Select(p, b.Player)
 	bingo := b.Bingo()
 

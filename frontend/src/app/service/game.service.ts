@@ -106,6 +106,10 @@ export class GameService {
     return this.http.get(this.hostUrl +  "/api/game?g="+gid).pipe(share());
   }
 
+  deactivateGame (gid:string) {
+    return this.http.get(this.hostUrl +  "/api/game/deactivate?g="+gid).pipe(share());
+  }
+
   getGamesForPlayer(){
     return this.http.get(this.hostUrl +  "/api/game/list").pipe(share());
   }

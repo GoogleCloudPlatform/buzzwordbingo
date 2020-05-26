@@ -27,6 +27,10 @@ export class ManageComponent implements OnInit {
     this.messages.subscribe()
   }
 
+  deactivateGame(){
+    this.gameService.deactivateGame(this.id).subscribe();
+  }
+
 
 
 }

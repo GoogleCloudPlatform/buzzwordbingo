@@ -3,11 +3,17 @@
 <div class="main">
     <div class="manage-header">
         <h2>Manage {{(game | async)?.name}}</h2>
-        <p>Invite others to the game:</p>
-        <div class="invite-link">
-            <a href="{{inviteLink}}/{{(game | async)?.id}}">
-                {{inviteLink}}/{{(game | async)?.id}}
-            </a>
+        <div class="manage-module">
+            <p>Invite others to the game:</p>
+            <div class="invite-link">
+                <a href="{{inviteLink}}/{{(game | async)?.id}}">
+                    {{inviteLink}}/{{(game | async)?.id}}
+                </a>
+            </div>
+        </div>
+        <div class="manage-module">
+            <p>Shut Down the Game:</p>
+            <button (click)="deactivateGame()">Deactivate Game</button>
         </div>
     </div>
     <app-manage-master class="master" [id]=id></app-manage-master>

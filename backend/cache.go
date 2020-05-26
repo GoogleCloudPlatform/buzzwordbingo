@@ -9,10 +9,10 @@ import (
 var ErrCacheMiss = fmt.Errorf("item is not in cache")
 
 // NewCache returns an initialized cache ready to go.
-func NewCache() Cache {
+func NewCache() (Cache, error) {
 	c := Cache{}
 	c.Init()
-	return c
+	return c, nil
 }
 
 // Cache abstracts all of the operations of caching for the application
