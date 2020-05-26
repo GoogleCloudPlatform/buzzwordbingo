@@ -53,7 +53,7 @@ import { ManagePhraseFormComponent } from './view/manage/manage-phrases/manage-p
     ReactiveFormsModule,
     AppRoutingModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFirestoreModule,
+    AngularFirestoreModule.enablePersistence({synchronizeTabs: true}),
     HttpClientModule
   ],
   providers: [],
