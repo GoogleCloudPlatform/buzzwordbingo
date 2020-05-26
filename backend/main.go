@@ -208,6 +208,24 @@ func handleGetIAPUsername(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func handleGetGames(w http.ResponseWriter, r *http.Request) {
+	weblog("/api/game/list called")
+	email, err := getPlayerEmail(r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	games, err := a.GetGamesForPlayer(email)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	writeJSON(w, games)
+	return
+}
+
 func handleGetBoard(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/board called")
 	email, err := getPlayerEmail(r)
@@ -247,26 +265,24 @@ func handleGetBoard(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func handleGetGames(w http.ResponseWriter, r *http.Request) {
-	weblog("/api/game/list called")
-	email, err := getPlayerEmail(r)
-	if err != nil {
-		writeError(w, err.Error())
-		return
-	}
-
-	games, err := a.GetGamesForPlayer(email)
-	if err != nil {
-		writeError(w, err.Error())
-		return
-	}
-
-	writeJSON(w, games)
-	return
+func handlePreflight(w http.ResponseWriter, method string) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", method)
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }
 
 func handleDeleteBoard(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/board/delete called")
+
+	if r.Method == http.MethodOptions {
+		handlePreflight(w, "DELETE")
+		return
+	}
+	if r.Method != http.MethodDelete {
+		msg := fmt.Sprintf("{\"error\":\"Must use http method DELETE you had %s\"}", r.Method)
+		writeResponse(w, http.StatusMethodNotAllowed, msg)
+		return
+	}
 
 	isAdm, err := isAdmin(r)
 	if err != nil {

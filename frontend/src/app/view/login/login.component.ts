@@ -20,7 +20,7 @@ export class LoginComponent implements OnInit {
     this.id = route.snapshot.paramMap.get('id');
     console.log(this.id);
     this.identity =auth.identifyPlayer();
-    this.game.getGamesForPlayer().subscribe(val=>{this.games=val} );
+    this.game.getGamesForPlayer().subscribe(val=>{this.games=val; } );
   }
 
   ngOnInit(): void {

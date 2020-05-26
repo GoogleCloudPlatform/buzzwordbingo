@@ -95,7 +95,9 @@ export class GameService {
   }
 
   resetboard (bid:string, gid:string) {
-    return this.http.get(this.hostUrl + "/api/board/delete?b=" + bid + "&g=" + gid).subscribe();
+    let url = `${this.hostUrl}/api/board/delete?b=${bid}&g=${gid}`
+    console.log(url);
+    return this.http.delete(url).subscribe();
   }
 
   newGame (name:string) {
