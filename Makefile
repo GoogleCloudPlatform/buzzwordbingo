@@ -18,7 +18,6 @@ frontend: clean
 
 
 deploy: env
-	cp vendorfix/validate.go backend/vendor/google.golang.org/api/idtoken/validate.go 
 	cd backend && gcloud app deploy -q
 
 dev: 
@@ -55,6 +54,14 @@ sapermissions: env
 	-gcloud projects add-iam-policy-binding $(PROJECT) \
   	--member serviceAccount:$(SAACCOUNT)@$(PROJECT).iam.gserviceaccount.com \
   	--role roles/project.viewer
+
+gaeperms:
+	-gcloud projects add-iam-policy-binding $(PROJECT) \
+  	--member serviceAccount:$(PROJECT)@appspot.gserviceaccount.com \
+  	--role roles/vpcaccess.user
+	-gcloud projects add-iam-policy-binding $(PROJECT) \
+  	--member serviceAccount:$(PROJECTNUMBER)@cloudbuild.gserviceaccount.com \
+  	--role roles/vpcaccess.user
 
 project: env services appengine cloudbuild memorystore
 	

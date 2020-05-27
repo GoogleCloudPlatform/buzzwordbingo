@@ -40,13 +40,16 @@
     span{
         padding: 20% 20px;
         display:block;
+        user-select: none;
     }
 }   
 
 
 .disabled{
     background-color: $disabled-item-bg-color;
+    color: $disabled-item-color;
     cursor: default;
+    
     
 }
 

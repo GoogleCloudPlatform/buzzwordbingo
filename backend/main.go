@@ -460,13 +460,19 @@ func handleGameAdminAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAdm, err := isGameAdmin(r, g)
+	isgAdm, err := isGameAdmin(r, g)
 	if err != nil {
 		writeError(w, err.Error())
 		return
 	}
 
-	if !isAdm {
+	isAdm, err := isAdmin(r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if !isAdm && !isgAdm {
 		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
 		writeResponse(w, http.StatusForbidden, msg)
 		return
@@ -520,13 +526,19 @@ func handleGameAdminDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAdm, err := isGameAdmin(r, g)
+	isgAdm, err := isGameAdmin(r, g)
 	if err != nil {
 		writeError(w, err.Error())
 		return
 	}
 
-	if !isAdm {
+	isAdm, err := isAdmin(r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if !isAdm && !isgAdm {
 		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
 		writeResponse(w, http.StatusForbidden, msg)
 		return
@@ -912,6 +924,8 @@ func getBoardForPlayer(p Player, g Game) (Board, error) {
 
 func generateBingoMessages(b Board, g Game, first bool) []Message {
 
+	messages := []Message{}
+
 	bingoMsg := "<strong>You</strong> already had <em><strong>BINGO</strong></em> on your board."
 	dubiousMsg := fmt.Sprintf("<strong>%s</strong> might have just redeclared a dubious <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
 
@@ -920,10 +934,11 @@ func generateBingoMessages(b Board, g Game, first bool) []Message {
 		dubiousMsg = fmt.Sprintf("<strong>%s</strong> might have just declared a dubious <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
 	}
 
-	messages := []Message{}
-
 	m1 := Message{}
 	m1.SetText(bingoMsg)
+	if first {
+		m1.SetAudience(b.Player.Email, "all")
+	}
 	m1.SetAudience(b.Player.Email)
 	m1.Bingo = true
 	messages = append(messages, m1)

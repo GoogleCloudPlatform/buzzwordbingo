@@ -52,9 +52,9 @@ export class ItemComponent implements OnInit {
       return;
     }
 
-    this.selectDisplay();
+    
     this.phraseEmitter.emit(this.phrase);
-    this.game.record(this.phrase.id, this.gid, this.bid);
+    this.game.record(this.phrase.id, this.gid, this.bid).subscribe(val=>{this.selectDisplay();});
   }
 
 
@@ -113,6 +113,12 @@ export class ItemComponent implements OnInit {
 
   public disable(){
     this.disabled = true;
+    let item:HTMLElement = document.querySelector("#id_"+ this.phrase.id);
+    if (item != null){
+      item.classList.add("disabled");
+      item.classList.add("board-disabled");
+    }
+    
   }
 
   

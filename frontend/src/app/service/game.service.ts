@@ -93,7 +93,7 @@ export class GameService {
   }
 
   record (pid:string, gid:string,  bid:string) {
-    return this.http.get(this.hostUrl + "/api/record?p="+pid + "&g=" + gid + "&b=" + bid).subscribe();
+    return this.http.get(this.hostUrl + "/api/record?p="+pid + "&g=" + gid + "&b=" + bid);
   }
 
   resetboard (bid:string, gid:string) {
