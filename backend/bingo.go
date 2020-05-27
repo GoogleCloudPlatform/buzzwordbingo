@@ -264,9 +264,7 @@ func (ps *Players) Remove(p Player) Players {
 
 // Add adds a particular player from the list.
 func (ps *Players) Add(p Player) {
-	out := Players{}
-	out = append(out, p)
-	ps = &out
+	*ps = append(*ps, p)
 	return
 }
 

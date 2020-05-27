@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { share } from 'rxjs/operators';
 import { Observable, of  } from 'rxjs';
 import { Player} from '../service/auth.service'
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders} from '@angular/common/http';
 import { environment } from '../../environments/environment';
 
 export class Board{
@@ -30,6 +30,8 @@ export class Game  {
 	name:string 
   active:boolean
   master:Master   
+  admins:Player[]
+  players:Player[]
 }
 
 export class Master {
@@ -124,8 +126,26 @@ export class GameService {
 
   updateGamePhrase(gid:string, phrase:Phrase){
     let url = `${this.hostUrl}/api/game/phrase/update?g=${gid}&p=${phrase.id}&text=${phrase.text}`
-    console.log(url)
     return this.http.get(url).pipe(share());
+  }
+
+  addGameAdmin(gid:string, email:string){
+    let headers = new HttpHeaders();
+    headers.append('Content-Type', 'application/json');
+
+    let options = { headers: headers };
+    let url = `${this.hostUrl}/api/game/admin/add`
+
+    let body = new FormData();
+    body.append('g', gid);
+    body.append('email', email);
+
+    return this.http.post(url,body, options).pipe(share());
+  }
+
+  removeGameAdmin(gid:string, email:string){
+    let url = `${this.hostUrl}/api/game/admin/remove?g=${gid}&email=${email}`
+    return this.http.delete(url).pipe(share());
   }
 
 }

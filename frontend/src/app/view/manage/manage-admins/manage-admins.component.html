@@ -1,0 +1,11 @@
+<h2>Manage Game Administrators</h2>
+
+<div *ngFor="let admin of (game | async)?.admins" >
+    <input  readonly  [value]="admin.email">
+    <button [id]="admin.email" (click)="onAdminRemove($event)">Remove</button>
+</div>
+
+<form> 
+    <input  #newadmin type="text" class="form-control" required placeholder="enter admin email" name="email">
+    <button (click)="onAdminAdd(newadmin.value); newadmin.value=''">Add</button>
+</form>

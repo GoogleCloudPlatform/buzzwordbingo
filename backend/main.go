@@ -59,6 +59,8 @@ func main() {
 	http.HandleFunc("/api/game", handleGetGame)
 	http.HandleFunc("/api/game/new", handleNewGame)
 	http.HandleFunc("/api/game/list", handleGetGames)
+	http.HandleFunc("/api/game/admin/add", handleGameAdminAdd)
+	http.HandleFunc("/api/game/admin/remove", handleGameAdminDelete)
 	http.HandleFunc("/api/game/deactivate", handleDeactivateGame)
 	http.HandleFunc("/api/game/phrase/update", handleUpdateGamePhrase)
 	http.HandleFunc("/api/phrase/update", handleUpdateMasterPhrase)
@@ -419,6 +421,133 @@ func handleRecordSelect(w http.ResponseWriter, r *http.Request) {
 
 	writeSuccess(w, "ok")
 
+}
+
+func handleGameAdminAdd(w http.ResponseWriter, r *http.Request) {
+	weblog("/api/game/admin/add called")
+	if r.Method == http.MethodOptions {
+		handlePreflight(w, "POST")
+		return
+	}
+	if r.Method != http.MethodPost {
+		msg := fmt.Sprintf("{\"error\":\"Must use http method POST you had %s\"}", r.Method)
+		writeResponse(w, http.StatusMethodNotAllowed, msg)
+		return
+	}
+
+	if err := r.ParseMultipartForm(160000); err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	g := r.Form.Get("g")
+	email := r.Form.Get("email")
+
+	if email == "" {
+		writeError(w, "email is required")
+		return
+	}
+
+	if g == "" {
+		writeError(w, "g is required")
+		return
+	}
+
+	isAdm, err := isGameAdmin(r, g)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if !isAdm {
+		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
+		writeResponse(w, http.StatusForbidden, msg)
+		return
+	}
+
+	game, err := getGame(g)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+	p := Player{}
+	p.Email = email
+
+	game.Admins.Add(p)
+
+	if err := cache.SaveGame(game); err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if err := a.SaveGame(game); err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	writeSuccess(w, "ok")
+	return
+}
+
+func handleGameAdminDelete(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method == http.MethodOptions {
+		handlePreflight(w, "DELETE")
+		return
+	}
+	if r.Method != http.MethodDelete {
+		msg := fmt.Sprintf("{\"error\":\"Must use http method DELETE you had %s\"}", r.Method)
+		writeResponse(w, http.StatusMethodNotAllowed, msg)
+		return
+	}
+
+	g, err := getFirstQuery("g", r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	email, err := getFirstQuery("email", r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	isAdm, err := isGameAdmin(r, g)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if !isAdm {
+		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
+		writeResponse(w, http.StatusForbidden, msg)
+		return
+	}
+
+	game, err := getGame(g)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+	p := Player{}
+	p.Email = email
+
+	new := game.Admins.Remove(p)
+	game.Admins = new
+
+	if err := cache.SaveGame(game); err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if err := a.SaveGame(game); err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	writeSuccess(w, "ok")
+	return
 }
 
 func handleHealth(w http.ResponseWriter, r *http.Request) {

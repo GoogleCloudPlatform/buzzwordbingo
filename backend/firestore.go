@@ -290,10 +290,25 @@ func (a *Agent) AddMessagesToGame(g Game, m []Message) error {
 // SaveGame records a game to firestore.
 func (a *Agent) SaveGame(g Game) error {
 
+	oldgame, err := a.GetGame(g.ID)
+	if err != nil {
+		return fmt.Errorf("error getting old data for game: %s", err)
+	}
+
 	a.log("Save game")
 	batch := a.client.Batch()
 	gref := a.client.Collection("games").Doc(g.ID)
 	batch.Set(gref, g)
+
+	for _, v := range oldgame.Players {
+		ref := a.client.Collection("games").Doc(g.ID).Collection("players").Doc(v.Email)
+		batch.Delete(ref)
+	}
+
+	for _, v := range oldgame.Admins {
+		ref := a.client.Collection("games").Doc(g.ID).Collection("admins").Doc(v.Email)
+		batch.Delete(ref)
+	}
 
 	for _, v := range g.Players {
 		ref := a.client.Collection("games").Doc(g.ID).Collection("players").Doc(v.Email)

@@ -13,7 +13,7 @@ export class ManagePhrasesComponent implements OnInit {
   public id:string;
   constructor(private gameService:GameService, public router:Router, route: ActivatedRoute) { 
     this.id = route.snapshot.paramMap.get('id');
-    this.gameService.getGame(this.id).subscribe(val=>{let g:Game = val as Game; this.game=observableOf(g); console.log(g)});
+    this.gameService.getGame(this.id).subscribe(val=>{let g:Game = val as Game; this.game=observableOf(g);});
   }
 
   ngOnInit(): void {

@@ -25,6 +25,7 @@ import { GamenewComponent } from './view/login/gamenew/gamenew.component';
 import { ManageComponent } from './view/manage/manage.component';
 import { ManagePhrasesComponent } from './view/manage/manage-phrases/manage-phrases.component';
 import { ManagePhraseFormComponent } from './view/manage/manage-phrases/manage-phrase-form/manage-phrase-form.component';
+import { ManageAdminsComponent } from './view/manage/manage-admins/manage-admins.component';
 
 @NgModule({
   declarations: [
@@ -45,7 +46,8 @@ import { ManagePhraseFormComponent } from './view/manage/manage-phrases/manage-p
     GamenewComponent,
     ManageComponent,
     ManagePhrasesComponent,
-    ManagePhraseFormComponent
+    ManagePhraseFormComponent,
+    ManageAdminsComponent
   ],
   imports: [
     BrowserModule,
