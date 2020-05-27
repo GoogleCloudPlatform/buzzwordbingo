@@ -30,6 +30,10 @@ var (
 
 func main() {
 	var err error
+
+	redisHost := os.Getenv("REDISHOST")
+	redisPort := os.Getenv("REDISPORT")
+
 	projectID, err = getProjectID()
 	if err != nil {
 		log.Fatal(err)
@@ -45,7 +49,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	cache, err = NewCache()
+	cache, err = NewCache(redisHost, redisPort)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -363,7 +367,7 @@ func handleGameGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, game)
-
+	return
 }
 
 func handleGameDeactivate(w http.ResponseWriter, r *http.Request) {

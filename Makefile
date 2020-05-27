@@ -97,3 +97,27 @@ secure: env
 	gcloud iap web add-iam-policy-binding  \
       --member='allAuthenticatedUsers' \
       --role='roles/iap.httpsResourceAccessor' 	
+
+redis: redisclean
+	docker run --name some-redis -p 6379:6379 -d redis	
+
+redisclean:
+	-docker stop some-redis
+	-docker rm some-redis
+
+
+serverredis:  redis
+	cd $(BASEDIR)/backend && \
+	export REDISHOST=127.0.0.1 && \
+	export REDISPORT=6379 && \
+	export GOOGLE_APPLICATION_CREDENTIALS=$(BASEDIR)/creds/creds.json && \
+	go run main.go firestore.go bingo.go cache.go
+
+devredis: redis
+	(trap 'kill 0' SIGINT; \
+	cd $(BASEDIR)/backend && \
+	export REDISHOST=127.0.0.1 && \
+	export REDISPORT=6379 && \
+	export GOOGLE_APPLICATION_CREDENTIALS=$(BASEDIR)/creds/creds.json && \
+	go run main.go firestore.go bingo.go cache.go & \
+	cd $(BASEDIR)/frontend && ng serve --open )	
