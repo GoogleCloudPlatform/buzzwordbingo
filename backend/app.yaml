@@ -14,3 +14,10 @@
 
 service: default
 runtime: go113
+
+env_variables:
+    REDISHOST: '10.36.80.83'
+    REDISPORT: '6379'
+  
+vpc_access_connector:
+    name: 'projects/bingo-collab/locations/us-central1/connectors/bingocollabconnector'
