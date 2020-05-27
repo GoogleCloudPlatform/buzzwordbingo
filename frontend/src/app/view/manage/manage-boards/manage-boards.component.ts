@@ -9,18 +9,22 @@ import {GameService, Board, Message, Record} from '../../../service/game.service
   styleUrls: ['./manage-boards.component.scss']
 })
 export class ManageBoardsComponent implements OnInit {
-  @Input() id:string;
+  @Input() gid:string;
   public boards: Observable<any[]>;
-  constructor(public data:DataService, public game:GameService) { }
+  constructor(public data:DataService, public gameService:GameService) { }
 
   ngOnInit(): void {
-    this.boards = this.data.getBoards(this.id)
+    this.boards = this.data.getBoards(this.gid)
     this.boards.subscribe();
   }
 
   reset(bid:string, gid:string){
     console.log("Reset called")
-    this.game.resetboard(bid, gid);
+    this.gameService.resetboard(bid, gid);
+  }
+
+  onAdminAdd(email:string){
+    this.gameService.addGameAdmin(this.gid, email).subscribe();
   }
 
 
