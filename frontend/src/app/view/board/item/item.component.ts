@@ -12,8 +12,8 @@ import {GameService, Board} from '../../../service/game.service'
 
 export class ItemComponent implements OnInit {
   @Input() phrase: Phrase;
-  @Input() boardid: string;
-  @Input() board: Board;
+  @Input() bid: string;
+  @Input() gid: string;
   @Input() currentState:any;
   @Input() position: number;
   @Input() bingo:boolean = false;
@@ -37,9 +37,6 @@ export class ItemComponent implements OnInit {
     
   } 
 
-  ngOnChange(){
-    console.log("Bingo:", this.bingo);
-  }
 
   select(){
     if (this.bingo){
@@ -54,10 +51,10 @@ export class ItemComponent implements OnInit {
     if (this.disabled){
       return;
     }
-    
+
     this.selectDisplay();
     this.phraseEmitter.emit(this.phrase);
-    this.game.record(this.phrase.id, this.board.game, this.board.id);
+    this.game.record(this.phrase.id, this.gid, this.bid);
   }
 
 
@@ -116,11 +113,6 @@ export class ItemComponent implements OnInit {
 
   public disable(){
     this.disabled = true;
-    let item:HTMLElement = document.querySelector("#id_"+ this.phrase.id);
-    if (!this.phrase.selected){
-      item.classList.add("disabled");
-    }
-    item.classList.add("board-disabled");
   }
 
   

@@ -5,7 +5,7 @@ import {AuthService, Player} from '../../service/auth.service'
 import {GameService, Board, Message, Game} from '../../service/game.service'
 import { Router, ActivatedRoute } from '@angular/router';
 import {ItemComponent} from './item/item.component'
-import { map } from 'rxjs/operators';
+import { map, share } from 'rxjs/operators';
 
 
 
@@ -20,7 +20,7 @@ export class BoardComponent implements OnInit {
   private itemComponent: ItemComponent;
   public itemComponents: ItemComponent[] = [];
 
-  public id:string;
+  public gid:string;
   public board: Observable<any>;
   public phrases: Observable<any[]>;
   public currentState:any = {};
@@ -34,17 +34,17 @@ export class BoardComponent implements OnInit {
     if (!auth.isAuth()){
       auth.logout("not authed")
     }
-    this.id = route.snapshot.paramMap.get('id');
+    this.gid = route.snapshot.paramMap.get('id');
     this.player = auth.getPlayer(); 
     
     if (this.player.email == "undefined"){
       auth.logout("not authed")
     }
     
-    this.board = gameService.getBoard(this.player.name, this.id);
+    this.board = gameService.getBoard(this.player.name, this.gid).pipe(share());
     this.board.subscribe(val=>{
         this.boardid=val.id; 
-        this.phrases = data.getGameBoard(this.id, this.boardid).pipe(map(val => {
+        this.phrases = data.getGameBoard(this.gid, this.boardid).pipe(map(val => {
           let phrases:Phrase[] = val as Phrase[]
           phrases= phrases.sort((a, b) => (a.displayorder > b.displayorder) ? 1 : -1)
           return phrases;
@@ -57,11 +57,11 @@ export class BoardComponent implements OnInit {
     
 
 
-    gameService.getGame(this.id).subscribe(val=>{let g:Game = val as Game; this.game=observableOf(g)});
+    gameService.getGame(this.gid).subscribe(val=>{let g:Game = val as Game; this.game=observableOf(g)});
    }
 
   ngOnInit(): void {
-    this.messages = this.data.getMessages(this.id);
+    this.messages = this.data.getMessages(this.gid);
     this.messages.subscribe(ms=>{this.listenForBingo(ms),this.listenForReset(ms)})
   }
 
@@ -71,11 +71,9 @@ export class BoardComponent implements OnInit {
       }
   }
 
-
   declareBingo(){
     this.bingo=true;
-      console.log("Bingo Declared");
-      this.showBingo()
+      this.showBingo();
       this.itemComponents.forEach(function(child){
         child.disable();
       })
@@ -153,7 +151,12 @@ export class BoardComponent implements OnInit {
   receiveChild($event) {
     let child = $event;
     this.itemComponents.push(child)
-    
+
+    if(this.itemComponents.length == 25 && this.bingo){
+      this.itemComponents.forEach(function(child){
+        child.disable();
+      })
+    }
   }
 
 

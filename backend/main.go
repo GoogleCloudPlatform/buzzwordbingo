@@ -997,7 +997,7 @@ func recordSelect(boardID, gameID, phraseID string) error {
 	messages = append(messages, m)
 
 	if bingo {
-		msg := generateBingoMessages(b, g, false)
+		msg := generateBingoMessages(b, g, true)
 		messages = append(messages, msg...)
 	}
 

@@ -11,10 +11,10 @@
         </div>
         <app-item #items class="cell"
             *ngFor="let phrase of phrases | async; let i = index;" 
-            [phrase]='phrase' [boardid]='boardid' 
+            [phrase]='phrase' [bid]='boardid' 
             (phraseEmitter)="recievePhrase($event)" 
             (readyEmitter)="receiveChild($event)" 
-            [board]="(board | async)"
+            [gid]="gid"
             [position]="i+1" [currentState]='currentState'>
         </app-item>
     </div>
