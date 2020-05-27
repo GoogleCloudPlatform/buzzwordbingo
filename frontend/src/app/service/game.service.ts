@@ -85,11 +85,11 @@ export class GameService {
   }
 
   isAdmin (): Observable<boolean> {
-    return this.http.get<boolean>(this.hostUrl+ "/api/player/isadmin");
+    return this.http.get<boolean>(this.hostUrl+ "/api/player/isadmin").pipe(share());
   }
 
   isGameAdmin (gid:string): Observable<boolean> {
-    return this.http.get<boolean>(this.hostUrl+ "/api/game/isadmin?g=" + gid);
+    return this.http.get<boolean>(this.hostUrl+ "/api/game/isadmin?g=" + gid).pipe(share());
   }
 
   record (pid:string, gid:string,  bid:string) {
@@ -146,6 +146,29 @@ export class GameService {
   removeGameAdmin(gid:string, email:string){
     let url = `${this.hostUrl}/api/game/admin/remove?g=${gid}&email=${email}`
     return this.http.delete(url).pipe(share());
+  }
+
+  addAdmin(email:string){
+    let headers = new HttpHeaders();
+    headers.append('Content-Type', 'application/json');
+
+    let options = { headers: headers };
+    let url = `${this.hostUrl}/api/admin/add`
+
+    let body = new FormData();
+    body.append('email', email);
+
+    return this.http.post(url,body, options).pipe(share());
+  }
+
+  removeAdmin(email:string){
+    let url = `${this.hostUrl}/api/admin/remove?email=${email}`
+    return this.http.delete(url).pipe(share());
+  }
+
+  getAdmins(){
+    let url = `${this.hostUrl}/api/admin/list`
+    return this.http.get(url).pipe(share());
   }
 
 }

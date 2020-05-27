@@ -20,17 +20,13 @@ export class Phrase{
 export class DataService {
 
   constructor(private firestore: AngularFirestore, private game:GameService) { }
-  formPhrase = new FormGroup({        
-    id: new FormControl(''),
-    phrase: new FormControl('')
-  })
 
   getPhrases() { 
     return this.firestore.collection("phrases").valueChanges();
   }
 
-  updatePhrase(phrase:Phrase) { 
-    return this.firestore.collection("phrases").doc(phrase.id).set({ text: phrase.text }, { merge: true });
+  getAdmins() { 
+    return this.firestore.collection("admins").valueChanges();
   }
 
   getMessages(id) { 

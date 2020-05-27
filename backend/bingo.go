@@ -268,6 +268,17 @@ func (ps *Players) Add(p Player) {
 	return
 }
 
+// JSON Returns the given list of players struct as a JSON string
+func (ps Players) JSON() (string, error) {
+
+	bytes, err := json.Marshal(ps)
+	if err != nil {
+		return "", fmt.Errorf("could not marshal json for response: %s", err)
+	}
+
+	return string(bytes), nil
+}
+
 // Board is an individual board that the players use to play bingo
 type Board struct {
 	ID            string   `json:"id" firestore:"id"`

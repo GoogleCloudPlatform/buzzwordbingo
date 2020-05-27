@@ -53,20 +53,23 @@ func main() {
 	fs := wrapHandler(http.FileServer(http.Dir("./static")))
 	http.HandleFunc("/", fs)
 	http.HandleFunc("/healthz", handleHealth)
-	http.HandleFunc("/api/board", handleGetBoard)
-	http.HandleFunc("/api/board/delete", handleDeleteBoard)
+	http.HandleFunc("/api/board", handleBoardGet)
+	http.HandleFunc("/api/board/delete", handleBoardDelete)
 	http.HandleFunc("/api/record", handleRecordSelect)
-	http.HandleFunc("/api/game", handleGetGame)
-	http.HandleFunc("/api/game/new", handleNewGame)
-	http.HandleFunc("/api/game/list", handleGetGames)
+	http.HandleFunc("/api/game", handleGameGet)
+	http.HandleFunc("/api/game/new", handleGameNew)
+	http.HandleFunc("/api/game/list", handleGameList)
 	http.HandleFunc("/api/game/admin/add", handleGameAdminAdd)
 	http.HandleFunc("/api/game/admin/remove", handleGameAdminDelete)
-	http.HandleFunc("/api/game/deactivate", handleDeactivateGame)
-	http.HandleFunc("/api/game/phrase/update", handleUpdateGamePhrase)
-	http.HandleFunc("/api/phrase/update", handleUpdateMasterPhrase)
-	http.HandleFunc("/api/game/isadmin", handleGetIsGameAdmin)
-	http.HandleFunc("/api/player/identify", handleGetIAPUsername)
-	http.HandleFunc("/api/player/isadmin", handleGetIsAdmin)
+	http.HandleFunc("/api/game/deactivate", handleGameDeactivate)
+	http.HandleFunc("/api/game/phrase/update", handleGamePhraseUpdate)
+	http.HandleFunc("/api/phrase/update", handleMasterPhraseUpdate)
+	http.HandleFunc("/api/game/isadmin", handleIsGameAdmin)
+	http.HandleFunc("/api/player/identify", handleIAPUsernameGet)
+	http.HandleFunc("/api/player/isadmin", handleIsAdmin)
+	http.HandleFunc("/api/admin/add", handleAdminAdd)
+	http.HandleFunc("/api/admin/remove", handleAdminDelete)
+	http.HandleFunc("/api/admin/list", handleAdminList)
 
 	weblog(fmt.Sprintf("Starting server on port %s\n", port))
 	if err := http.ListenAndServe(port, nil); err != nil {
@@ -75,7 +78,7 @@ func main() {
 
 }
 
-func handleGetIsAdmin(w http.ResponseWriter, r *http.Request) {
+func handleIsAdmin(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/player/isadmin called")
 	isAdm, err := isAdmin(r)
 	if err != nil {
@@ -87,7 +90,7 @@ func handleGetIsAdmin(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func handleGetIsGameAdmin(w http.ResponseWriter, r *http.Request) {
+func handleIsGameAdmin(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/game/isadmin called")
 
 	gid, err := getFirstQuery("g", r)
@@ -106,7 +109,7 @@ func handleGetIsGameAdmin(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func handleUpdateGamePhrase(w http.ResponseWriter, r *http.Request) {
+func handleGamePhraseUpdate(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/game/phrase/update called")
 
 	gid, err := getFirstQuery("g", r)
@@ -153,7 +156,7 @@ func handleUpdateGamePhrase(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func handleUpdateMasterPhrase(w http.ResponseWriter, r *http.Request) {
+func handleMasterPhraseUpdate(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/phrase/update called")
 
 	pid, err := getFirstQuery("p", r)
@@ -194,7 +197,7 @@ func handleUpdateMasterPhrase(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func handleGetIAPUsername(w http.ResponseWriter, r *http.Request) {
+func handleIAPUsernameGet(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/player/identify called")
 	p := Player{}
 
@@ -210,7 +213,7 @@ func handleGetIAPUsername(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func handleGetGames(w http.ResponseWriter, r *http.Request) {
+func handleGameList(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/game/list called")
 	email, err := getPlayerEmail(r)
 	if err != nil {
@@ -228,7 +231,7 @@ func handleGetGames(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func handleGetBoard(w http.ResponseWriter, r *http.Request) {
+func handleBoardGet(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/board called")
 	email, err := getPlayerEmail(r)
 	if err != nil {
@@ -273,7 +276,7 @@ func handlePreflight(w http.ResponseWriter, method string) {
 	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }
 
-func handleDeleteBoard(w http.ResponseWriter, r *http.Request) {
+func handleBoardDelete(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/board/delete called")
 
 	if r.Method == http.MethodOptions {
@@ -319,7 +322,7 @@ func handleDeleteBoard(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func handleNewGame(w http.ResponseWriter, r *http.Request) {
+func handleGameNew(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/game/new called")
 
 	name, err := getFirstQuery("name", r)
@@ -344,7 +347,7 @@ func handleNewGame(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func handleGetGame(w http.ResponseWriter, r *http.Request) {
+func handleGameGet(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/game called")
 
 	g, err := getFirstQuery("g", r)
@@ -363,7 +366,7 @@ func handleGetGame(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func handleDeactivateGame(w http.ResponseWriter, r *http.Request) {
+func handleGameDeactivate(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/game/deactivate called")
 
 	g, err := getFirstQuery("g", r)
@@ -547,6 +550,108 @@ func handleGameAdminDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeSuccess(w, "ok")
+	return
+}
+
+func handleAdminAdd(w http.ResponseWriter, r *http.Request) {
+	weblog("/api/admin/add called")
+	if r.Method == http.MethodOptions {
+		handlePreflight(w, "POST")
+		return
+	}
+	if r.Method != http.MethodPost {
+		msg := fmt.Sprintf("{\"error\":\"Must use http method POST you had %s\"}", r.Method)
+		writeResponse(w, http.StatusMethodNotAllowed, msg)
+		return
+	}
+
+	if err := r.ParseMultipartForm(160000); err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	email := r.Form.Get("email")
+
+	if email == "" {
+		writeError(w, "email is required")
+		return
+	}
+
+	isAdm, err := isAdmin(r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if !isAdm {
+		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
+		writeResponse(w, http.StatusForbidden, msg)
+		return
+	}
+	p := Player{}
+	p.Email = email
+
+	if err := a.AddAdmin(p); err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	writeSuccess(w, "ok")
+	return
+}
+
+func handleAdminDelete(w http.ResponseWriter, r *http.Request) {
+	weblog("/api/admin/delete called")
+	if r.Method == http.MethodOptions {
+		handlePreflight(w, "DELETE")
+		return
+	}
+	if r.Method != http.MethodDelete {
+		msg := fmt.Sprintf("{\"error\":\"Must use http method DELETE you had %s\"}", r.Method)
+		writeResponse(w, http.StatusMethodNotAllowed, msg)
+		return
+	}
+
+	email, err := getFirstQuery("email", r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	isAdm, err := isAdmin(r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if !isAdm {
+		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
+		writeResponse(w, http.StatusForbidden, msg)
+		return
+	}
+
+	p := Player{}
+	p.Email = email
+
+	if err := a.DeleteAdmin(p); err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	writeSuccess(w, "ok")
+	return
+}
+
+func handleAdminList(w http.ResponseWriter, r *http.Request) {
+	weblog("/api/admin/list called")
+
+	players, err := a.GetAdmins()
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	writeJSON(w, players)
 	return
 }
 

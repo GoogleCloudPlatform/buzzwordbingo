@@ -1,0 +1,22 @@
+@import "../../../../assets/variables.scss";
+:host{
+    background-color: $interface-bg-color;
+    color: $interface-text-color;
+    padding: 20px;
+    border-radius: 6px;
+}
+
+input{
+    width: 400px;
+    font-size: 20px;
+    margin-right: 5px;
+    border-radius: 6px;
+}
+
+button{
+    font-size: 20px;
+}
+
+form{
+    margin-bottom: 10px;
+}
