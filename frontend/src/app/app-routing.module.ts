@@ -17,6 +17,7 @@ const routes: Routes = [
   { path: 'gamepicker', component: GamepickerComponent },
   { path: 'gamenew', component:  GamenewComponent},
   { path: 'manage/:id', component:  ManageComponent},
+  { path: 'admin', component: AdminComponent, canActivate: [AuthGuard] },
   { path: 'admin/:id', component: AdminComponent, canActivate: [AuthGuard] },
 ];
 
