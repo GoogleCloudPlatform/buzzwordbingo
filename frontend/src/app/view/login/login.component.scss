@@ -3,14 +3,16 @@
     margin: 10px auto;
     box-shadow: 0 1px 2px 0 rgba(60,64,67,0.30), 0 2px 6px 2px rgba(60,64,67,0.15);
     background-color: var(--login-bg-color);
+    color: var(--login-color);
     border-radius: 6px;
+    
 
     h1{
         margin-top:0;
         font-size: 24px;
         padding: 10px 30px 10px 30px;
         background-color: var(--login-highlight-bg-color);
-        color: var(--interface-text-color);
+        color: var(--login-header-text-color);
         border-top-left-radius: 6px;
         border-top-right-radius: 6px;
         font-family: var(--login-header-font);
@@ -55,7 +57,7 @@
     button{
         margin: 3px 30px 20px 30px;;
         background-color: var(--login-highlight-bg-color);
-        color: var(--interface-text-color);
+        color: var(--login-header-text-color);
         font-size: 24px;
         border-radius: 6px;
         padding: 0px 30px;

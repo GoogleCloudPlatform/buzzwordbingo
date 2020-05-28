@@ -1,4 +1,4 @@
-
+<app-toolbar></app-toolbar>
 <div class="login">
     <h1>Enter name to play</h1>
     <p>Only your name will appear on screen. </p>
@@ -10,4 +10,5 @@
     <input readonly id="email" type="email" name="email" [value]="(identity | async)?.email | replace">
     <br />
     <button (click)="submitPlayer()" >Go!</button>
+    <app-footer></app-footer>
 </div>

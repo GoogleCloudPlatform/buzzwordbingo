@@ -1,9 +1,11 @@
 .main{
+    max-width: 1000px;
+    margin: 0 auto;
     background-color: var(--interface-bg-color);
     color: var(--interface-text-color);
     padding: 20px;
-    margin: 20px;
     border-radius: 6px;
+    
 
     li{
         font-weight: 100;
@@ -15,6 +17,29 @@
         font-weight:900;
     }
 
+    .admins{
+        width: 100%;
+        display: block;
+    }
+
 
 }
 
+.picker{
+    display:block;
+    margin: 0 auto;
+    max-width: 1000px;
+}
+
+@media screen and (max-width: 1000px) {
+    .main{
+        width: 600px;
+        margin: 0 auto;
+    }
+
+    .picker{
+        margin: 0 auto;
+        max-width: 600px;
+    }
+
+}

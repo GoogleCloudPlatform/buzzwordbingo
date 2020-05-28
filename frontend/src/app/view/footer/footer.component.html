@@ -1,0 +1,17 @@
+<footer>
+    <div>
+        <input type="radio" id="light" name="drone" value="light" [checked]="theme=='light'" (click)="click('light')">
+        <label for="light">Light</label>
+    </div>
+
+    <div>
+        <input type="radio" id="dark" name="drone" value="dark" [checked]="theme=='dark'" (click)="click('dark')">
+        <label for="dark">Dark</label>
+    </div>
+
+    <div>
+        <input type="radio" id="unicorn" name="drone" value="unicorn" [checked]="theme=='unicorn'" checked (click)="click('unicorn')">
+        <label for="unicorn">Unicorn</label>
+    </div>
+      
+</footer>

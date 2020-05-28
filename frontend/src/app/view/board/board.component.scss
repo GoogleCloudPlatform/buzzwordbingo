@@ -39,7 +39,7 @@
                 text-align: center;
                 font-size: 72px;
                 font-weight: 900;
-                color: #e3c3ff;
+                color: var(--bingo-header-color);
                 padding-top:10px;
                 box-sizing: border-box;
             }
@@ -47,9 +47,10 @@
 
         .header-bingo{
             background-image:  var(--bingo-header-bg-image);
+            background-color: var(--bingo-declared-header-bg-color);
             
             header{
-                color:  var(--interface-text-color);
+                color:  var(--bingo-declared-header-color);
                 text-shadow: 0px 0px 3px  var(--bingo-header-text-shadow);
             }
         }

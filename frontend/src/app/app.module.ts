@@ -27,6 +27,7 @@ import { ManagePhrasesComponent } from './view/manage/manage-phrases/manage-phra
 import { ManagePhraseFormComponent } from './view/manage/manage-phrases/manage-phrase-form/manage-phrase-form.component';
 import { ManageAdminsComponent } from './view/manage/manage-admins/manage-admins.component';
 import { AdminAdminsComponent } from './view/admin/admin-admins/admin-admins.component';
+import { FooterComponent } from './view/footer/footer.component';
 
 @NgModule({
   declarations: [
@@ -49,7 +50,8 @@ import { AdminAdminsComponent } from './view/admin/admin-admins/admin-admins.com
     ManagePhrasesComponent,
     ManagePhraseFormComponent,
     ManageAdminsComponent,
-    AdminAdminsComponent
+    AdminAdminsComponent,
+    FooterComponent
   ],
   imports: [
     BrowserModule,
