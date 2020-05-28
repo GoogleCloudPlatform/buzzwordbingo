@@ -74,6 +74,7 @@ func main() {
 	http.HandleFunc("/api/admin/add", handleAdminAdd)
 	http.HandleFunc("/api/admin/remove", handleAdminDelete)
 	http.HandleFunc("/api/admin/list", handleAdminList)
+	http.HandleFunc("/api/message/receive", handleMessageAcknowledge)
 
 	weblog(fmt.Sprintf("Starting server on port %s\n", port))
 	if err := http.ListenAndServe(port, nil); err != nil {
@@ -214,6 +215,41 @@ func handleIAPUsernameGet(w http.ResponseWriter, r *http.Request) {
 	p.Email = email
 
 	writeJSON(w, p)
+
+}
+
+func handleMessageAcknowledge(w http.ResponseWriter, r *http.Request) {
+	weblog("/api/message/receive called")
+
+	if r.Method == http.MethodOptions {
+		handlePreflight(w, "POST")
+		return
+	}
+	if r.Method != http.MethodPost {
+		msg := fmt.Sprintf("{\"error\":\"Must use http method POST you had %s\"}", r.Method)
+		writeResponse(w, http.StatusMethodNotAllowed, msg)
+		return
+	}
+
+	if err := r.ParseMultipartForm(160000); err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	mid := r.Form.Get("m")
+	gid := r.Form.Get("g")
+
+	g := Game{}
+	m := Message{}
+	g.ID = gid
+	m.ID = mid
+
+	if err := a.AcknowledgeMessage(g, m); err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	writeSuccess(w, "ok")
 
 }
 

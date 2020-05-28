@@ -17,6 +17,7 @@ type Message struct {
 	Audience  []string `json:"audience" firestore:"audience"`
 	Bingo     bool     `json:"bingo" firestore:"bingo"`
 	Operation string   `json:"operation" firestore:"operation"`
+	Received  bool     `json:"received" firestore:"received"`
 }
 
 // SetText sets the text of the broadcast message

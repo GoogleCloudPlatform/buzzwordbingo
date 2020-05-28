@@ -104,12 +104,13 @@ export class BoardComponent implements OnInit {
       return;
     }
 
-    if (msg.operation == "reset"){
-      let ignoreid = localStorage.getItem(msg.id);
-      if (ignoreid == null){
-        this.auth.logout("reset message received for " + this.boardid, msg.id )
-      }
+    if (msg.operation == "reset" && !msg.received){
+      console.log(msg);
+      this.gameService.messageReceived(this.gid, msg.id).subscribe();
+      this.auth.logout("reset message received for " + this.boardid, msg.id )
+      return;
     }
+    return;
   }
 
 

@@ -476,6 +476,17 @@ func (a *Agent) AddMessagesToGame(g Game, m []Message) error {
 	return nil
 }
 
+// AcknowledgeMessage marks the message as having been received.
+func (a *Agent) AcknowledgeMessage(g Game, m Message) error {
+
+	update := map[string]interface{}{"received": true}
+	if _, err := a.client.Collection("games").Doc(g.ID).Collection("messages").Doc(m.ID).Set(ctx, update, firestore.MergeAll); err != nil {
+		return fmt.Errorf("unable to acknowledge message: %s", err)
+	}
+
+	return nil
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BOARDS
 ////////////////////////////////////////////////////////////////////////////////

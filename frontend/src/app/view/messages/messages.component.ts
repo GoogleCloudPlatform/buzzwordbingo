@@ -34,8 +34,7 @@ export class MessagesComponent implements OnInit {
         if ((val == self.target) || (val == "all")) {
           result = true
         } 
-      })
-
+    })
     return result;    
   }
 

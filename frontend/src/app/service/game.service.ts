@@ -44,6 +44,7 @@ export class Message  {
   audience:string[]  
   operation:string 
   id:string
+  received:boolean
   
   public isAudience(email:string):boolean{
     this.audience.forEach(function(aud:string) {			
@@ -169,6 +170,17 @@ export class GameService {
   getAdmins(){
     let url = `${this.hostUrl}/api/admin/list`
     return this.http.get(url).pipe(share());
+  }
+
+  messageReceived(gid:string, mid:string){
+    let headers = new HttpHeaders();
+    headers.append('Content-Type', 'application/json');
+    let options = { headers: headers };
+    let body = new FormData();
+    body.append('g', gid);
+    body.append('m', mid);
+    let url = `${this.hostUrl}/api/message/receive`
+    return this.http.post(url, body).pipe(share());
   }
 
 }
