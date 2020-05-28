@@ -1,8 +1,6 @@
-@import "../../../../assets/variables.scss";
-
 .main{
-    background-color: $interface-bg-color;
-    color: $interface-text-color;
+    background-color: var(--interface-bg-color);
+    color: var(--interface-text-color);
     padding: 20px;
     margin: 20px;
     border-radius: 6px;
@@ -10,7 +8,7 @@
     li{
         font-weight: 100;
         a{
-            color: $link-text-color;
+            color: var(--link-text-color);
         }
     }
     li.active{

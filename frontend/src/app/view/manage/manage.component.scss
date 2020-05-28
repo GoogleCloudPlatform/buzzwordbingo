@@ -8,8 +8,8 @@
     
     .manage-header{
         width: 100%;
-        color: $interface-text-color;
-        background-color: $interface-bg-color;
+        color: var(--interface-text-color);
+        background-color: var(--interface-bg-color);
         padding: 20px;
         margin: 20px 0 ;
         border-radius: 6px;
@@ -22,8 +22,8 @@
             a{
                 display: inline-block;
                 padding: 5px;
-                color: $link-text-color;
-                background-color: $link-text-bg-color;
+                color: var(--link-text-color);
+                background-color: var(--link-text-bg-color);
             }
             
         }
@@ -45,8 +45,8 @@
 
     .manage-messages{
         margin:0;
-        background-color: $interface-bg-color;
-        color: $interface-text-color;
+        background-color: var(--interface-bg-color);
+        color: var(--interface-text-color);
         width: 27%;
         max-height: 700px;
     }

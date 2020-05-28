@@ -1,5 +1,3 @@
-@import "../../../assets/variables.scss";
-
 .main{
     max-width: 1000px;
     margin: 0 auto;
@@ -8,7 +6,7 @@
 
     h2{
         width: 100%;
-        color: $interface-text-color;
+        color: var(--interface-text-color);
     }
 
     .master{
@@ -23,8 +21,8 @@
 
     .admin-messages{
         margin:0;
-        background-color: $interface-bg-color;
-        color: $interface-text-color;
+        background-color: var(--interface-bg-color);
+        color: var(--interface-text-color);
         width: 27%;
         max-height: 700px;
     }

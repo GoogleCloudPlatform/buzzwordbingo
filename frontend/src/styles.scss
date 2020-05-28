@@ -1,6 +1,47 @@
+:root {
+    --body-font: "Google Sans", "Roboto", sans-serif;
+    --header-font: 'Cinzel Decorative', cursive;
+    --login-header-font: "Roboto";
+
+    --header-before: "🌈Unicorn ";
+    --header-after: "🦄";
+
+    --body-bg-color: rgb(52, 47, 55);
+    --body-bg: url("assets/wallpaper.jpg");
+    --bingo-header-bg-image: url("../src/assets/celebration.jpeg");
+    
+    --interface-bg-color: #260252;
+    --interface-text-color: #FFF;
+    --link-text-color: #fff25e;
+    --link-text-bg-color: #000;
+    --link-hover-bg-color: #F8F9FA;
+    --link-hover-color: #111;
+    --link-active-bg-color: #333;
+    --link-active-color: #7d7a5b;
+    
+    --bingo-header-text-shadow: #260252;
+    --bingo-bg-color: #ffedfb;
+    --bingo-color: #270147;
+    --border-color: #ccc;
+    --login-bg-color: #f5ceec;
+    --login-highlight-bg-color: #f222ad;
+    --login-highlight-contrast-bg-color: #82aff7;
+    --login-alert-bg-color: #ff0000;
+    --login-readonly-bg-color: #f5ceec;
+    --login-readonly-color: #666;
+    --disabled-item-bg-color: #474545;
+    --disabled-item-color: #777;
+    --record-bg-color: #f5e389;
+    --record-color: #c18a00;  
+
+    
+}
+
+
 body{
-    font-family: "Google Sans", "Roboto", sans-serif;
-    background-image: url("assets/wallpaper.jpg");
+    font-family: var(--body-font);
+    background-image: var(--body-bg);
+    background-color: var(--body-bg-color);
     background-size: cover;
 }
 

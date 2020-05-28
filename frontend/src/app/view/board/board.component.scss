@@ -1,5 +1,4 @@
 
-@import "../../../assets/variables.scss";
 .main{
     
     max-width: 1000px;
@@ -9,18 +8,18 @@
     justify-content: space-between;
 
     h2{
-        color:$interface-text-color;
+        color: var(--interface-text-color);
         width: 100%;
     }
 
     .phrases{
-        background-color: $interface-bg-color;
+        background-color:  var(--interface-bg-color);
         padding: 0;
         width: 60%;
         display: flex;
         flex-wrap: wrap;
         align-items: flex-start;
-        color:$interface-text-color;
+        color: var(--interface-text-color);
         box-sizing: border-box;
         border-top-left-radius: 6px;
         border-top-right-radius: 6px;
@@ -47,17 +46,17 @@
         }
 
         .header-bingo{
-            background-image: $bingo-header-bg-image;
+            background-image:  var(--bingo-header-bg-image);
             
             header{
-                color: $interface-text-color;
-                text-shadow: 0px 0px 3px $bingo-header-text-shadow;
+                color:  var(--interface-text-color);
+                text-shadow: 0px 0px 3px  var(--bingo-header-text-shadow);
             }
         }
     }
 
     .board-messages{
-        background-color: $interface-bg-color;
+        background-color:  var(--interface-bg-color);
         width: 30%;
         height: 690px;
     }

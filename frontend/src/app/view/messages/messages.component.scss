@@ -1,13 +1,11 @@
-@import "../../../assets/variables.scss";
-
 .messages{
     padding: 10px;
     box-sizing: border-box;
-    border: 1px solid $border-color;
+    border: 1px solid var(--border-color);
     height: 100%;
     overflow-y: scroll;
     border-radius: 6px;
-    color: $interface-text-color;
+    color: var(--interface-text-color);
 
     .message{
         
@@ -20,8 +18,8 @@
         }
 
         .bingo{
-            background-color: $bingo-bg-color; 
-            color: $bingo-color;
+            background-color: var(--bingo-bg-color);
+            color: var(--bingo-color);
         }
     }
 }
