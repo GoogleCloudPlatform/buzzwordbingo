@@ -112,11 +112,15 @@ export class ItemComponent implements OnInit {
   }
 
   public disable(){
+    let self = this;
     this.disabled = true;
     let item:HTMLElement = document.querySelector("#id_"+ this.phrase.id);
     if (item != null){
       item.classList.add("disabled");
       item.classList.add("board-disabled");
+      return;
+    } else{
+      setTimeout(function(){ self.disable();}, 100);
     }
     
   }

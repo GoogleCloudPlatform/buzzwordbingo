@@ -16,7 +16,10 @@ export class ToolbarComponent implements OnInit {
   constructor(public auth:AuthService, public router:Router, route: ActivatedRoute,) {
     this.isAdmin = auth.isAdmin()
     this.id = route.snapshot.paramMap.get('id');
-    this.auth.checkGameAdmin(this.id);
+    if (this.id != null ){
+      this.auth.checkGameAdmin(this.id);
+    }
+    
    }
 
   ngOnInit(): void {
