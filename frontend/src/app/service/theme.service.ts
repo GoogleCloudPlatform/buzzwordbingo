@@ -124,7 +124,8 @@ export const darkTheme = {
   'input-color':'rgba(255, 255, 255, .60)',
   'input-border-color':'#000',
   'bingo-declared-header-bg-color':'#03DAc6',
-  'bingo-declared-header-color':' #121212'
+  'bingo-declared-header-color':' #121212',
+  'header-color':'#fff'
 } 
 
 
