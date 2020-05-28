@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { BrowserModule, Title }  from '@angular/platform-browser'
 
 export const unicornTheme = {
     'body-font':'"Google Sans", "Roboto", sans-serif',
@@ -138,18 +139,21 @@ export const darkTheme = {
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
 
-  constructor() { }
+  constructor(private titleService:Title) { }
 
   toggleDark() {
     this.setTheme(darkTheme);
+    this.titleService.setTitle("Meeting Bingo");
   }
 
   toggleLight() {
     this.setTheme(lightTheme);
+    this.titleService.setTitle("Meeting Bingo");
   }
 
   toggleUnicorn() {
     this.setTheme(unicornTheme);
+    this.titleService.setTitle("🌈Unicorn Meeting Bingo🦄");
   }
 
   private setTheme(theme: {}) {
