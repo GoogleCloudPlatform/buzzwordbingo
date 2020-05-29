@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gorilla/mux"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/compute/v1"
@@ -54,28 +55,55 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fs := wrapHandler(http.FileServer(http.Dir("./static")))
-	http.HandleFunc("/", fs)
-	http.HandleFunc("/healthz", handleHealth)
-	http.HandleFunc("/api/board", handleBoardGet)
-	http.HandleFunc("/api/board/delete", handleBoardDelete)
-	http.HandleFunc("/api/record", handleRecordSelect)
-	http.HandleFunc("/api/game", handleGameGet)
-	http.HandleFunc("/api/game/new", handleGameNew)
-	http.HandleFunc("/api/game/list", handleGameList)
-	http.HandleFunc("/api/game/admin/add", handleGameAdminAdd)
-	http.HandleFunc("/api/game/admin/remove", handleGameAdminDelete)
-	http.HandleFunc("/api/game/deactivate", handleGameDeactivate)
-	http.HandleFunc("/api/game/phrase/update", handleGamePhraseUpdate)
-	http.HandleFunc("/api/phrase/update", handleMasterPhraseUpdate)
-	http.HandleFunc("/api/game/isadmin", handleIsGameAdmin)
-	http.HandleFunc("/api/player/identify", handleIAPUsernameGet)
-	http.HandleFunc("/api/player/isadmin", handleIsAdmin)
-	http.HandleFunc("/api/admin/add", handleAdminAdd)
-	http.HandleFunc("/api/admin/remove", handleAdminDelete)
-	http.HandleFunc("/api/admin/list", handleAdminList)
-	http.HandleFunc("/api/message/receive", handleMessageAcknowledge)
+	r := mux.NewRouter()
+	r.HandleFunc("/healthz", handleHealth)
+	r.HandleFunc("/api/board", handleBoardGet)
+	r.HandleFunc("/api/board/delete", handleBoardDelete)
+	r.HandleFunc("/api/record", handleRecordSelect)
+	r.HandleFunc("/api/game", handleGameGet)
+	r.HandleFunc("/api/game/new", handleGameNew)
+	r.HandleFunc("/api/game/list", handleGameList)
+	r.HandleFunc("/api/game/admin/add", handleGameAdminAdd)
+	r.HandleFunc("/api/game/admin/remove", handleGameAdminDelete)
+	r.HandleFunc("/api/game/deactivate", handleGameDeactivate)
+	r.HandleFunc("/api/game/phrase/update", handleGamePhraseUpdate)
+	r.HandleFunc("/api/phrase/update", handleMasterPhraseUpdate)
+	r.HandleFunc("/api/game/isadmin", handleIsGameAdmin)
+	r.HandleFunc("/api/player/identify", handleIAPUsernameGet)
+	r.HandleFunc("/api/player/isadmin", handleIsAdmin)
+	r.HandleFunc("/api/admin/add", handleAdminAdd)
+	r.HandleFunc("/api/admin/remove", handleAdminDelete)
+	r.HandleFunc("/api/admin/list", handleAdminList)
+	r.HandleFunc("/api/message/receive", handleMessageAcknowledge)
 
+	r.PathPrefix("/login/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "static/index.html")
+	})
+
+	r.PathPrefix("/game").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "static/index.html")
+	})
+
+	r.PathPrefix("/manage").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "static/index.html")
+	})
+
+	r.PathPrefix("/gamenew").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "static/index.html")
+	})
+
+	r.PathPrefix("/gamepicker").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "static/index.html")
+	})
+
+	r.PathPrefix("/admin").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "static/index.html")
+	})
+
+	fs := wrapHandler(http.FileServer(http.Dir("./static")))
+	r.PathPrefix("/").HandlerFunc(fs)
+
+	http.Handle("/", r)
 	weblog(fmt.Sprintf("Starting server on port %s\n", port))
 	if err := http.ListenAndServe(port, nil); err != nil {
 		log.Fatal(err)
