@@ -36,6 +36,7 @@
     width:100%;
     text-align: center;
     font-size: 11px;
+    transition: border-color .25s ease-in, color .25s ease-in;
     span{
         padding: 20% 20px;
         display:block;
@@ -47,6 +48,7 @@
 .disabled{
     background-color: var(--disabled-item-bg-color);
     color: var(--disabled-item-color);
+    transition: background-color .25s ease-in, color .25s ease-in;
     cursor: default;
     
     
@@ -67,6 +69,7 @@
         width: 20%;
         height: 70px;
         border: 1px solid var(--border-color);
+        transition: corder-color .25s ease-in;
         margin-top: 0px;
        
     }    

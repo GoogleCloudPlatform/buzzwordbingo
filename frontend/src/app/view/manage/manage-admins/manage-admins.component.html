@@ -1,6 +1,6 @@
 <h2>Manage Game Administrators</h2>
-
-<div *ngFor="let admin of (game | async)?.admins" >
+<p>Add or remove people who can manage the game board and see what's going on.</p>
+<div class="admin-item" *ngFor="let admin of (game | async)?.admins" >
     <input  readonly  [value]="admin.email">
     <button [id]="admin.email" (click)="onAdminRemove($event)">Remove</button>
 </div>

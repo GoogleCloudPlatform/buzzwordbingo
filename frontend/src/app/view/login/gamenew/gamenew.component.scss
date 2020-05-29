@@ -1,6 +1,7 @@
 .main{
     background-color: var(--interface-bg-color);
     color: var(--interface-text-color);
+    transition: background-color .25s ease-in, color .25s ease-in;
     padding: 20px;
     margin: 20px;
     border-radius: 6px;

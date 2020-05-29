@@ -9,6 +9,7 @@
 
     h2{
         color: var(--interface-text-color);
+        transition:  color .25s ease-in;
         width: 100%;
     }
 
@@ -23,6 +24,7 @@
         box-sizing: border-box;
         border-top-left-radius: 6px;
         border-top-right-radius: 6px;
+        transition: background-color .25s ease-in, color .25s ease-in;
         
 
         .header-container{
@@ -42,22 +44,26 @@
                 color: var(--bingo-header-color);
                 padding-top:10px;
                 box-sizing: border-box;
+                transition: color .25s ease-in;
             }
         }
 
         .header-bingo{
             background-image:  var(--bingo-header-bg-image);
             background-color: var(--bingo-declared-header-bg-color);
+            transition: background-color .25s ease-in, background-image .25s ease-in;
             
             header{
                 color:  var(--bingo-declared-header-color);
                 text-shadow: 0px 0px 3px  var(--bingo-header-text-shadow);
+                transition: text-shadow .25s ease-in, color .25s ease-in;
             }
         }
     }
 
     .board-messages{
         background-color:  var(--interface-bg-color);
+        transition: background-color .25s ease-in;
         width: 30%;
         height: 690px;
     }

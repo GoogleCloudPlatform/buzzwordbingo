@@ -34,7 +34,7 @@ export const unicornTheme = {
     'record-bg-color':'#f5e389',
     'record-color':'#c18a00',
     "input-bg-color":"#fff",
-    "input-color":"rgba(255, 255, 255, .60)",
+    "input-color":"#121212",
     "input-border-color":"#000",
     "bingo-declared-header-bg-color":"#260252",
     "bingo-declared-header-color":"#fff",
@@ -58,13 +58,12 @@ export const lightTheme = {
   'link-text-bg-color':'#fff',
   'link-hover-bg-color':'#03DAc6',
   'link-hover-color':'#121212',
-  'link-active-bg-color':'#333',
-  'link-active-color':'#03DAc6',
+  'link-active-bg-color':'#BBB',
+  'link-active-color':'#121212',
   'bingo-header-text-shadow':'#026056',
   'bingo-bg-color':'#03DAc6',
   'bingo-color':'rgb(255, 255, 255, .80)', 
   'bingo-header-color':'#03DAc6',
-  
   'border-color':'#ccc',
   'login-bg-color':'#fff',
   'login-color':'#000',
@@ -73,16 +72,15 @@ export const lightTheme = {
   'login-alert-bg-color':'#CF6679',
   'login-readonly-bg-color':'#ccc',
   'login-readonly-color':'#999',
-  'disabled-item-bg-color':'#999',
-  'disabled-item-color':'#ccc',
+  'disabled-item-bg-color':'#dedede',
+  'disabled-item-color':'#777',
   'record-bg-color':'#03DAc6',
   'record-color':'rgb(255, 255, 255, .80)',  
-
   'input-bg-color':'#f9f9f9',
   'input-color':'#121212',
   'input-border-color':'#ccc',
   'bingo-declared-header-bg-color':'#03DAc6',
-  'bingo-declared-header-color':' #121212',
+  'bingo-declared-header-color':' #fff',
   'login-header-text-color':'#fff',
   'header-color':'#121212'
 } 
@@ -104,7 +102,7 @@ export const darkTheme = {
   'link-hover-bg-color':'#03DAc6',
   'link-hover-color':'#121212',
   'link-active-bg-color':'#333',
-  'link-active-color':'#7d7a5b',
+  'link-active-color':'rgb(255, 255, 255, .60)',
   'bingo-header-text-shadow':'#026056',
   'bingo-bg-color':'#03DAc6',
   'bingo-color':'#270147',
@@ -139,7 +137,10 @@ export const darkTheme = {
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
 
-  constructor(private titleService:Title) { }
+  constructor(private titleService:Title) {
+    this.toggleLight();
+
+   }
 
   toggleDark() {
     this.setTheme(darkTheme);

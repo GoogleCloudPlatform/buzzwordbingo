@@ -1,12 +1,13 @@
 :host{
     background-color: var(--interface-bg-color);
     color: var(--interface-text-color);
+    transition: background-color .25s ease-in, color .25s ease-in;
     padding: 20px;
     border-radius: 6px;
 }
 
 input{
-    width: 400px;
+    width: 300px;
     font-size: 20px;
     margin-right: 5px;
     border-radius: 6px;
@@ -14,8 +15,13 @@ input{
 
 button{
     font-size: 20px;
+    width: 100px;
 }
 
 form{
     margin-bottom: 10px;
+}
+
+.admin-item{
+    margin: 10px 0;
 }

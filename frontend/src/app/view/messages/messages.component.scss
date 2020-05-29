@@ -6,6 +6,7 @@
     overflow-y: scroll;
     border-radius: 6px;
     color: var(--interface-text-color);
+    transition: background-color .25s ease-in, color .25s ease-in;
 
     .message{
         
@@ -20,6 +21,7 @@
         .bingo{
             background-color: var(--bingo-bg-color);
             color: var(--bingo-color);
+            transition: background-color .25s ease-in, color .25s ease-in;
         }
     }
 }

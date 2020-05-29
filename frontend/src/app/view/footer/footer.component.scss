@@ -1,5 +1,6 @@
 footer{
     color: var(--interface-text-color);
+    transition: color .25s ease-in;
     padding: 20px;
     border-radius: 6px;
     display: flex;

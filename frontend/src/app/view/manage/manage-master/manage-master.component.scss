@@ -1,6 +1,7 @@
 :host{
     background-color: var(--interface-bg-color);
     color: var(--interface-text-color);
+    transition: background-color .25s ease-in, color .25s ease-in;
     padding: 20px;
     margin: 20px;
     border-radius: 6px;
@@ -11,6 +12,7 @@
     border-collapse: separate;
     .record{
         color: var(--interface-text-color);
+        transition: color .25s ease-in;
         
         font-size: 12px;
         .text{
@@ -26,6 +28,7 @@
         font-weight: 900;
         background-color: var(--record-bg-color);
         color: var(--record-color);
+        transition: background-color .25s ease-in, color .25s ease-in;
     }
 }
 

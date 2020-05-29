@@ -1,6 +1,6 @@
 <h2>Manage Global Administrators</h2>
 
-<div *ngFor="let admin of admins | async" >
+<div class="admin-item" *ngFor="let admin of admins | async" >
     <input  readonly  [value]="admin.email">
     <button [id]="admin.email" (click)="onAdminRemove($event)">Remove</button>
 </div>

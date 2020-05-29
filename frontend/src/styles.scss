@@ -131,6 +131,7 @@ body{
     background-color: var(--body-bg-color);
     background-size: cover;
     color: var(--interface-text-color);
+    transition: background-image .25s ease-in, background-color .25s ease-in, color .25s ease-in;
 }
 
 
@@ -143,15 +144,19 @@ input {
     background-color: var(--input-bg-color);
     color: var(--input-color);
     border-color:  var(--input-border-color);
+    transition: border-color .25s ease-in, background-color .25s ease-in, color .25s ease-in;
 }
 
 button{
     background-color: var(--link-text-bg-color);
     color: var(--link-text-color);
+    transition: background-color .25s ease-in, color .25s ease-in;
+    border-radius: 6px;
 
     &:hover{
         background-color: var(--link-hover-bg-color);
         color: var(--link-hover-color);
+        transition: background-color .25s ease-in, color .25s ease-in;
     }
 
 }

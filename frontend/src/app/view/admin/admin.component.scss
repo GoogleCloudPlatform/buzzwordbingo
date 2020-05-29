@@ -7,6 +7,7 @@
     h2{
         width: 100%;
         color: var(--interface-text-color);
+        transition: color .25s ease-in;
     }
 
     .master{
@@ -14,22 +15,14 @@
         width: 25%;
     }
 
-    .boards{
-        margin:0 20px 0 0;
-        width: 35%;
-    }
-
-    .admin-messages{
-        margin:0;
-        background-color: var(--interface-bg-color);
-        color: var(--interface-text-color);
-        width: 27%;
-        max-height: 700px;
+    .admins{
+        margin: 10px 10px 0 0 ;
+        width: 45%
     }
 
     .phrases{
-        margin:10px 0;
-        width: 100%
+        margin: 10px 0 0 10px;
+        width: 45%
     }
 
     .game{

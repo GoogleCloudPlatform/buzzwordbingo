@@ -5,6 +5,7 @@
     background-color: var(--login-bg-color);
     color: var(--login-color);
     border-radius: 6px;
+    transition: background-color .25s ease-in, color .25s ease-in;
     
 
     h1{
@@ -17,6 +18,7 @@
         border-top-right-radius: 6px;
         font-family: var(--login-header-font);
         font-weight: 400;
+        transition: background-color .25s ease-in, color .25s ease-in;
     }
 
     label{
@@ -31,6 +33,7 @@
         background-color: var(--login-alert-bg-color);
         padding: 5px 2px;
         display:none;
+        transition: background-color .25s ease-in;
     }
     
     input{
@@ -52,6 +55,7 @@
         background-color: var(--login-readonly-bg-color);
         user-select: none;
         outline: none;
+        transition: background-color .25s ease-in, color .25s ease-in;
     }
 
     button{
@@ -62,6 +66,7 @@
         border-radius: 6px;
         padding: 0px 30px;
         box-shadow: 0 1px 1px 0 rgba(60,64,67,0.30), 0 1px 3px 1px rgba(60,64,67,0.15);
+        transition: background-color .25s ease-in, color .25s ease-in;
     }
 
     button:hover{
