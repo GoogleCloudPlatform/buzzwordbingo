@@ -1210,16 +1210,16 @@ func recordSelect(boardID, gameID, phraseID string) error {
 	r := g.Select(p, b.Player)
 	bingo := b.Bingo()
 
+	if err := a.SelectPhrase(b, p, r); err != nil {
+		return fmt.Errorf("record click to firestore: %s", err)
+	}
+
 	if err := cache.SaveGame(g); err != nil {
 		return fmt.Errorf("could not cache game: %s", err)
 	}
 
 	if err := cache.SaveBoard(b); err != nil {
 		return fmt.Errorf("could not cache game: %s", err)
-	}
-
-	if err := a.SelectPhrase(b, p, r); err != nil {
-		return fmt.Errorf("record click to firestore: %s", err)
 	}
 
 	indicator := "unselected"
@@ -1258,7 +1258,6 @@ func updateGamePhrases(gameID string, phrase Phrase) error {
 	if err != nil {
 		return fmt.Errorf("could not get game id(%s): %s", g.ID, err)
 	}
-	// TODO: Compenstate for display order somewhere in there.
 	g.UpdatePhrase(phrase)
 
 	if err := cache.SaveGame(g); err != nil {
