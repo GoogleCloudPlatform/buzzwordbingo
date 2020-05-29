@@ -167,13 +167,19 @@ func handleGamePhraseUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAdm, err := isGameAdmin(r, gid)
+	isGameAdm, err := isGameAdmin(r, gid)
 	if err != nil {
 		writeError(w, err.Error())
 		return
 	}
 
-	if !isAdm {
+	isAdm, err := isAdmin(r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if !isAdm && !isGameAdm {
 		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
 		writeResponse(w, http.StatusForbidden, msg)
 		return
@@ -373,13 +379,19 @@ func handleBoardDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAdm, err := isGameAdmin(r, g)
+	isGameAdm, err := isGameAdmin(r, g)
 	if err != nil {
 		writeError(w, err.Error())
 		return
 	}
 
-	if !isAdm {
+	isAdm, err := isAdmin(r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if !isAdm && !isGameAdm {
 		msg := fmt.Sprintf("{\"error\":\"Not a game admin\"}")
 		writeResponse(w, http.StatusForbidden, msg)
 		return
