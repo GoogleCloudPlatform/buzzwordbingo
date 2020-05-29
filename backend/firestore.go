@@ -31,6 +31,7 @@ func uniqueID() string {
 // NewAgent intializes and returns a fresh agent.
 func NewAgent(ctx context.Context, projectID string) (Agent, error) {
 	var err error
+	rand.Seed(time.Now().UTC().UnixNano())
 	a := Agent{}
 	a.ProjectID = projectID
 	a.ctx = ctx
@@ -171,10 +172,11 @@ func (a *Agent) NewGame(name string, p Player) (Game, error) {
 	g.Admins = append(g.Admins, p)
 	g.Name = name
 	g.Active = true
+	g.Created = time.Now()
 	g.Master.Load(phrases)
 
 	batch := a.client.Batch()
-	a.log("Creating new game")
+	a.log(fmt.Sprintf("Creating new game, id: %s", g.ID))
 
 	gref := a.client.Collection("games").Doc(g.ID)
 	batch.Set(gref, g)
@@ -447,6 +449,12 @@ func (a *Agent) GetGamesForPlayer(email string) (Games, error) {
 		game := Game{}
 		v.DataTo(&game)
 		game.ID = v.Ref.ID
+
+		game, err := a.loadGameWithAdmins(game)
+		if err != nil {
+			return g, fmt.Errorf("failed to get admins for game: %v", err)
+		}
+
 		g = append(g, game)
 	}
 

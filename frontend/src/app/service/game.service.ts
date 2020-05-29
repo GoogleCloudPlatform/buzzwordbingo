@@ -29,6 +29,7 @@ export class Game  {
 	id:string 
 	name:string 
   active:boolean
+  created:any
   master:Master   
   admins:Player[]
   players:Player[]
@@ -103,8 +104,9 @@ export class GameService {
     return this.http.delete(url).subscribe();
   }
 
-  newGame (name:string) {
-    return this.http.get(this.hostUrl + "/api/game/new?name=" + name);
+  newGame (name:string, pname:string) {
+    let url = `${this.hostUrl}/api/game/new?name=${name}&pname=${pname}`
+    return this.http.get(url);
   }
 
   getGame (gid:string) {
@@ -121,7 +123,6 @@ export class GameService {
 
   updateMasterPhrase(phrase:Phrase){
     let url = `${this.hostUrl}/api/phrase/update?p=${phrase.id}&text=${phrase.text}`
-    console.log(url)
     return this.http.get(url).pipe(share());
   }
 

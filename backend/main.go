@@ -289,7 +289,7 @@ func handleGameList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	games, err := a.GetGamesForPlayer(email)
+	games, err := getGamesForPlayer(email)
 	if err != nil {
 		writeError(w, err.Error())
 		return
@@ -399,13 +399,21 @@ func handleGameNew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	pname, err := getFirstQuery("pname", r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
 	email, err := getPlayerEmail(r)
 	if err != nil {
 		writeError(w, err.Error())
 		return
 	}
 
-	game, err := getNewGame(name, email)
+	p := Player{Name: pname, Email: email}
+
+	game, err := getNewGame(name, p)
 	if err != nil {
 		writeError(w, err.Error())
 		return
@@ -1028,6 +1036,26 @@ func generateBingoMessages(b Board, g Game, first bool) []Message {
 	return messages
 }
 
+func getGamesForPlayer(email string) (Games, error) {
+	g := Games{}
+	var err error
+
+	g, err = cache.GetGamesForPlayer(email)
+	if err != nil {
+		if err == ErrCacheMiss {
+			g, err = a.GetGamesForPlayer(email)
+			if err != nil {
+				return g, fmt.Errorf("error getting games: %v", err)
+			}
+		}
+		if err := cache.SaveGamesForPlayer(email, g); err != nil {
+			return g, fmt.Errorf("error caching games : %v", err)
+		}
+	}
+
+	return g, nil
+}
+
 func getBoard(bid string, gid string) (Board, error) {
 	b := Board{}
 
@@ -1091,14 +1119,14 @@ func deleteBoard(bid, gid string) error {
 	return nil
 }
 
-func getNewGame(name, email string) (Game, error) {
-
-	p := Player{}
-	p.Email = email
+func getNewGame(name string, p Player) (Game, error) {
 
 	game, err := a.NewGame(name, p)
 	if err != nil {
 		return game, fmt.Errorf("failed to get new game: %v", err)
+	}
+	if err := cache.DeleteGamesForPlayer(p.Email); err != nil {
+		return game, fmt.Errorf("failed to clear cache: %v", err)
 	}
 
 	return game, nil

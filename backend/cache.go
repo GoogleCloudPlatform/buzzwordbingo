@@ -92,6 +92,48 @@ func (c *Cache) SaveGame(g Game) error {
 	return nil
 }
 
+func (c *Cache) SaveGamesForPlayer(email string, g Games) error {
+
+	conn := c.redisPool.Get()
+	defer conn.Close()
+
+	json, err := g.JSON()
+	if err != nil {
+		return err
+	}
+
+	key := "games-" + email
+
+	if _, err := conn.Do("SET", key, json); err != nil {
+		return err
+	}
+	c.log("Successfully saved game list to cache")
+	return nil
+}
+
+// GetGamesForPlayer retrieves a list of games from the cache
+func (c *Cache) GetGamesForPlayer(email string) (Games, error) {
+	g := []Game{}
+	conn := c.redisPool.Get()
+	defer conn.Close()
+
+	key := "games-" + email
+
+	s, err := redis.String(conn.Do("GET", key))
+	if err == redis.ErrNil {
+		return g, ErrCacheMiss
+	} else if err != nil {
+		return g, err
+	}
+
+	if err := json.Unmarshal([]byte(s), &g); err != nil {
+		return g, err
+	}
+	c.log("Successfully retrieved games from cache")
+
+	return g, nil
+}
+
 // GetGame retrieves an game from the cache
 func (c *Cache) GetGame(key string) (Game, error) {
 
@@ -150,5 +192,19 @@ func (c *Cache) DeleteBoard(board Board) error {
 
 	c.log(fmt.Sprintf("Cleaning from cache %s", board.ID))
 	c.log(fmt.Sprintf("Cleaning from cache %s", board.Game+"_"+board.Player.Email))
+	return nil
+}
+
+// DeleteBoard will remove a board from the cache completely.
+func (c *Cache) DeleteGamesForPlayer(email string) error {
+	conn := c.redisPool.Get()
+	defer conn.Close()
+
+	key := "games-" + email
+	if _, err := conn.Do("DEL", key); err != nil {
+		return err
+	}
+
+	c.log(fmt.Sprintf("Cleaning games for player from cache %s", email))
 	return nil
 }

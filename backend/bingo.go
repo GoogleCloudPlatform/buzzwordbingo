@@ -32,13 +32,14 @@ func (m *Message) SetAudience(a ...string) {
 
 // Game is the master structure for the game
 type Game struct {
-	ID      string  `json:"id" firestore:"id"`
-	Name    string  `json:"name" firestore:"name"`
-	Active  bool    `json:"active" firestore:"active"`
-	Players Players `json:"players" firestore:"-"`
-	Admins  Players `json:"admins" firestore:"-"`
-	Master  Master  `json:"master" firestore:"-"`
-	Boards  []Board `json:"boards" firestore:"-"`
+	ID      string    `json:"id" firestore:"id"`
+	Name    string    `json:"name" firestore:"name"`
+	Active  bool      `json:"active" firestore:"active"`
+	Players Players   `json:"players" firestore:"-"`
+	Admins  Players   `json:"admins" firestore:"-"`
+	Master  Master    `json:"master" firestore:"-"`
+	Boards  []Board   `json:"boards" firestore:"-"`
+	Created time.Time `json:"created" firestore:"created"`
 }
 
 // NewBoard creates a new board for a user.

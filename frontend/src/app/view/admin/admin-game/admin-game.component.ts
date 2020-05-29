@@ -12,14 +12,16 @@ export class AdminGameComponent implements OnInit {
 
   gameName:string="";
 
-  constructor(private game: GameService, private router: Router) { }
+  constructor(private game: GameService, private router: Router, private auth: AuthService) { }
 
   ngOnInit(): void {
   }
 
   createNewGame(name:string){
-    console.log(name);
-    this.game.newGame(name).subscribe(val => {
+    let player = this.auth.getPlayer()
+
+
+    this.game.newGame(name,player.name).subscribe(val => {
       let g:Game = val as Game;
       this.router.navigateByUrl('/game/' + g.id);
     })
