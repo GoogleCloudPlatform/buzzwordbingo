@@ -4,6 +4,7 @@ import { environment } from '../../environments/environment';
 import { share } from 'rxjs/operators';
 import {GameService, Game} from '../service/game.service'
 import {Router} from '@angular/router';
+import { LocalstorageService } from './localstorage.service';
 
 export class Player{
   name:string
@@ -23,8 +24,11 @@ export class AuthService {
   private isAdministrator:boolean=false;
   private hostUrl: string = environment.host_url;
 
-  constructor(private http: HttpClient, public game:GameService, private router: Router) { 
-    let player = JSON.parse(localStorage.getItem('player'));
+  constructor(private http: HttpClient, 
+              public game:GameService, 
+              private localStorageService:LocalstorageService, 
+              private router: Router) { 
+    let player = localStorageService.getPlayer();
     if (player != null){
       this.setPlayer(player.name, player.email)
     }
@@ -36,7 +40,7 @@ export class AuthService {
     this.player.email = email;
     this.player.admin = admin;
     this.isAuthed = true;
-    localStorage.setItem('player', JSON.stringify(this.player));
+    this.localStorageService.setPlayer(this.player);
     this.game.isAdmin().pipe(share()).subscribe(val=>{this.isAdministrator = val})
 
   } 
@@ -69,16 +73,9 @@ export class AuthService {
     return this.http.get(this.hostUrl + "/api/player/identify");
   }
 
-  logout (reason:string="logged out", ignoreid:string="") {
-    localStorage.clear();
+  logout (reason:string="logged out") {
     console.log("logged out, reason:", reason )
-    localStorage.clear();
-
-    if (ignoreid != ""){
-      localStorage.setItem(ignoreid, "true");
-    }
-
-
+    this.localStorageService.clearGameData();
     this.router.navigateByUrl('/login');
     return 
   }

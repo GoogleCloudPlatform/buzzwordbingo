@@ -109,7 +109,7 @@ export class BoardComponent implements OnInit {
     if (msg.operation == "reset" && !msg.received){
       console.log(msg);
       this.gameService.messageReceived(this.gid, msg.id).subscribe();
-      this.auth.logout("reset message received for " + this.boardid, msg.id )
+      this.router.navigateByUrl('/game/'+this.gid);
       return;
     }
     return;

@@ -2,7 +2,7 @@
 	<h1>Meeting Bingo</h1>
 	<nav *ngIf="!isLogin()">
 		<ul>
-			<li><a *ngIf="auth.isAdmin() || auth.isGameAdmin()" routerLink="/gamepicker" routerLinkActive="active">Game</a></li>
+			<li><a routerLink="/gamepicker" routerLinkActive="active">Pick Game</a></li>
 			<li *ngIf="auth.isAdmin()"><a routerLink="/admin/{{id}}" routerLinkActive="active">Admin</a></li>
 			<li *ngIf="id != null && (auth.isAdmin() || auth.isGameAdmin())"><a routerLink="/manage/{{id}}" routerLinkActive="active">Manage</a></li>
 			<li><a *ngIf="auth.isAuth()" href="" (click)="logout()">Quit</a></li>

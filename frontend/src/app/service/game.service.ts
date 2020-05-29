@@ -4,6 +4,7 @@ import { Observable, of  } from 'rxjs';
 import { Player} from '../service/auth.service'
 import { HttpClient, HttpHeaders} from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { LocalstorageService } from './localstorage.service';
 
 export class Board{
   id:string
@@ -73,8 +74,8 @@ export class GameService {
 
   game:any = new Game;
 
-  constructor(private http: HttpClient) { 
-    let game = JSON.parse(localStorage.getItem('game'));
+  constructor(private http: HttpClient, private localStorageService:LocalstorageService) { 
+    let game = localStorageService.getGame();
     if (game != null){
       this.game = game;
     }
