@@ -20,6 +20,7 @@ var (
 	randseedfunc  = randomseed
 	a             Agent
 	cache         Cache
+	cacheEnabled  = false
 	port          = ":8080"
 	noisy         = true
 	projectID     = ""
@@ -50,7 +51,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	cache, err = NewCache(redisHost, redisPort)
+	cache, err = NewCache(redisHost, redisPort, cacheEnabled)
 	if err != nil {
 		log.Fatal(err)
 	}

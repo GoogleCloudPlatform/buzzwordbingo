@@ -12,15 +12,17 @@ import (
 var ErrCacheMiss = fmt.Errorf("item is not in cache")
 
 // NewCache returns an initialized cache ready to go.
-func NewCache(redisHost, redisPort string) (Cache, error) {
+func NewCache(redisHost, redisPort string, enabled bool) (Cache, error) {
 	c := Cache{}
 	c.Init(redisHost, redisPort)
+	c.enabled = enabled
 	return c, nil
 }
 
 // Cache abstracts all of the operations of caching for the application
 type Cache struct {
 	redisPool *redis.Pool
+	enabled   bool
 }
 
 func (c *Cache) log(msg string) {
@@ -43,6 +45,9 @@ func (c *Cache) Init(redisHost, redisPort string) {
 
 // Clear removes all items from the cache.
 func (c *Cache) Clear() error {
+	if !c.enabled {
+		return nil
+	}
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
@@ -54,6 +59,9 @@ func (c *Cache) Clear() error {
 
 // SaveBoard records a board into the cache.
 func (c *Cache) SaveBoard(b Board) error {
+	if !c.enabled {
+		return nil
+	}
 
 	conn := c.redisPool.Get()
 	defer conn.Close()
@@ -76,6 +84,9 @@ func (c *Cache) SaveBoard(b Board) error {
 
 // SaveGame records a game in the cache.
 func (c *Cache) SaveGame(g Game) error {
+	if !c.enabled {
+		return nil
+	}
 
 	conn := c.redisPool.Get()
 	defer conn.Close()
@@ -93,6 +104,9 @@ func (c *Cache) SaveGame(g Game) error {
 }
 
 func (c *Cache) SaveGamesForPlayer(email string, g Games) error {
+	if !c.enabled {
+		return nil
+	}
 
 	conn := c.redisPool.Get()
 	defer conn.Close()
@@ -114,6 +128,9 @@ func (c *Cache) SaveGamesForPlayer(email string, g Games) error {
 // GetGamesForPlayer retrieves a list of games from the cache
 func (c *Cache) GetGamesForPlayer(email string) (Games, error) {
 	g := []Game{}
+	if !c.enabled {
+		return g, ErrCacheMiss
+	}
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
@@ -136,6 +153,10 @@ func (c *Cache) GetGamesForPlayer(email string) (Games, error) {
 
 // GetGame retrieves an game from the cache
 func (c *Cache) GetGame(key string) (Game, error) {
+	g := Game{}
+	if !c.enabled {
+		return g, ErrCacheMiss
+	}
 
 	conn := c.redisPool.Get()
 	defer conn.Close()
@@ -147,7 +168,6 @@ func (c *Cache) GetGame(key string) (Game, error) {
 		return Game{}, err
 	}
 
-	g := Game{}
 	if err := json.Unmarshal([]byte(s), &g); err != nil {
 		return Game{}, err
 	}
@@ -158,6 +178,10 @@ func (c *Cache) GetGame(key string) (Game, error) {
 
 // GetBoard retrieves an board from the cache
 func (c *Cache) GetBoard(key string) (Board, error) {
+	b := Board{}
+	if !c.enabled {
+		return b, ErrCacheMiss
+	}
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
@@ -168,7 +192,6 @@ func (c *Cache) GetBoard(key string) (Board, error) {
 		return Board{}, err
 	}
 
-	b := Board{}
 	if err := json.Unmarshal([]byte(s), &b); err != nil {
 		return Board{}, err
 	}
@@ -179,6 +202,9 @@ func (c *Cache) GetBoard(key string) (Board, error) {
 
 // DeleteBoard will remove a board from the cache completely.
 func (c *Cache) DeleteBoard(board Board) error {
+	if !c.enabled {
+		return nil
+	}
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
@@ -197,6 +223,9 @@ func (c *Cache) DeleteBoard(board Board) error {
 
 // DeleteBoard will remove a board from the cache completely.
 func (c *Cache) DeleteGamesForPlayer(email string) error {
+	if !c.enabled {
+		return nil
+	}
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
