@@ -1000,10 +1000,11 @@ func generateBingoMessages(b Board, g Game, first bool) []Message {
 
 	m1 := Message{}
 	m1.SetText(bingoMsg)
+	m1.SetAudience(b.Player.Email)
 	if first {
 		m1.SetAudience(b.Player.Email, "all")
 	}
-	m1.SetAudience(b.Player.Email)
+
 	m1.Bingo = true
 	messages = append(messages, m1)
 
