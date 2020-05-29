@@ -1,6 +1,6 @@
 <header>
 	<h1>Meeting Bingo</h1>
-	<nav>
+	<nav *ngIf="!isLogin()">
 		<ul>
 			<li><a *ngIf="auth.isAdmin() || auth.isGameAdmin()" routerLink="/gamepicker" routerLinkActive="active">Game</a></li>
 			<li *ngIf="auth.isAdmin()"><a routerLink="/admin/{{id}}" routerLinkActive="active">Admin</a></li>
