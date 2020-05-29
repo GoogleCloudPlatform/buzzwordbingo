@@ -19,7 +19,7 @@ export class ManageComponent implements OnInit {
   constructor(public data:DataService, public gameService:GameService, public router:Router, route: ActivatedRoute,) {
     this.id = route.snapshot.paramMap.get('id');
     gameService.getGame(this.id).subscribe(val=>{let g:Game = val as Game; this.game=observableOf(g)});
-    this.inviteLink = "http://" + window.location.hostname + "/login";
+    this.inviteLink = "http://" + window.location.hostname + "/invite";
   }
 
   ngOnInit(): void {

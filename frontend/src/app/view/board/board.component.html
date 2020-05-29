@@ -1,6 +1,14 @@
 <app-toolbar></app-toolbar>
 <div class="main">
+    <header>
     <h2>{{(game | async)?.name}}</h2>
+    <div class="invite-link">
+        Invite others using this link:
+        <a href="{{inviteLink}}/{{(game | async)?.id}}">
+            {{inviteLink}}/{{(game | async)?.id}}
+        </a>
+    </div>
+    </header>
     <div class="phrases">
         <div class="header-container">
             <header>B</header>

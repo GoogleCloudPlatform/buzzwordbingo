@@ -80,6 +80,10 @@ func main() {
 		http.ServeFile(w, r, "static/index.html")
 	})
 
+	r.PathPrefix("/invite/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "static/index.html")
+	})
+
 	r.PathPrefix("/game").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "static/index.html")
 	})
@@ -956,6 +960,9 @@ func getBoardForPlayer(p Player, g Game) (Board, error) {
 			if err != nil {
 				return b, fmt.Errorf("error getting board for player: %v", err)
 			}
+		}
+		if err := cache.DeleteGamesForPlayer(p.Email); err != nil {
+			return b, fmt.Errorf("error clearing game cache for player: %v", err)
 		}
 		if err := cache.SaveBoard(b); err != nil {
 			return b, fmt.Errorf("error caching board for player: %v", err)

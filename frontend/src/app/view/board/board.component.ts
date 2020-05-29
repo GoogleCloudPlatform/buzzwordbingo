@@ -29,11 +29,13 @@ export class BoardComponent implements OnInit {
   public messages: Observable<any[]>;
   public bingo:boolean=false;
   public game:Observable<any>;
+  public inviteLink:string;
 
   constructor(public data:DataService, public auth:AuthService, public gameService:GameService, public router:Router, route: ActivatedRoute,) {
     if (!auth.isAuth()){
       auth.logout("not authed")
     }
+    this.inviteLink = "http://" + window.location.hostname + "/invite";
     this.gid = route.snapshot.paramMap.get('id');
     this.player = auth.getPlayer(); 
     

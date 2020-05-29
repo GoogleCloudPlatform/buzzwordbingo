@@ -7,10 +7,26 @@
     flex-wrap: wrap;
     justify-content: space-between;
 
-    h2{
-        color: var(--interface-text-color);
-        transition:  color .25s ease-in;
-        width: 100%;
+
+    header{
+        display:flex;
+    
+        h2{
+            color: var(--interface-text-color);
+            transition:  color .25s ease-in;
+            margin-right: 20px;
+        }
+
+        .invite-link{
+            a{
+                display: inline-block;
+                padding: 5px;
+                color: var(--link-text-color);
+                background-color: var(--link-text-bg-color);
+                transition: background-color .25s ease-in, color .25s ease-in;
+            }
+            
+        }
     }
 
     .phrases{

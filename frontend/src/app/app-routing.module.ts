@@ -11,6 +11,7 @@ import { ManageComponent } from './view/manage/manage.component';
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login/:id', component: LoginComponent },
+  { path: 'invite/:id', component: LoginComponent },
   { path: 'login', component: LoginComponent },
   { path: 'game/:id', component: BoardComponent },
   { path: 'gamepicker', component: GamepickerComponent },
