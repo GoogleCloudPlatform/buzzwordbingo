@@ -50,16 +50,8 @@ export class LoginComponent implements OnInit {
       return;
     }
       
-    if (gameids.length == 0){
-      this.router.navigateByUrl('/gamenew');
-      return;
-    } else if (gameids.length == 1){
-      this.router.navigateByUrl('/game/' + gameids[0]);
-      return;
-    } else{
-      this.router.navigateByUrl('/gamepicker');
-      return;
-    }
+    this.router.navigateByUrl('/gamepicker');
+    return;
     
 
   }

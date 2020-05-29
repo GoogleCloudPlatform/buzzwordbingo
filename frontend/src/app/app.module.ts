@@ -21,7 +21,6 @@ import { AdminPhrasesComponent } from './view/admin/admin-phrases/admin-phrases.
 import { AdminPhraseFormComponent } from './view/admin/admin-phrases/admin-phrase-form/admin-phrase-form.component';
 import { AdminGameComponent } from './view/admin/admin-game/admin-game.component';
 import { GamepickerComponent } from './view/login/gamepicker/gamepicker.component';
-import { GamenewComponent } from './view/login/gamenew/gamenew.component';
 import { ManageComponent } from './view/manage/manage.component';
 import { ManagePhrasesComponent } from './view/manage/manage-phrases/manage-phrases.component';
 import { ManagePhraseFormComponent } from './view/manage/manage-phrases/manage-phrase-form/manage-phrase-form.component';
@@ -45,7 +44,6 @@ import { FooterComponent } from './view/footer/footer.component';
     AdminPhraseFormComponent,
     AdminGameComponent,
     GamepickerComponent,
-    GamenewComponent,
     ManageComponent,
     ManagePhrasesComponent,
     ManagePhraseFormComponent,

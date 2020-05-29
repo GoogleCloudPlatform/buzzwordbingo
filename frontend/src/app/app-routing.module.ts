@@ -5,7 +5,6 @@ import { BoardComponent } from './view/board/board.component';
 import { AdminComponent } from './view/admin/admin.component';
 import { AuthGuard } from '../app/auth/auth.guard';
 import { GamepickerComponent } from './view/login/gamepicker/gamepicker.component';
-import { GamenewComponent } from './view/login/gamenew/gamenew.component';
 import { ManageComponent } from './view/manage/manage.component';
 
 
@@ -15,7 +14,7 @@ const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'game/:id', component: BoardComponent },
   { path: 'gamepicker', component: GamepickerComponent },
-  { path: 'gamenew', component:  GamenewComponent},
+  { path: 'gamenew', component:  GamepickerComponent},
   { path: 'manage/:id', component:  ManageComponent},
   { path: 'admin', component: AdminComponent, canActivate: [AuthGuard] },
   { path: 'admin/:id', component: AdminComponent, canActivate: [AuthGuard] },

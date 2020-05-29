@@ -2,6 +2,9 @@
 
 <app-toolbar></app-toolbar>
 <div class="main">
+    <app-admin-game class="game"></app-admin-game>
+
+
     <h2>Join a game</h2>
     <ul>
     <li *ngFor="let game of games" [class.active]="game.active">
