@@ -20,7 +20,7 @@ var (
 	randseedfunc  = randomseed
 	a             Agent
 	cache         Cache
-	cacheEnabled  = false
+	cacheEnabled  = true
 	port          = ":8080"
 	noisy         = true
 	projectID     = ""
