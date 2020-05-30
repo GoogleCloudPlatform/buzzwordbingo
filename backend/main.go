@@ -1260,12 +1260,12 @@ func updateGamePhrases(gameID string, phrase Phrase) error {
 		return fmt.Errorf("could not get game id(%s): %s", g.ID, err)
 	}
 
-	if err := a.UpdatePhrase(g, phrase); err != nil {
-		return fmt.Errorf("error saving update phrase : %v", err)
+	if err := cache.UpdatePhrase(g, phrase); err != nil {
+		return fmt.Errorf("error saving update phrase in cache: %v", err)
 	}
 
 	if err := a.UpdatePhrase(g, phrase); err != nil {
-		return fmt.Errorf("error saving update phrase : %v", err)
+		return fmt.Errorf("error saving update phrase in firebase: %v", err)
 	}
 
 	messages := []Message{}
