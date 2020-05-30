@@ -9,32 +9,14 @@ PROJECTNUMBER=$(shell gcloud projects list --filter="$(PROJECT)" --format="value
 env:
 	gcloud config set project $(PROJECT)
 
-
 clean:
 	-rm -rf server/dist		
 
 frontend: clean
 	cd frontend && ng build --prod
 
-
 deploy: env
 	cd backend && gcloud app deploy -q
-
-dev: 
-	(trap 'kill 0' SIGINT; \
-	cd $(BASEDIR)/backend && \
-	export GOOGLE_APPLICATION_CREDENTIALS=$(BASEDIR)/creds/creds.json && \
-	go run main.go firestore.go bingo.go cache.go & \
-	cd $(BASEDIR)/frontend && ng serve --open )
-
-fixvendor:
-	@echo Copying fix library not working. 
-	cp $(BASEDIR)/vendorfix/validate.go	$(BASEDIR)/backend/vendor/google.golang.org/api/idtoken/validate.go
-
-server: 
-	cd $(BASEDIR)/backend && \
-	export GOOGLE_APPLICATION_CREDENTIALS=$(BASEDIR)/creds/creds.json && \
-	go run main.go firestore.go bingo.go cache.go
 
 init:
 	cd frontend && npm install
@@ -49,23 +31,26 @@ serviceaccount: env
 	-gcloud iam service-accounts keys create creds/creds.json \
   	--iam-account $(SAACCOUNT)@$(PROJECT).iam.gserviceaccount.com  	
 
-sapermissions: env
+
+perms:
 	@echo ~~~~~~~~~~~~~ Grant Service account permissions
 	-gcloud projects add-iam-policy-binding $(PROJECT) \
-  	--member serviceAccount:$(SAACCOUNT)@$(PROJECT).iam.gserviceaccount.com \
-  	--role roles/project.viewer
-
-gaeperms:
-	-gcloud projects add-iam-policy-binding $(PROJECT) \
   	--member serviceAccount:$(PROJECT)@appspot.gserviceaccount.com \
-  	--role roles/vpcaccess.user
+  	--role roles/vpaccess.user
 	-gcloud projects add-iam-policy-binding $(PROJECT) \
   	--member serviceAccount:$(PROJECTNUMBER)@cloudbuild.gserviceaccount.com \
-  	--role roles/vpcaccess.user
+  	--role roles/vpaccess.user
+	-gcloud projects add-iam-policy-binding $(PROJECT) \
+  	--member serviceAccount:$(PROJECTNUMBER)@cloudbuild.gserviceaccount.com \
+  	--role roles/vpaccess.user  
+	-gcloud projects add-iam-policy-binding $(PROJECT) \
+  	--member serviceAccount:$(SAACCOUNT)@$(PROJECT).iam.gserviceaccount.com \
+  	--role roles/compute.networkAdmin
+	-gcloud projects add-iam-policy-binding $(PROJECT) \
+  	--member serviceAccount:$(SAACCOUNT)@$(PROJECT).iam.gserviceaccount.com \
+  	--role roles/project.viewer  
 
-project: env services appengine cloudbuild memorystore
-	
-
+project: env services appengine cloudbuild memorystore serviceaccount perms
 
 services: env
 	-gcloud services enable vpcaccess.googleapis.com
@@ -84,8 +69,6 @@ cloudbuild: env
 	-gcloud projects add-iam-policy-binding $(PROJECT) \
   	--member serviceAccount:$(PROJECTNUMBER)@cloudbuild.gserviceaccount.com \
   	--role roles/appengine.appAdmin	
-	@echo ~~~~~~~~~~~~~ Create Angular builder for Cloud Build 
-	-cd builder && make build    
 
 memorystore: env
 	-gcloud redis instances create $(NAME) --size=1 --region=$(REGION)
@@ -112,15 +95,14 @@ redisclean:
 	-docker stop some-redis
 	-docker rm some-redis
 
-
-serverredis:  redis
+server:  redis
 	cd $(BASEDIR)/backend && \
 	export REDISHOST=127.0.0.1 && \
 	export REDISPORT=6379 && \
 	export GOOGLE_APPLICATION_CREDENTIALS=$(BASEDIR)/creds/creds.json && \
 	go run main.go firestore.go bingo.go cache.go
 
-devredis: redis
+dev: redis
 	(trap 'kill 0' SIGINT; \
 	cd $(BASEDIR)/backend && \
 	export REDISHOST=127.0.0.1 && \
