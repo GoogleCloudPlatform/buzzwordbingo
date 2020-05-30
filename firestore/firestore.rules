@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isGlobalAdmin(userId) {
+      let isAdmin = exists(/databases/$(database)/documents/admins/$(userId));
+      return isAdmin;
+    }
+
+    function isGameAdmin(userId, gameID) {
+      let isAdmin = exists(/databases/$(database)/documents/games/$(gameID)/admins/$(userId));
+      return isAdmin;
+    }
+
+    function isAdmin(userId, gameID) {
+      return isGlobalAdmin(userId) || isGameAdmin(userId, gameID)
+    }
+
+    function isPlayer(userId, game) {
+      return exists(/databases/$(database)/documents/games/$(game)/players/$(userId));
+    }
+
+    match /games/{game}/boards/{board} {
+      allow read: if request.auth.token.email == resource.data.player.email || isAdmin(request.auth.token.email, resource.data.game)
+
+    }
+    match /games/{game}/messages/{message} {
+      allow read: if request.auth.token.email in resource.data.audience 
+                  || "all" in resource.data.audience 
+                  || isAdmin(request.auth.token.email, game.id)
+    }
+    match /games/{game} {
+      allow read: if isPlayer(request.auth.token.email, game) 
+      || isAdmin(request.auth.token.email, game)
+
+    }
+    match /phrases/{phrase} {
+      allow read: if isGlobalAdmin(request.auth.token.email)
+
+    }
+  }
+}

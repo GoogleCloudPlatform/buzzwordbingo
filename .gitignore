@@ -3,3 +3,6 @@ backend/vendor
 creds
 .DS_Store
 temp
+node_modules
+.firebaserc
+firestore-debug.log
