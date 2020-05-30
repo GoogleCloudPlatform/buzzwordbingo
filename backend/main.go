@@ -380,11 +380,25 @@ func handleBoardDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	board, err := getBoard(b, g)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	email, err := getPlayerEmail(r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
 	isGameAdm, err := isGameAdmin(r, g)
 	if err != nil {
 		writeError(w, err.Error())
 		return
 	}
+
+	isPlayer := board.Player.Email == email
 
 	isAdm, err := isAdmin(r)
 	if err != nil {
@@ -392,8 +406,8 @@ func handleBoardDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !isAdm && !isGameAdm {
-		msg := fmt.Sprintf("{\"error\":\"Not a game admin\"}")
+	if !isAdm && !isGameAdm && isPlayer {
+		msg := fmt.Sprintf("{\"error\":\"Not an admin, game admin or player\"}")
 		writeResponse(w, http.StatusForbidden, msg)
 		return
 	}
