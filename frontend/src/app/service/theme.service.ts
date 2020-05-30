@@ -95,12 +95,12 @@ export const darkTheme = {
   'body-bg-color':'#000000',
   'body-bg':'none',
   'bingo-header-bg-image':'none',
-  'interface-bg-color':'#121212',
+  'interface-bg-color':'#232323',
   'interface-text-color':'rgb(255, 255, 255, .87)',
   'link-text-color':'#03DAc6',
-  'link-text-bg-color':'#121212',
+  'link-text-bg-color':'#232323',
   'link-hover-bg-color':'#03DAc6',
-  'link-hover-color':'#121212',
+  'link-hover-color':'#232323',
   'link-active-bg-color':'#333',
   'link-active-color':'rgb(255, 255, 255, .60)',
   'bingo-header-text-shadow':'#026056',
@@ -108,7 +108,7 @@ export const darkTheme = {
   'bingo-color':'#270147',
   'bingo-header-color':'#03DAc6',
   'border-color':'#ccc',
-  'login-bg-color':'#121212',
+  'login-bg-color':'#232323',
   'login-color':'rgb(255, 255, 255, .87)',
   'login-highlight-bg-color':'#BB86FC',
   'login-highlight-contrast-bg-color':'#82aff7',
@@ -123,7 +123,7 @@ export const darkTheme = {
   'input-color':'rgba(255, 255, 255, .60)',
   'input-border-color':'#000',
   'bingo-declared-header-bg-color':'#03DAc6',
-  'bingo-declared-header-color':' #121212',
+  'bingo-declared-header-color':' #232323',
   'header-color':'#fff'
 } 
 
