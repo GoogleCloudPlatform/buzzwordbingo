@@ -2,7 +2,7 @@
 
 <div class="main">
     <div class="manage-header">
-        <h2>Manage {{(game | async)?.name}}</h2>
+        <h2>Manage <a routerLink="/game/{{(game | async)?.id}}">{{(game | async)?.name}}</a></h2>
         <div class="manage-module">
             <p>Invite others to the game:</p>
             <div class="invite-link">

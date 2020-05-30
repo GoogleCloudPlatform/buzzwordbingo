@@ -16,6 +16,10 @@
         flex-wrap: wrap;
         h2{
             width: 100%;
+            a{
+                color: var(--link-text-color);
+                transition: background-color .25s ease-in, color .25s ease-in;
+            }
         }
         .invite-link{
             a{
