@@ -1259,25 +1259,9 @@ func updateGamePhrases(gameID string, phrase Phrase) error {
 	if err != nil {
 		return fmt.Errorf("could not get game id(%s): %s", g.ID, err)
 	}
-	g.UpdatePhrase(phrase)
 
-	if err := cache.SaveGame(g); err != nil {
-		return fmt.Errorf("error caching game : %v", err)
-	}
-
-	for _, v := range g.Boards {
-		b, err := getBoard(v.ID, g.ID)
-		if err != nil {
-			if strings.Contains(err.Error(), "failed to get board") {
-				continue
-			}
-			return fmt.Errorf("could not get board id(%s): %s", v.ID, err)
-		}
-		b.UpdatePhrase(phrase)
-
-		if err := cache.SaveBoard(b); err != nil {
-			return fmt.Errorf("error caching board : %v", err)
-		}
+	if err := a.UpdatePhrase(g, phrase); err != nil {
+		return fmt.Errorf("error saving update phrase : %v", err)
 	}
 
 	if err := a.UpdatePhrase(g, phrase); err != nil {

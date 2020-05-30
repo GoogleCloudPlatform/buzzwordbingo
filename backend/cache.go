@@ -237,3 +237,35 @@ func (c *Cache) DeleteGamesForPlayer(email string) error {
 	c.log(fmt.Sprintf("Cleaning games for player from cache %s", email))
 	return nil
 }
+
+func (c *Cache) UpdatePhrase(g Game, p Phrase) error {
+	conn := c.redisPool.Get()
+	defer conn.Close()
+
+	g.UpdatePhrase(p)
+	json, err := g.JSON()
+	if err != nil {
+		return err
+	}
+
+	conn.Send("MULTI")
+	conn.Send("SET", g.ID, json)
+
+	for _, b := range g.Boards {
+		b.UpdatePhrase(p)
+		json, err := b.JSON()
+		if err != nil {
+			return err
+		}
+
+		conn.Send("SET", b.ID, json)
+		conn.Send("SET", b.Game+"_"+b.Player.Email, json)
+	}
+
+	if _, err := conn.Do("EXEC"); err != nil {
+		return err
+	}
+
+	return nil
+
+}
