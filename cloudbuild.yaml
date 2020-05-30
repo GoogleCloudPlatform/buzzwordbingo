@@ -16,9 +16,9 @@ steps:
     - name: 'gcr.io/cloud-builders/npm'
       args: [ 'install' ]
       dir: "frontend"
-    - name: 'gcr.io/$PROJECT_ID/ng:latest'
-      args: ["build", "--prod"]
-      dir: "frontend"
+    - name: 'gcr.io/cloud-builders/npm'
+      args: ["install", "-g", "@angular/cli@latest", "--unsafe-perms"]
+      dir: "frontend"  
     - name: gcr.io/cloud-builders/gcloud
       args: ['app', 'deploy', '-q']
       dir: "backend"
