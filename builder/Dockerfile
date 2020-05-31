@@ -12,14 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-steps:
-    - name: 'gcr.io/cloud-builders/npm'
-      args: [ 'install' ]
-      dir: "frontend"
-    - name: 'gcr.io/$PROJECT_ID/ng:latest'
-      args: ["build", "--prod"]
-      dir: "frontend"
-    - name: gcr.io/cloud-builders/gcloud
-      args: ['app', 'deploy', '-q']
-      dir: "backend"
-  
+FROM node:current
+
+ARG ng_version=latest
+RUN npm install -g @angular/cli@$ng_version --unsafe-perms && ng version
+
+ENTRYPOINT ["ng"]

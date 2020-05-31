@@ -13,13 +13,14 @@
 # limitations under the License.
 
 steps:
-    - name: 'gcr.io/cloud-builders/npm'
-      args: [ 'install' ]
-      dir: "frontend"
-    - name: 'gcr.io/$PROJECT_ID/ng:latest'
-      args: ["build", "--prod"]
-      dir: "frontend"
-    - name: gcr.io/cloud-builders/gcloud
-      args: ['app', 'deploy', '-q']
-      dir: "backend"
+    - name: 'gcr.io/cloud-builders/docker'
+      args:
+        [
+          'build', '.',
+          '--tag=gcr.io/$PROJECT_ID/ng:latest',
+          '--file=Dockerfile',
+          '--build-arg', 'ng_version=latest',
+        ]
+images:
+    - 'gcr.io/$PROJECT_ID/ng:latest'
   
