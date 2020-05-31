@@ -20,8 +20,6 @@ export class DataService {
   constructor(  private firestore: AngularFirestore, 
                 private game:GameService,
                 ) { 
-
-
   }
 
   getPhrases() { 
