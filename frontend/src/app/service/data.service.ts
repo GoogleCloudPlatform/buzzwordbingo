@@ -1,6 +1,7 @@
-import { Injectable,isDevMode } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore'; 
 import {GameService, Game} from '../service/game.service'
+import { FormControl, FormGroup } from "@angular/forms";
 
 export class Phrase{
   id:string
@@ -17,10 +18,8 @@ export class Phrase{
 })
 
 export class DataService {
-  constructor(  private firestore: AngularFirestore, 
-                private game:GameService,
-                ) { 
-  }
+
+  constructor(private firestore: AngularFirestore, private game:GameService) { }
 
   getPhrases() { 
     return this.firestore.collection("phrases").valueChanges();
@@ -46,5 +45,7 @@ export class DataService {
     return this.firestore.collection("games").doc(gid).collection("boards").doc(bid).collection("phrases").valueChanges();
   }
 
+
+  
 
 }
