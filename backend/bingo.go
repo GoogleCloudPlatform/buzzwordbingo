@@ -42,6 +42,22 @@ type Game struct {
 	Created time.Time `json:"created" firestore:"created"`
 }
 
+// Obscure will obscure the email address of every email in the game other than
+// the one that is input.
+func (g *Game) Obscure(email string) {
+	g.Players.Obscure(email)
+	g.Admins.Obscure(email)
+
+	for _, v := range g.Master.Records {
+		v.Players.Obscure(email)
+	}
+
+	for i, v := range g.Boards {
+		p := v.Player.Obscure(email)
+		g.Boards[i].Player = *p
+	}
+}
+
 // NewBoard creates a new board for a user.
 func (g *Game) NewBoard(p Player) Board {
 	b := Board{}
@@ -51,12 +67,14 @@ func (g *Game) NewBoard(p Player) Board {
 	return b
 }
 
+// UpdatePhrase will change a given phrase in the master record of phrases.
 func (g *Game) UpdatePhrase(p Phrase) {
 	i, r := g.FindRecord(p)
 	r.Phrase = p
 	g.Master.Records[i] = r
 }
 
+// Delete board removes a board from the game.
 func (g *Game) DeleteBoard(b Board) {
 	for i, v := range g.Boards {
 		if v.ID == b.ID {
@@ -229,6 +247,14 @@ type Player struct {
 	Email string `json:"email"  firestore:"email"`
 }
 
+// Obscure will replace the email, if it isn't the one input.
+func (p *Player) Obscure(email string) *Player {
+	if p.Email != email {
+		p.Email = "xxxxxx@xxxxxx.xxx"
+	}
+	return p
+}
+
 // JSON Returns the given Board struct as a JSON string
 func (p Player) JSON() (string, error) {
 
@@ -242,6 +268,14 @@ func (p Player) JSON() (string, error) {
 
 // Players is a slice of Player.
 type Players []Player
+
+// Obscure will obscure the email of any email that isn't the email input.
+func (ps Players) Obscure(email string) {
+	for i, v := range ps {
+		p := v.Obscure(email)
+		ps[i] = *p
+	}
+}
 
 // IsMember checks to see if a player is in the collection already
 func (ps Players) IsMember(p Player) bool {
@@ -288,6 +322,12 @@ type Board struct {
 	Player        Player   `json:"player" firestore:"player"`
 	BingoDeclared bool     `json:"bingodeclared" firestore:"bingodeclared"`
 	Phrases       []Phrase `json:"phrases" firestore:"-"`
+}
+
+// Obscure obscures the email of every player in the slice other than the one
+// input.
+func (b *Board) Obscure(email string) {
+	b.Player.Obscure(email)
 }
 
 // Bingo determins if the correct sequence of items have been Selected to
@@ -379,6 +419,7 @@ func (b *Board) Load(p []Phrase) {
 	b.Phrases = p
 }
 
+// UpdatePhrase change the text of a given phrases.
 func (b *Board) UpdatePhrase(p Phrase) {
 	for i, v := range b.Phrases {
 		if p.ID == v.ID {

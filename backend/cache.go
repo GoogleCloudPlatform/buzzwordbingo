@@ -103,6 +103,7 @@ func (c *Cache) SaveGame(g Game) error {
 	return nil
 }
 
+// SaveGamesForPlayer saves a list of all of the games a player is in.
 func (c *Cache) SaveGamesForPlayer(email string, g Games) error {
 	if !c.enabled {
 		return nil
@@ -221,7 +222,7 @@ func (c *Cache) DeleteBoard(board Board) error {
 	return nil
 }
 
-// DeleteBoard will remove a board from the cache completely.
+// DeleteGamesForPlayer will remove the list of games for a particular player
 func (c *Cache) DeleteGamesForPlayer(email string) error {
 	if !c.enabled {
 		return nil
@@ -238,6 +239,8 @@ func (c *Cache) DeleteGamesForPlayer(email string) error {
 	return nil
 }
 
+// UpdatePhrase will update all of the versions of a phrase in a game and all
+// of the boards in that game.
 func (c *Cache) UpdatePhrase(g Game, p Phrase) error {
 	conn := c.redisPool.Get()
 	defer conn.Close()

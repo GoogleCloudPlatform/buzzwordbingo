@@ -463,11 +463,18 @@ func handleGameGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	email, err := getPlayerEmail(r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
 	game, err := getGame(g)
 	if err != nil {
 		writeError(w, err.Error())
 		return
 	}
+	game.Obscure(email)
 
 	writeJSON(w, game)
 	return
