@@ -21,8 +21,13 @@ service cloud.firestore {
 
     match /games/{game}/boards/{board} {
       allow read: if request.auth.token.email == resource.data.player.email || isAdmin(request.auth.token.email, resource.data.game)
-
     }
+    
+    match /games/{game}/boards/{board}/phrases/{phrase} {
+      allow read: if request.auth.token.email == resource.data.player.email || isAdmin(request.auth.token.email, resource.data.game)
+    }
+    
+    
     match /games/{game}/messages/{message} {
       allow read: if request.auth.token.email in resource.data.audience 
                   || "all" in resource.data.audience 
@@ -35,6 +40,11 @@ service cloud.firestore {
     }
     match /phrases/{phrase} {
       allow read: if isGlobalAdmin(request.auth.token.email)
+
+    }
+    
+    match /games/{game}/records/{record} {
+      allow read: if isAdmin(request.auth.token.email, game)
 
     }
   }
