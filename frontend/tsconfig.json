@@ -11,6 +11,9 @@
     "moduleResolution": "node",
     "importHelpers": true,
     "target": "es2015",
+    "types": [
+      "gapi", 
+    ],
     "lib": [
       "es2018",
       "dom"

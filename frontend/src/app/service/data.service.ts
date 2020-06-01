@@ -1,7 +1,13 @@
-import { Injectable } from '@angular/core';
+/// <reference path="../../../node_modules/@types/gapi/index.d.ts" />
+/// <reference path="../../../node_modules/@types/gapi.auth2/index.d.ts" />
+import { Injectable, isDevMode } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore'; 
 import {GameService, Game} from '../service/game.service'
-import { FormControl, FormGroup } from "@angular/forms";
+import { AngularFireAuth } from '@angular/fire/auth';
+import { Router } from '@angular/router';
+import * as firebase from 'firebase'
+
+declare var gapi:any;
 
 export class Phrase{
   id:string
@@ -11,6 +17,10 @@ export class Phrase{
   displayorder:number
 }
 
+const GAPI_CONFIG = {
+  clientId: "1038359390820-699rfff3vd63dbojri418cop4qhkgm8i.apps.googleusercontent.com",
+  fetch_basic_profile: true
+}
 
 
 @Injectable({
@@ -19,7 +29,10 @@ export class Phrase{
 
 export class DataService {
 
-  constructor(private firestore: AngularFirestore, private game:GameService) { }
+  constructor(public auth: AngularFireAuth, private firestore: AngularFirestore, private game:GameService) { 
+    this.passCredentials();
+
+  }
 
   getPhrases() { 
     return this.firestore.collection("phrases").valueChanges();
@@ -46,6 +59,31 @@ export class DataService {
   }
 
 
-  
+
+   passCredentials() {
+
+    console.log("passCredentials ")
+    let self = this;
+
+    gapi.load('client:auth2', function(){
+      gapi.auth2.init(GAPI_CONFIG).then(function(googleAuth){
+
+        if ( googleAuth.isSignedIn.get()){
+          let token = googleAuth.currentUser.get().getAuthResponse().id_token;
+          const credential = firebase.auth.GoogleAuthProvider.credential(token);
+          self.auth.signInWithCredential(credential);
+        } else {
+          googleAuth.signIn().then((guser) =>{
+            const token = guser.getAuthResponse().id_token;
+            const credential = firebase.auth.GoogleAuthProvider.credential(token);
+            self.auth.signInWithCredential(credential);
+          })
+        }
+      }, function(err){console.log(err);})
+
+    })
+
+  }
+
 
 }
