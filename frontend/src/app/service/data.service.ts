@@ -6,6 +6,7 @@ import {GameService, Game} from '../service/game.service'
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import * as firebase from 'firebase'
+import { environment } from '../../environments/environment';
 
 declare var gapi:any;
 
@@ -18,7 +19,7 @@ export class Phrase{
 }
 
 const GAPI_CONFIG = {
-  clientId: "1038359390820-699rfff3vd63dbojri418cop4qhkgm8i.apps.googleusercontent.com",
+  clientId: environment.client_id,
   fetch_basic_profile: true
 }
 
@@ -62,7 +63,6 @@ export class DataService {
 
    passCredentials() {
 
-    console.log("passCredentials ")
     let self = this;
 
     gapi.load('client:auth2', function(){

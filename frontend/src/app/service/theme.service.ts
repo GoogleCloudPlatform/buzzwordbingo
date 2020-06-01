@@ -158,7 +158,6 @@ export class ThemeService {
   }
 
   private setTheme(theme: {}) {
-    console.log("Theme change called")
     Object.keys(theme).forEach(k =>
       document.documentElement.style.setProperty(`--${k}`, theme[k])
     );

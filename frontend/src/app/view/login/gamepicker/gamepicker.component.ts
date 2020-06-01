@@ -13,8 +13,6 @@ export class GamepickerComponent implements OnInit {
     this.game.getGamesForPlayer().subscribe(val=>{
       let games:Game[] = val as Game[];
       games.sort((a, b) => (a.created > b.created) ? 1 : -1)
-
-      console.log(val);
       this.games=games; 
     } );
   }

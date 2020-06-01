@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { Meta } from '@angular/platform-browser';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -8,6 +10,7 @@ import { Component } from '@angular/core';
 export class AppComponent {
   title = 'bingomeeting';
 
-  constructor() { 
+  constructor(public meta: Meta) { 
+    this.meta.updateTag({ name: 'google-signin-client_id', content: environment.client_id });
   }
 }
