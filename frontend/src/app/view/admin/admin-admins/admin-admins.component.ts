@@ -17,7 +17,7 @@ export class AdminAdminsComponent implements OnInit {
   }
 
   refreshAdmins(){
-    this.gameService.getAdmins().subscribe(val=>{let p:Player[] = val as Player[]; console.log(val); this.admins.next(p);});
+    this.gameService.getAdmins().subscribe(val=>{let p:Player[] = val as Player[]; this.admins.next(p);});
   }
 
   onAdminAdd(email:string){
@@ -26,7 +26,6 @@ export class AdminAdminsComponent implements OnInit {
   }
 
   onAdminRemove($event){
-    console.log($event)
     $event.target.parentElement.style.display = 'none';
     this.gameService.removeAdmin($event.target.id).subscribe(val=>{$event.target.parentElement.style.display = 'none'; this.refreshAdmins();});
     
