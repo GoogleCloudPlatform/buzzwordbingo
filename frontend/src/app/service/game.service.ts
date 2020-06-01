@@ -118,7 +118,7 @@ export class GameService {
   }
 
   getGamesForPlayer(){
-    return this.http.get(this.hostUrl +  "/api/game/list").pipe(share());
+    return this.http.get(this.hostUrl +  "/api/player/game/list").pipe(share());
   }
 
   updateMasterPhrase(phrase:Phrase){

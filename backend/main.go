@@ -63,7 +63,7 @@ func main() {
 	r.HandleFunc("/api/record", handleRecordSelect)
 	r.HandleFunc("/api/game", handleGameGet)
 	r.HandleFunc("/api/game/new", handleGameNew)
-	r.HandleFunc("/api/game/list", handleGameList)
+	r.HandleFunc("/api/player/game/list", handlePlayerGameList)
 	r.HandleFunc("/api/game/admin/add", handleGameAdminAdd)
 	r.HandleFunc("/api/game/admin/remove", handleGameAdminDelete)
 	r.HandleFunc("/api/game/deactivate", handleGameDeactivate)
@@ -292,8 +292,8 @@ func handleMessageAcknowledge(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func handleGameList(w http.ResponseWriter, r *http.Request) {
-	weblog("/api/game/list called")
+func handlePlayerGameList(w http.ResponseWriter, r *http.Request) {
+	weblog("/api/player/game/list called")
 	email, err := getPlayerEmail(r)
 	if err != nil {
 		writeError(w, err.Error())
