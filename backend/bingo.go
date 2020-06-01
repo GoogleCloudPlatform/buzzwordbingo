@@ -74,7 +74,7 @@ func (g *Game) UpdatePhrase(p Phrase) {
 	g.Master.Records[i] = r
 }
 
-// Delete board removes a board from the game.
+// DeleteBoard removes a board from the game.
 func (g *Game) DeleteBoard(b Board) {
 	for i, v := range g.Boards {
 		if v.ID == b.ID {
