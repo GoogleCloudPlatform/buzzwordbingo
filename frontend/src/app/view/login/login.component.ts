@@ -3,6 +3,7 @@ import { Observable, of  } from 'rxjs';
 import {Router, ActivatedRoute} from '@angular/router';
 import {AuthService, Player} from '../../service/auth.service'
 import { GameService, Game } from 'src/app/service/game.service';
+import { DataService } from 'src/app/service/data.service';
 
 
 @Component({
@@ -16,7 +17,7 @@ export class LoginComponent implements OnInit {
   public identity:Observable<any>;
   public games:any;
 
-  constructor(private auth:AuthService, public router:Router, route: ActivatedRoute, public game:GameService) { 
+  constructor(private auth:AuthService, public router:Router, route: ActivatedRoute, public game:GameService, public dataService:DataService) { 
     this.id = route.snapshot.paramMap.get('id');
     console.log(this.id);
     this.identity =auth.identifyPlayer();
