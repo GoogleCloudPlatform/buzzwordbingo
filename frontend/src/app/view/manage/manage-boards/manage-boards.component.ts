@@ -19,7 +19,6 @@ export class ManageBoardsComponent implements OnInit {
   }
 
   reset(bid:string, gid:string){
-    console.log("Reset called")
     this.gameService.resetboard(bid, gid);
   }
 

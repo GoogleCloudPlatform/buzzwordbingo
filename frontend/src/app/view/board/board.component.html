@@ -10,6 +10,9 @@
     </div>
     </header>
     <div class="phrases">
+        <div class="board-toolbar">
+            <button *ngIf="bingo" class="reset" (click)="reset(boardid, gid)">Get a new board</button>
+        </div>
         <div class="header-container">
             <header>B</header>
             <header>I</header>

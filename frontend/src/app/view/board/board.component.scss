@@ -42,6 +42,14 @@
         border-top-right-radius: 6px;
         transition: background-color .25s ease-in, color .25s ease-in;
         
+        .board-toolbar{
+            width: 100%;
+            background-color: var(--body-bg-color);
+            height: 30px;
+            button{
+                margin: 2px auto;
+            }
+        }
 
         .header-container{
             box-sizing: border-box;
@@ -82,6 +90,7 @@
         transition: background-color .25s ease-in;
         width: 30%;
         height: 690px;
+        margin-top: 30px;
     }
 
 }

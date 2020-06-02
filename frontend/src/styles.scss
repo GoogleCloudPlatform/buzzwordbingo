@@ -151,6 +151,7 @@ button{
     background-color: var(--link-text-bg-color);
     color: var(--link-text-color);
     transition: background-color .25s ease-in, color .25s ease-in;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
 
     &:hover{

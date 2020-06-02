@@ -80,6 +80,10 @@ export class BoardComponent implements OnInit {
         child.disable();
       })
   }
+  reset(bid:string, gid:string){
+    this.gameService.resetboard(bid, gid);
+  }
+
 
   showBingo(){
     let board = document.querySelector(".header-container");
@@ -109,7 +113,10 @@ export class BoardComponent implements OnInit {
     if (msg.operation == "reset" && !msg.received){
       console.log(msg);
       this.gameService.messageReceived(this.gid, msg.id).subscribe();
-      this.router.navigateByUrl('/game/'+this.gid);
+      this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+        this.router.navigateByUrl('/game/'+this.gid);
+      }); 
+      
       return;
     }
     return;
