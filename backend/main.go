@@ -994,12 +994,18 @@ func getValidatedEmail(r *http.Request) (string, error) {
 
 	jwt := r.Header.Get("X-Goog-IAP-JWT-Assertion")
 
-	_, err := validateJWT(jwt, projectNumber, projectID)
+	payload, err := validateJWT(jwt, projectNumber, projectID)
 	if err != nil {
 		return "", fmt.Errorf("could not validate IAP JWT: %s", err)
 	}
 
-	// TODO: Get rid of this and use the jwt token when it is done correctly
+	var ok bool
+	email, ok = payload.Claims["email"]
+
+	if !ok {
+		return "", fmt.Errorf("could not get email from IAP JWT")
+	}
+
 	return email, nil
 
 }
