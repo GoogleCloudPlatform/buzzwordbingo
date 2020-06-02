@@ -10,7 +10,7 @@ import {Router, ActivatedRoute} from '@angular/router';
 export class GamepickerComponent implements OnInit {
   public games:any;
   constructor(public game:GameService, public router:Router) { 
-    this.game.getGamesForPlayer().subscribe(val=>{
+    this.game.GetGamesForKey().subscribe(val=>{
       let games:Game[] = val as Game[];
       games.sort((a, b) => (a.created > b.created) ? 1 : -1)
       this.games=games; 
