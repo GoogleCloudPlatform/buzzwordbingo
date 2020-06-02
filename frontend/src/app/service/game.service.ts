@@ -121,6 +121,10 @@ export class GameService {
     return this.http.get(this.hostUrl +  "/api/player/game/list").pipe(share());
   }
 
+  getGames(){
+    return this.http.get(this.hostUrl +  "/api/game/list").pipe(share());
+  }
+
   updateMasterPhrase(phrase:Phrase){
     let url = `${this.hostUrl}/api/phrase/update?p=${phrase.id}&text=${phrase.text}`
     return this.http.get(url).pipe(share());

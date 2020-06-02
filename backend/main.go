@@ -538,7 +538,7 @@ func handleGameDeactivate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := cache.DeleteGamesForKey("admins"); err != nil {
+	if err := cache.DeleteGamesForKey("admin-list"); err != nil {
 		writeError(w, err.Error())
 		return
 	}
@@ -1245,6 +1245,10 @@ func deactivateGame(gid string) error {
 
 	if err := a.SaveGame(game); err != nil {
 		return fmt.Errorf("error saving game to firestore : %v", err)
+	}
+
+	if err := cache.DeleteGamesForKey("admin-list"); err != nil {
+		return fmt.Errorf("error caching game : %v", err)
 	}
 
 	return nil
