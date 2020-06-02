@@ -63,6 +63,7 @@ func main() {
 	r.HandleFunc("/api/record", handleRecordSelect)
 	r.HandleFunc("/api/game", handleGameGet)
 	r.HandleFunc("/api/game/new", handleGameNew)
+	r.HandleFunc("/api/game/list", handleGameList)
 	r.HandleFunc("/api/player/game/list", handlePlayerGameList)
 	r.HandleFunc("/api/game/admin/add", handleGameAdminAdd)
 	r.HandleFunc("/api/game/admin/remove", handleGameAdminDelete)
@@ -300,7 +301,32 @@ func handlePlayerGameList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	games, err := getGamesForPlayer(email)
+	games, err := getGamesForKey(email)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	writeJSON(w, games)
+	return
+}
+
+func handleGameList(w http.ResponseWriter, r *http.Request) {
+	weblog("/api/game/list called")
+
+	isAdm, err := isAdmin(r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if !isAdm {
+		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
+		writeResponse(w, http.StatusForbidden, msg)
+		return
+	}
+
+	games, err := getGamesForKey("admin-list")
 	if err != nil {
 		writeError(w, err.Error())
 		return
@@ -406,7 +432,7 @@ func handleBoardDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !isAdm && !isGameAdm && isPlayer {
+	if !isAdm && !isGameAdm && !isPlayer {
 		msg := fmt.Sprintf("{\"error\":\"Not an admin, game admin or player\"}")
 		writeResponse(w, http.StatusForbidden, msg)
 		return
@@ -489,19 +515,30 @@ func handleGameDeactivate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAdm, err := isGameAdmin(r, g)
+	isGameAdm, err := isGameAdmin(r, g)
 	if err != nil {
 		writeError(w, err.Error())
 		return
 	}
 
-	if !isAdm {
-		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
+	isAdm, err := isAdmin(r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if !isAdm && !isGameAdm {
+		msg := fmt.Sprintf("{\"error\":\"Not an admin, game admin\"}")
 		writeResponse(w, http.StatusForbidden, msg)
 		return
 	}
 
 	if err := deactivateGame(g); err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	if err := cache.DeleteGamesForKey("admins"); err != nil {
 		writeError(w, err.Error())
 		return
 	}
@@ -995,7 +1032,7 @@ func getBoardForPlayer(p Player, g Game) (Board, error) {
 				return b, fmt.Errorf("error getting board for player: %v", err)
 			}
 		}
-		if err := cache.DeleteGamesForPlayer(p.Email); err != nil {
+		if err := cache.DeleteGamesForKey(p.Email); err != nil {
 			return b, fmt.Errorf("error clearing game cache for player: %v", err)
 		}
 		if err := cache.SaveBoard(b); err != nil {
@@ -1077,19 +1114,19 @@ func generateBingoMessages(b Board, g Game, first bool) []Message {
 	return messages
 }
 
-func getGamesForPlayer(email string) (Games, error) {
+func getGamesForKey(key string) (Games, error) {
 	g := Games{}
 	var err error
 
-	g, err = cache.GetGamesForPlayer(email)
+	g, err = cache.GetGamesForKey(key)
 	if err != nil {
 		if err == ErrCacheMiss {
-			g, err = a.GetGamesForPlayer(email)
+			g, err = a.GetGames()
 			if err != nil {
 				return g, fmt.Errorf("error getting games: %v", err)
 			}
 		}
-		if err := cache.SaveGamesForPlayer(email, g); err != nil {
+		if err := cache.SaveGamesForKey(key, g); err != nil {
 			return g, fmt.Errorf("error caching games : %v", err)
 		}
 	}
@@ -1166,7 +1203,7 @@ func getNewGame(name string, p Player) (Game, error) {
 	if err != nil {
 		return game, fmt.Errorf("failed to get new game: %v", err)
 	}
-	if err := cache.DeleteGamesForPlayer(p.Email); err != nil {
+	if err := cache.DeleteGamesForKey(p.Email); err != nil {
 		return game, fmt.Errorf("failed to clear cache: %v", err)
 	}
 

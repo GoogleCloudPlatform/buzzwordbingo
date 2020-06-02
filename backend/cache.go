@@ -103,8 +103,8 @@ func (c *Cache) SaveGame(g Game) error {
 	return nil
 }
 
-// SaveGamesForPlayer saves a list of all of the games a player is in.
-func (c *Cache) SaveGamesForPlayer(email string, g Games) error {
+// SaveGamesForKey saves a list of all of the games a player is in.
+func (c *Cache) SaveGamesForKey(key string, g Games) error {
 	if !c.enabled {
 		return nil
 	}
@@ -117,17 +117,17 @@ func (c *Cache) SaveGamesForPlayer(email string, g Games) error {
 		return err
 	}
 
-	key := "games-" + email
+	rkey := "games-" + key
 
-	if _, err := conn.Do("SET", key, json); err != nil {
+	if _, err := conn.Do("SET", rkey, json); err != nil {
 		return err
 	}
 	c.log("Successfully saved game list to cache")
 	return nil
 }
 
-// GetGamesForPlayer retrieves a list of games from the cache
-func (c *Cache) GetGamesForPlayer(email string) (Games, error) {
+// GetGamesForKey retrieves a list of games from the cache
+func (c *Cache) GetGamesForKey(key string) (Games, error) {
 	g := []Game{}
 	if !c.enabled {
 		return g, ErrCacheMiss
@@ -135,9 +135,9 @@ func (c *Cache) GetGamesForPlayer(email string) (Games, error) {
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
-	key := "games-" + email
+	rkey := "games-" + key
 
-	s, err := redis.String(conn.Do("GET", key))
+	s, err := redis.String(conn.Do("GET", rkey))
 	if err == redis.ErrNil {
 		return g, ErrCacheMiss
 	} else if err != nil {
@@ -222,20 +222,20 @@ func (c *Cache) DeleteBoard(board Board) error {
 	return nil
 }
 
-// DeleteGamesForPlayer will remove the list of games for a particular player
-func (c *Cache) DeleteGamesForPlayer(email string) error {
+// DeleteGamesForKey will remove the list of games for a particular player
+func (c *Cache) DeleteGamesForKey(key string) error {
 	if !c.enabled {
 		return nil
 	}
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
-	key := "games-" + email
-	if _, err := conn.Do("DEL", key); err != nil {
+	rkey := "games-" + key
+	if _, err := conn.Do("DEL", rkey); err != nil {
 		return err
 	}
 
-	c.log(fmt.Sprintf("Cleaning games for player from cache %s", email))
+	c.log(fmt.Sprintf("Cleaning games for key from cache %s", rkey))
 	return nil
 }
 

@@ -206,6 +206,30 @@ func (a *Agent) NewGame(name string, p Player) (Game, error) {
 	return g, nil
 }
 
+// GetGames finds a collection of all games.
+func (a *Agent) GetGames() (Games, error) {
+	g := []Game{}
+
+	a.log("Getting Games for player")
+	iter := a.client.Collection("games").Where("active", "==", true).Documents(a.ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return g, fmt.Errorf("Failed to iterate: %v", err)
+		}
+		game := Game{}
+		doc.DataTo(&game)
+		game.ID = doc.Ref.ID
+
+		g = append(g, game)
+	}
+
+	return g, nil
+}
+
 // GetGame gets a given game from the database
 func (a *Agent) GetGame(id string) (Game, error) {
 	g := Game{}
@@ -419,8 +443,8 @@ func (a *Agent) GetBoardsForGame(g Game) ([]Board, error) {
 	return b, nil
 }
 
-// GetGamesForPlayer fetches the list of all games a user in currently in.
-func (a *Agent) GetGamesForPlayer(email string) (Games, error) {
+// GetGamesForKey fetches the list of all games a user in currently in.
+func (a *Agent) GetGamesForKey(email string) (Games, error) {
 
 	g := []Game{}
 
