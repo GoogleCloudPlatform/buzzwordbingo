@@ -1000,7 +1000,7 @@ func getValidatedEmail(r *http.Request) (string, error) {
 	}
 
 	var ok bool
-	email, ok = payload.Claims["email"]
+	email, ok = payload.Claims["email"].(string)
 
 	if !ok {
 		return "", fmt.Errorf("could not get email from IAP JWT")
