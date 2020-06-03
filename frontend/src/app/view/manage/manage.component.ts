@@ -23,7 +23,7 @@ export class ManageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.messages = this.data.getMessages(this.id);
+    this.messages = this.data.getMessagesAdmin(this.id);
     this.messages.subscribe()
   }
 

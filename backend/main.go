@@ -26,7 +26,7 @@ var (
 	projectID     = ""
 	projectNumber = ""
 	// ErrNotAdmin is an error that indicates that the user is not an admin
-	ErrNotAdmin = fmt.Errorf("not an admin")
+	ErrNotAdmin = fmt.Errorf("not an admin or game admin")
 	ctx         = context.Background()
 )
 
@@ -481,7 +481,15 @@ func handleGameGet(w http.ResponseWriter, r *http.Request) {
 		writeError(w, err.Error())
 		return
 	}
-	game.Obscure(email)
+
+	if _, err := isAdmin(r, g); err != nil {
+		if err != ErrNotAdmin {
+			writeError(w, err.Error())
+			return
+
+		}
+		game.Obscure(email)
+	}
 
 	writeJSON(w, game)
 	return
@@ -896,7 +904,7 @@ func isAdmin(r *http.Request, gid string) (int, error) {
 	}
 
 	if !isAdm && !isGameAdm {
-		return http.StatusForbidden, fmt.Errorf("not and admin or game admin")
+		return http.StatusForbidden, ErrNotAdmin
 	}
 
 	return http.StatusOK, nil
@@ -1026,7 +1034,7 @@ func getBoardForPlayer(p Player, g Game) (Board, error) {
 			return b, fmt.Errorf("error caching board for player: %v", err)
 		}
 		m.SetText("<strong>%s</strong> got a board and joined the game.", b.Player.Name)
-		m.SetAudience("all", b.Player.Email)
+		m.SetAudience("all")
 
 	}
 
@@ -1061,7 +1069,7 @@ func generateBingoMessages(b Board, g Game, first bool) []Message {
 	m1.SetText(bingoMsg)
 	m1.SetAudience(b.Player.Email)
 	if first {
-		m1.SetAudience(b.Player.Email, "all")
+		m1.SetAudience("all")
 	}
 
 	m1.Bingo = true
@@ -1094,10 +1102,19 @@ func getGamesForKey(key string) (Games, error) {
 	g, err = cache.GetGamesForKey(key)
 	if err != nil {
 		if err == ErrCacheMiss {
-			g, err = a.GetGames()
-			if err != nil {
-				return g, fmt.Errorf("error getting games: %v", err)
+
+			if key == "admin-list" {
+				g, err = a.GetGames()
+				if err != nil {
+					return g, fmt.Errorf("error getting games: %v", err)
+				}
+			} else {
+				g, err = a.GetGamesForKey(key)
+				if err != nil {
+					return g, fmt.Errorf("error getting games: %v", err)
+				}
 			}
+
 		}
 		if err := cache.SaveGamesForKey(key, g); err != nil {
 			return g, fmt.Errorf("error caching games : %v", err)

@@ -24,14 +24,14 @@ service cloud.firestore {
     }
     
     match /games/{game}/boards/{board}/phrases/{phrase} {
-      allow read: if request.auth.token.email == resource.data.player.email || isAdmin(request.auth.token.email, resource.data.game)
+      allow read: if true
     }
     
     
     match /games/{game}/messages/{message} {
       allow read: if request.auth.token.email in resource.data.audience 
                   || "all" in resource.data.audience 
-                  || isAdmin(request.auth.token.email, game.id)
+                  || isAdmin(request.auth.token.email, game)
     }
     match /games/{game} {
       allow read: if isPlayer(request.auth.token.email, game) 

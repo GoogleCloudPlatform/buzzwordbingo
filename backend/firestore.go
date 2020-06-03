@@ -467,7 +467,7 @@ func (a *Agent) GetGamesForKey(email string) (Games, error) {
 
 	refs := []*firestore.DocumentRef{}
 	a.log("Getting Games for player")
-	iter := a.client.CollectionGroup("players").Where("email", "==", email).Documents(a.ctx)
+	iter := a.client.CollectionGroup("players").Where("email", "==", email).Where("active", "==", true).Documents(a.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {

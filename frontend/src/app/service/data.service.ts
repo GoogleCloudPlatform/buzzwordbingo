@@ -43,7 +43,13 @@ export class DataService {
     return this.firestore.collection("admins").valueChanges();
   }
 
-  getMessages(id) { 
+  getMessages(id:string, email:string) { 
+    return this.firestore.collection("games").doc(id)
+            .collection("messages", ref=> ref.where("audience", 'array-contains-any',
+            ['any', email])).valueChanges();
+  }
+
+  getMessagesAdmin(id) { 
     return this.firestore.collection("games").doc(id).collection("messages").valueChanges();
   }
 
