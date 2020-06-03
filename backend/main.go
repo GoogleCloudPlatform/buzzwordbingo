@@ -119,7 +119,7 @@ func main() {
 
 func handleIsAdmin(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/player/isadmin called")
-	isAdm, err := isAdmin(r)
+	isAdm, err := isGlobalAdmin(r)
 	if err != nil {
 		writeError(w, err.Error())
 		return
@@ -169,21 +169,10 @@ func handleGamePhraseUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isGameAdm, err := isGameAdmin(r, gid)
+	statusCode, err := isAdmin(r, gid)
 	if err != nil {
-		writeError(w, err.Error())
-		return
-	}
-
-	isAdm, err := isAdmin(r)
-	if err != nil {
-		writeError(w, err.Error())
-		return
-	}
-
-	if !isAdm && !isGameAdm {
-		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
-		writeResponse(w, http.StatusForbidden, msg)
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, statusCode, msg)
 		return
 	}
 
@@ -198,7 +187,6 @@ func handleGamePhraseUpdate(w http.ResponseWriter, r *http.Request) {
 
 	writeSuccess(w, "ok")
 	return
-
 }
 
 func handleMasterPhraseUpdate(w http.ResponseWriter, r *http.Request) {
@@ -216,7 +204,7 @@ func handleMasterPhraseUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAdm, err := isAdmin(r)
+	isAdm, err := isGlobalAdmin(r)
 	if err != nil {
 		writeError(w, err.Error())
 		return
@@ -314,7 +302,7 @@ func handlePlayerGameList(w http.ResponseWriter, r *http.Request) {
 func handleGameList(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/game/list called")
 
-	isAdm, err := isAdmin(r)
+	isAdm, err := isGlobalAdmin(r)
 	if err != nil {
 		writeError(w, err.Error())
 		return
@@ -418,21 +406,14 @@ func handleBoardDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isGameAdm, err := isGameAdmin(r, g)
+	statusCode, err := isAdmin(r, g)
 	if err != nil {
-		writeError(w, err.Error())
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, statusCode, msg)
 		return
 	}
 
-	isPlayer := board.Player.Email == email
-
-	isAdm, err := isAdmin(r)
-	if err != nil {
-		writeError(w, err.Error())
-		return
-	}
-
-	if !isAdm && !isGameAdm && !isPlayer {
+	if !(board.Player.Email == email) {
 		msg := fmt.Sprintf("{\"error\":\"Not an admin, game admin or player\"}")
 		writeResponse(w, http.StatusForbidden, msg)
 		return
@@ -515,21 +496,10 @@ func handleGameDeactivate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isGameAdm, err := isGameAdmin(r, g)
+	statusCode, err := isAdmin(r, g)
 	if err != nil {
-		writeError(w, err.Error())
-		return
-	}
-
-	isAdm, err := isAdmin(r)
-	if err != nil {
-		writeError(w, err.Error())
-		return
-	}
-
-	if !isAdm && !isGameAdm {
-		msg := fmt.Sprintf("{\"error\":\"Not an admin, game admin\"}")
-		writeResponse(w, http.StatusForbidden, msg)
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, statusCode, msg)
 		return
 	}
 
@@ -607,21 +577,10 @@ func handleGameAdminAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isgAdm, err := isGameAdmin(r, g)
+	statusCode, err := isAdmin(r, g)
 	if err != nil {
-		writeError(w, err.Error())
-		return
-	}
-
-	isAdm, err := isAdmin(r)
-	if err != nil {
-		writeError(w, err.Error())
-		return
-	}
-
-	if !isAdm && !isgAdm {
-		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
-		writeResponse(w, http.StatusForbidden, msg)
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, statusCode, msg)
 		return
 	}
 
@@ -673,21 +632,10 @@ func handleGameAdminDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isgAdm, err := isGameAdmin(r, g)
+	statusCode, err := isAdmin(r, g)
 	if err != nil {
-		writeError(w, err.Error())
-		return
-	}
-
-	isAdm, err := isAdmin(r)
-	if err != nil {
-		writeError(w, err.Error())
-		return
-	}
-
-	if !isAdm && !isgAdm {
-		msg := fmt.Sprintf("{\"error\":\"Not an admin\"}")
-		writeResponse(w, http.StatusForbidden, msg)
+		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
+		writeResponse(w, statusCode, msg)
 		return
 	}
 
@@ -740,7 +688,7 @@ func handleAdminAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAdm, err := isAdmin(r)
+	isAdm, err := isGlobalAdmin(r)
 	if err != nil {
 		writeError(w, err.Error())
 		return
@@ -781,7 +729,7 @@ func handleAdminDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isAdm, err := isAdmin(r)
+	isAdm, err := isGlobalAdmin(r)
 	if err != nil {
 		writeError(w, err.Error())
 		return
@@ -935,7 +883,26 @@ func validateJWT(iapJWT, projectNumber, projectID string) (*idtoken.Payload, err
 	return idtoken.Validate(ctx, iapJWT, aud)
 }
 
-func isAdmin(r *http.Request) (bool, error) {
+func isAdmin(r *http.Request, gid string) (int, error) {
+
+	isGameAdm, err := isGameAdmin(r, gid)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	isAdm, err := isGlobalAdmin(r)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	if !isAdm && !isGameAdm {
+		return http.StatusForbidden, fmt.Errorf("not and admin or game admin")
+	}
+
+	return http.StatusOK, nil
+}
+
+func isGlobalAdmin(r *http.Request) (bool, error) {
 	email, err := getPlayerEmail(r)
 	if err != nil {
 		return false, err
