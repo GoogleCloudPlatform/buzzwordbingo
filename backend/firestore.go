@@ -398,7 +398,6 @@ func (a *Agent) SaveGame(g Game) error {
 
 // UpdatePhrase updates a phrase on a particular game and all boards associated with it.
 func (a *Agent) UpdatePhrase(g Game, p Phrase) error {
-
 	b, err := a.GetBoardsForGame(g)
 	if err != nil {
 		return fmt.Errorf("failed to get list of boards: %v", err)
@@ -479,8 +478,6 @@ func (a *Agent) GetGamesForKey(email string) (Games, error) {
 
 		refs = append(refs, doc.Ref.Parent.Parent)
 	}
-
-	//.Where("active", "==", true)
 
 	a.log("Getting Games for player")
 	snapshots, err := a.client.GetAll(a.ctx, refs)

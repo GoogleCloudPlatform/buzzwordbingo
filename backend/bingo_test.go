@@ -116,7 +116,20 @@ func TestRowCalc(t *testing.T) {
 
 }
 
-func TestDubiousBingo(t *testing.T) {
+func TestPhraseUpdate(t *testing.T) {
+	board := getTestBoard()
+	phrase := Phrase{"1", "Test Phrase", false, "", "", 0}
+
+	board.UpdatePhrase(phrase)
+
+	for _, v := range board.Phrases {
+		if v.ID == phrase.ID {
+			if v.Text != phrase.Text {
+				t.Errorf("Board.UpdatePhrase() got %s, want %s", board.Phrases[0].Text, phrase.Text)
+			}
+			return
+		}
+	}
 
 }
 
@@ -136,31 +149,31 @@ func getTestGame() Game {
 
 func getTestPhrases() []Phrase {
 	phrases := []Phrase{
-		Phrase{"1", "", false, "", "", 0},
-		Phrase{"2", "", false, "", "", 1},
-		Phrase{"3", "", false, "", "", 2},
-		Phrase{"4", "", false, "", "", 3},
-		Phrase{"5", "", false, "", "", 4},
-		Phrase{"6", "", false, "", "", 5},
-		Phrase{"7", "", false, "", "", 6},
-		Phrase{"8", "", false, "", "", 0},
-		Phrase{"9", "", false, "", "", 1},
-		Phrase{"10", "", false, "", "", 2},
-		Phrase{"11", "", false, "", "", 3},
-		Phrase{"12", "", false, "", "", 4},
-		Phrase{"13", "", false, "", "", 5},
-		Phrase{"14", "", false, "", "", 6},
-		Phrase{"15", "", false, "", "", 0},
-		Phrase{"16", "", false, "", "", 1},
-		Phrase{"17", "", false, "", "", 2},
-		Phrase{"18", "", false, "", "", 3},
-		Phrase{"19", "", false, "", "", 4},
-		Phrase{"20", "", false, "", "", 5},
-		Phrase{"21", "", false, "", "", 6},
-		Phrase{"22", "", false, "", "", 3},
-		Phrase{"23", "", false, "", "", 4},
-		Phrase{"24", "", false, "", "", 5},
-		Phrase{"25", "", false, "", "", 6},
+		Phrase{"1", "Filler 1", false, "", "", 0},
+		Phrase{"2", "Filler 2", false, "", "", 1},
+		Phrase{"3", "Filler 3", false, "", "", 2},
+		Phrase{"4", "Filler 4", false, "", "", 3},
+		Phrase{"5", "Filler 5", false, "", "", 4},
+		Phrase{"6", "Filler 6", false, "", "", 5},
+		Phrase{"7", "Filler 7", false, "", "", 6},
+		Phrase{"8", "Filler 8", false, "", "", 0},
+		Phrase{"9", "Filler 9", false, "", "", 1},
+		Phrase{"10", "Filler 10", false, "", "", 2},
+		Phrase{"11", "Filler 11", false, "", "", 3},
+		Phrase{"12", "Filler 12", false, "", "", 4},
+		Phrase{"13", "Filler 13", false, "", "", 5},
+		Phrase{"14", "Filler 14", false, "", "", 6},
+		Phrase{"15", "Filler 15", false, "", "", 0},
+		Phrase{"16", "Filler 16", false, "", "", 1},
+		Phrase{"17", "Filler 17", false, "", "", 2},
+		Phrase{"18", "Filler 18", false, "", "", 3},
+		Phrase{"19", "Filler 19", false, "", "", 4},
+		Phrase{"20", "Filler 20", false, "", "", 5},
+		Phrase{"21", "Filler 21", false, "", "", 6},
+		Phrase{"22", "Filler 22", false, "", "", 3},
+		Phrase{"23", "Filler 23", false, "", "", 4},
+		Phrase{"24", "Filler 24", false, "", "", 5},
+		Phrase{"25", "Filler 25", false, "", "", 6},
 	}
 
 	return phrases
