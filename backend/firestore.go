@@ -324,6 +324,12 @@ func (a *Agent) loadGameWithBoards(g Game) (Game, error) {
 		}
 		b := Board{}
 		doc.DataTo(&b)
+
+		b, err = a.loadBoardWithPhrases(b)
+		if err != nil {
+			return g, fmt.Errorf("Failed to populare board: %v", err)
+		}
+
 		g.Boards = append(g.Boards, b)
 	}
 
@@ -441,6 +447,12 @@ func (a *Agent) GetBoardsForGame(g Game) ([]Board, error) {
 		board := Board{}
 		doc.DataTo(&board)
 		board.ID = doc.Ref.ID
+
+		board, err = a.loadBoardWithPhrases(board)
+		if err != nil {
+			return b, fmt.Errorf("Failed to populare board: %v", err)
+		}
+
 		b = append(b, board)
 
 	}
