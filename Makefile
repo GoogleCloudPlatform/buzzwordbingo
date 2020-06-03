@@ -100,7 +100,7 @@ server:  redis
 	export REDISHOST=127.0.0.1 && \
 	export REDISPORT=6379 && \
 	export GOOGLE_APPLICATION_CREDENTIALS=$(BASEDIR)/creds/creds.json && \
-	go run main.go firestore.go bingo.go cache.go
+	go run main.go firestore.go bingo.go cache.go game.go
 
 dev: redis
 	(trap 'kill 0' SIGINT; \
@@ -108,5 +108,5 @@ dev: redis
 	export REDISHOST=127.0.0.1 && \
 	export REDISPORT=6379 && \
 	export GOOGLE_APPLICATION_CREDENTIALS=$(BASEDIR)/creds/creds.json && \
-	go run main.go firestore.go bingo.go cache.go & \
+	go run main.go firestore.go bingo.go cache.go game.go & \
 	cd $(BASEDIR)/frontend && ng serve --open )	
