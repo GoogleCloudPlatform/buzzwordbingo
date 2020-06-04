@@ -27,7 +27,7 @@ type Cache struct {
 
 func (c *Cache) log(msg string) {
 	if noisy {
-		log.Printf("Cache: %s\n", msg)
+		log.Printf("Cache    : %s\n", msg)
 	}
 }
 
@@ -71,11 +71,11 @@ func (c *Cache) SaveBoard(b Board) error {
 		return err
 	}
 
-	if _, err := conn.Do("SET", b.ID, json); err != nil {
-		return err
-	}
+	conn.Send("MULTI")
+	conn.Send("SET", b.ID, json)
+	conn.Send("SET", b.Game+"_"+b.Player.Email, json)
 
-	if _, err := conn.Do("SET", b.Game+"_"+b.Player.Email, json); err != nil {
+	if _, err := conn.Do("EXEC"); err != nil {
 		return err
 	}
 	c.log("Successfully saved board to cache")

@@ -95,8 +95,8 @@ export class GameService {
     return this.http.get<boolean>(this.hostUrl+ "/api/game/isadmin?g=" + gid).pipe(share());
   }
 
-  record (pid:string, gid:string,  bid:string) {
-    return this.http.get(this.hostUrl + "/api/record?p="+pid + "&g=" + gid + "&b=" + bid);
+  record (pid:string, gid:string,  bid:string, selected:boolean) {
+    return this.http.get(this.hostUrl + "/api/record?p="+pid + "&g=" + gid + "&b=" + bid +"&selected="+ selected);
   }
 
   resetboard (bid:string, gid:string) {

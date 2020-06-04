@@ -219,13 +219,13 @@ func (m *Master) Select(ph Phrase, pl Player) Record {
 				new := v.Players.Remove(pl)
 				v.Players = new
 
-				if len(new) == 0 {
+				if !ph.Selected {
 					v.Phrase.Selected = false
 				}
 				m.Records[i] = v
 				return v
 			}
-			v.Phrase.Selected = true
+			v.Phrase.Selected = ph.Selected
 			v.Players = append(v.Players, pl)
 			m.Records[i] = v
 			return v
@@ -337,7 +337,8 @@ func (b *Board) Bingo() bool {
 	diag2 := []string{"B4", "I3", "N2", "G1", "O0"}
 	counts := make(map[string]int)
 
-	for _, v := range b.Phrases {
+	for i, v := range b.Phrases {
+		v.Column, v.Row = calcColumnsRows(i)
 		if v.Selected {
 			counts[v.Column]++
 			counts[v.Row]++
@@ -373,7 +374,7 @@ func (b *Board) Select(ph Phrase) Phrase {
 	for i, v := range b.Phrases {
 		if v.ID == ph.ID {
 
-			if v.Selected {
+			if ph.Selected {
 				b.log(fmt.Sprintf("Unselected %s", v.Position()))
 				v.Selected = false
 				b.Phrases[i] = v
@@ -486,6 +487,6 @@ func (p Phrase) Position() string {
 
 func (b Board) log(msg string) {
 	if noisy {
-		log.Printf("Bingo: %s\n", msg)
+		log.Printf("Bingo    : %s\n", msg)
 	}
 }

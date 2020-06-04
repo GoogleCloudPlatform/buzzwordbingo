@@ -54,7 +54,7 @@ export class ItemComponent implements OnInit {
 
     
     this.phraseEmitter.emit(this.phrase);
-    this.game.record(this.phrase.id, this.gid, this.bid).subscribe(val=>{this.selectDisplay();});
+    this.game.record(this.phrase.id, this.gid, this.bid, this.phrase.selected).subscribe(val=>{this.selectDisplay();});
   }
 
 

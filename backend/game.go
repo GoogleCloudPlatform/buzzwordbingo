@@ -247,9 +247,10 @@ func deactivateGame(gid string) error {
 	return nil
 }
 
-func recordSelect(boardID, gameID, phraseID string) error {
+func recordSelect(boardID, gameID, phraseID string, selected bool) error {
 	p := Phrase{}
 	p.ID = phraseID
+	p.Selected = selected
 	messages := []Message{}
 
 	b, err := getBoard(boardID, gameID)

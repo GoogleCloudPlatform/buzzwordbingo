@@ -523,7 +523,15 @@ func handleRecordSelect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := recordSelect(bid, gid, pid); err != nil {
+	st, err := getFirstQuery("selected", r)
+	if err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	selected := st == "true"
+
+	if err := recordSelect(bid, gid, pid, selected); err != nil {
 		writeError(w, err.Error())
 		return
 	}
