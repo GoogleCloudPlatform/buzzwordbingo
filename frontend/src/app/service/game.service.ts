@@ -83,7 +83,10 @@ export class GameService {
   private hostUrl: string = environment.host_url;
 
   getBoard (name:string, g:string): Observable<Board> {
-    if (name == "undefined") return
+    if (name == "undefined"){
+      console.log("Name was unknown")
+      return
+    } 
     return this.http.get<Board>(this.hostUrl +"/api/board?name="+name + "&g="+g).pipe(share());
   }
 

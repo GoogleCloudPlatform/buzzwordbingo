@@ -59,7 +59,6 @@ import { AdminGamesComponent } from './view/admin/admin-games/admin-games.compon
     ReactiveFormsModule,
     AppRoutingModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFirestoreModule.enablePersistence({synchronizeTabs: true}),
     HttpClientModule
   ],
   providers: [],

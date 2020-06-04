@@ -42,9 +42,14 @@ export class BoardComponent implements OnInit {
     if (this.player.email == "undefined"){
       auth.logout("not authed")
     }
+
+    let block = false;
+    if (!block){
     
-    this.board = gameService.getBoard(this.player.name, this.gid).pipe(share());
-    this.board.subscribe(val=>{
+      this.board = gameService.getBoard(this.player.name, this.gid).pipe(share());
+    
+      this.board.subscribe(val=>{
+        block = true;
         this.boardid=val.id; 
         this.phrases = data.getGameBoard(this.gid, this.boardid).pipe(map(val => {
           let phrases:Phrase[] = val as Phrase[]
@@ -54,7 +59,10 @@ export class BoardComponent implements OnInit {
         if (val.bingodeclared){
           this.declareBingo()
         }
-    })
+        block = false;
+      })
+    }
+   
     
     
 
@@ -113,10 +121,12 @@ export class BoardComponent implements OnInit {
 
     if (msg.operation == "reset" && !msg.received){
       console.log(msg);
-      this.gameService.messageReceived(this.gid, msg.id).subscribe();
-      this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-        this.router.navigateByUrl('/game/'+this.gid);
-      }); 
+      this.gameService.messageReceived(this.gid, msg.id).subscribe(val=>{
+        this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+          this.router.navigateByUrl('/game/'+this.gid);
+        }); 
+      });
+      
       
       return;
     }

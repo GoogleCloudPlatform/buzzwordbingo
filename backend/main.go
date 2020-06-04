@@ -334,6 +334,7 @@ func handleBoardGet(w http.ResponseWriter, r *http.Request) {
 		writeError(w, err.Error())
 		return
 	}
+	board.Print()
 
 	writeJSON(w, board)
 	return
@@ -530,6 +531,8 @@ func handleRecordSelect(w http.ResponseWriter, r *http.Request) {
 	}
 
 	selected := st == "true"
+	msg := fmt.Sprintf("Selecte result: %t %s", selected, st)
+	weblog(msg)
 
 	if err := recordSelect(bid, gid, pid, selected); err != nil {
 		writeError(w, err.Error())
@@ -985,6 +988,6 @@ func getEmailFromString(arr string) string {
 
 func weblog(msg string) {
 	if noisy {
-		log.Printf("Webserver: %s", msg)
+		log.Printf("Webserver : %s", msg)
 	}
 }

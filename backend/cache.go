@@ -27,7 +27,7 @@ type Cache struct {
 
 func (c *Cache) log(msg string) {
 	if noisy {
-		log.Printf("Cache    : %s\n", msg)
+		log.Printf("Cache     : %s\n", msg)
 	}
 }
 
@@ -100,6 +100,11 @@ func (c *Cache) SaveGame(g Game) error {
 		return err
 	}
 	c.log("Successfully saved game to cache")
+
+	if len(g.Boards) == 0 {
+		c.log("WARNING game saved to cache without the boards.")
+	}
+
 	return nil
 }
 
@@ -242,6 +247,7 @@ func (c *Cache) DeleteGamesForKey(key string) error {
 // UpdatePhrase will update all of the versions of a phrase in a game and all
 // of the boards in that game.
 func (c *Cache) UpdatePhrase(g Game, p Phrase) error {
+	c.log("Update Phrase " + p.Text)
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
@@ -255,14 +261,26 @@ func (c *Cache) UpdatePhrase(g Game, p Phrase) error {
 	conn.Send("SET", g.ID, json)
 
 	for _, b := range g.Boards {
+		// TODO: Remove these comments when you are sure that the revert after
+		// update bug is fixed.
+		fmt.Printf("Before update  \n")
+		b.Print()
 		b.UpdatePhrase(p)
+		fmt.Printf("After  update  \n")
+		b.Print()
 		json, err := b.JSON()
 		if err != nil {
 			return err
 		}
 
-		conn.Send("SET", b.ID, json)
-		conn.Send("SET", b.Game+"_"+b.Player.Email, json)
+		if err := conn.Send("SET", b.ID, json); err != nil {
+			return err
+		}
+
+		if err := conn.Send("SET", b.Game+"_"+b.Player.Email, json); err != nil {
+			return err
+		}
+
 	}
 
 	if _, err := conn.Do("EXEC"); err != nil {

@@ -6,7 +6,9 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -32,14 +34,14 @@ func (m *Message) SetAudience(a ...string) {
 
 // Game is the master structure for the game
 type Game struct {
-	ID      string    `json:"id" firestore:"id"`
-	Name    string    `json:"name" firestore:"name"`
-	Active  bool      `json:"active" firestore:"active"`
-	Players Players   `json:"players" firestore:"-"`
-	Admins  Players   `json:"admins" firestore:"-"`
-	Master  Master    `json:"master" firestore:"-"`
-	Boards  []Board   `json:"boards" firestore:"-"`
-	Created time.Time `json:"created" firestore:"created"`
+	ID      string           `json:"id" firestore:"id"`
+	Name    string           `json:"name" firestore:"name"`
+	Active  bool             `json:"active" firestore:"active"`
+	Players Players          `json:"players" firestore:"-"`
+	Admins  Players          `json:"admins" firestore:"-"`
+	Master  Master           `json:"master" firestore:"-"`
+	Boards  map[string]Board `json:"boards" firestore:"-"`
+	Created time.Time        `json:"created" firestore:"created"`
 }
 
 // Obscure will obscure the email address of every email in the game other than
@@ -54,13 +56,15 @@ func (g *Game) Obscure(email string) {
 
 	for i, v := range g.Boards {
 		p := v.Player.Obscure(email)
-		g.Boards[i].Player = *p
+		v.Player = *p
+		g.Boards[i] = v
 	}
 }
 
 // NewBoard creates a new board for a user.
 func (g *Game) NewBoard(p Player) Board {
 	b := Board{}
+	b.log("Creating new board ")
 	b.Game = g.ID
 	b.Player = p
 	b.Load(g.Master.Phrases())
@@ -72,17 +76,16 @@ func (g *Game) UpdatePhrase(p Phrase) {
 	i, r := g.FindRecord(p)
 	r.Phrase = p
 	g.Master.Records[i] = r
+
+	for _, b := range g.Boards {
+		b.UpdatePhrase(p)
+	}
+
 }
 
 // DeleteBoard removes a board from the game.
 func (g *Game) DeleteBoard(b Board) {
-	for i, v := range g.Boards {
-		if v.ID == b.ID {
-			g.Boards[i] = g.Boards[len(g.Boards)-1]
-			g.Boards[len(g.Boards)-1] = Board{}
-			g.Boards = g.Boards[:len(g.Boards)-1]
-		}
-	}
+	delete(g.Boards, b.ID)
 }
 
 // Games is a collection of game objects.
@@ -366,6 +369,7 @@ func (b *Board) Bingo() bool {
 			return true
 		}
 	}
+	b.BingoDeclared = false
 	return false
 }
 
@@ -373,15 +377,15 @@ func (b *Board) Bingo() bool {
 func (b *Board) Select(ph Phrase) Phrase {
 	for i, v := range b.Phrases {
 		if v.ID == ph.ID {
+			v.Selected = ph.Selected
+			b.log(fmt.Sprintf("Selected? %s %t\n", v.Position(), ph.Selected))
+			b.log(fmt.Sprintf("New %+v \n", ph))
 
-			if ph.Selected {
-				b.log(fmt.Sprintf("Unselected %s", v.Position()))
-				v.Selected = false
-				b.Phrases[i] = v
-				return v
-			}
-			b.log(fmt.Sprintf("Selected %s", v.Position()))
-			v.Selected = true
+			// if ph.Selected {
+			// 	b.log(fmt.Sprintf("Selected %s", v.Position()))
+
+			// }
+			// b.log(fmt.Sprintf("Unselected %s", v.Position()))
 			b.Phrases[i] = v
 			return v
 		}
@@ -425,8 +429,39 @@ func (b *Board) UpdatePhrase(p Phrase) {
 	for i, v := range b.Phrases {
 		if p.ID == v.ID {
 			p.DisplayOrder = v.DisplayOrder
+			p.Row = v.Row
+			p.Column = v.Column
 			b.Phrases[i] = p
 			return
+		}
+	}
+	return
+}
+
+// Print prints out the board for debugging
+func (b *Board) Print() {
+
+	phrases := make([]Phrase, len(b.Phrases))
+	copy(phrases, b.Phrases)
+
+	sort.Slice(phrases, func(i, j int) bool {
+		return phrases[i].DisplayOrder < phrases[j].DisplayOrder
+	})
+
+	fmt.Printf("|*************** %s   ****************|\n", b.ID)
+	for i, v := range phrases {
+		text := strings.ToLower(v.Text)
+		if len(text) > 10 {
+			text = text[0:9]
+		}
+
+		if v.Selected {
+			text = strings.ToUpper(text)
+		}
+
+		fmt.Printf("|%s%s-%-10v|", v.Column, v.Row, text)
+		if (i+1)%5 == 0 {
+			fmt.Printf("\n")
 		}
 	}
 	return
@@ -475,8 +510,8 @@ type Phrase struct {
 	ID           string `json:"id" firestore:"id"`
 	Text         string `json:"text" firestore:"text"`
 	Selected     bool   `json:"selected" firestore:"selected"`
-	Row          string `json:"row" firestore:"-"`
-	Column       string `json:"column" firestore:"-"`
+	Row          string `json:"row" firestore:"row"`
+	Column       string `json:"column" firestore:"column"`
 	DisplayOrder int    `json:"displayorder" firestore:"displayorder"`
 }
 
@@ -487,6 +522,6 @@ func (p Phrase) Position() string {
 
 func (b Board) log(msg string) {
 	if noisy {
-		log.Printf("Bingo    : %s\n", msg)
+		log.Printf("Bingo     : %s\n", msg)
 	}
 }

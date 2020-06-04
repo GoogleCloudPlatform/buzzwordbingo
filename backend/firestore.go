@@ -51,7 +51,7 @@ type Agent struct {
 
 func (a *Agent) log(msg string) {
 	if noisy {
-		log.Printf("Firestore: %s\n", msg)
+		log.Printf("Firestore : %s\n", msg)
 	}
 }
 
@@ -62,7 +62,7 @@ func (a *Agent) log(msg string) {
 // IsAdmin tests if a give player is in the admin group by email
 func (a *Agent) IsAdmin(email string) (bool, error) {
 
-	a.log("See if user exists")
+	a.log("See if user is in admin collection")
 	doc, err := a.client.Collection("admins").Doc(email).Get(a.ctx)
 	if err != nil {
 		if strings.Contains(err.Error(), "code = NotFound") {
@@ -229,6 +229,11 @@ func (a *Agent) GetGames() (Games, error) {
 			return g, fmt.Errorf("failed to load admins for game: %v", err)
 		}
 
+		game, err = a.loadGameWithBoards(game)
+		if err != nil {
+			return g, fmt.Errorf("failed to load boards for game: %v", err)
+		}
+
 		g = append(g, game)
 	}
 
@@ -238,6 +243,7 @@ func (a *Agent) GetGames() (Games, error) {
 // GetGame gets a given game from the database
 func (a *Agent) GetGame(id string) (Game, error) {
 	g := Game{}
+	g.Boards = map[string]Board{}
 
 	a.log("Getting existing game")
 	doc, err := a.client.Collection("games").Doc(id).Get(a.ctx)
@@ -330,7 +336,7 @@ func (a *Agent) loadGameWithBoards(g Game) (Game, error) {
 			return g, fmt.Errorf("Failed to populare board: %v", err)
 		}
 
-		g.Boards = append(g.Boards, b)
+		g.Boards[b.ID] = b
 	}
 
 	return g, nil
@@ -368,6 +374,8 @@ func (a *Agent) SaveGame(g Game) error {
 	batch := a.client.Batch()
 	gref := a.client.Collection("games").Doc(g.ID)
 	batch.Set(gref, g)
+
+	// TODO: deal with other parts of game.
 
 	for _, v := range oldgame.Players {
 		ref := a.client.Collection("games").Doc(g.ID).Collection("players").Doc(v.Email)

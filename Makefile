@@ -95,7 +95,7 @@ redisclean:
 	-docker stop some-redis
 	-docker rm some-redis
 
-server:  redis
+server:  
 	cd $(BASEDIR)/backend && \
 	export REDISHOST=127.0.0.1 && \
 	export REDISPORT=6379 && \
@@ -110,3 +110,5 @@ dev: redis
 	export GOOGLE_APPLICATION_CREDENTIALS=$(BASEDIR)/creds/creds.json && \
 	go run main.go firestore.go bingo.go cache.go game.go & \
 	cd $(BASEDIR)/frontend && ng serve --open )	
+
+	

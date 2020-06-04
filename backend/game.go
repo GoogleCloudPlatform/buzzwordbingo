@@ -162,18 +162,20 @@ func deleteBoard(bid, gid string) error {
 		return fmt.Errorf("failed to get active game to delete board: %v", err)
 	}
 
-	game.DeleteBoard(b)
-
-	if err := cache.SaveGame(game); err != nil {
-		return fmt.Errorf("could not reset game in cache: %s", err)
+	if err := a.DeleteBoard(bid, game.ID); err != nil {
+		return fmt.Errorf("could not delete board from firestore: %s", err)
 	}
-
 	if err := cache.DeleteBoard(b); err != nil {
 		return fmt.Errorf("could not delete board from cache: %s", err)
 	}
 
-	if err := a.DeleteBoard(bid, game.ID); err != nil {
-		return fmt.Errorf("could not delete board from firestore: %s", err)
+	game, err = a.GetGame(game.ID)
+	if err != nil {
+		return fmt.Errorf("failed to get updated game from database: %v", err)
+	}
+
+	if err := cache.SaveGame(game); err != nil {
+		return fmt.Errorf("could not reset game in cache: %s", err)
 	}
 
 	messages := []Message{}
@@ -215,6 +217,19 @@ func getGame(gid string) (Game, error) {
 		if err := cache.SaveGame(game); err != nil {
 			return Game{}, fmt.Errorf("error caching game : %v", err)
 		}
+	}
+
+	if len(game.Boards) == 0 {
+		weblog("WARNING a game was retrieved without its boards - fixing")
+
+		game, err = a.loadGameWithBoards(game)
+		if err != nil {
+			return Game{}, fmt.Errorf("error loading game : %v", err)
+		}
+		if err := cache.SaveGame(game); err != nil {
+			return Game{}, fmt.Errorf("error caching game : %v", err)
+		}
+
 	}
 
 	return game, nil
@@ -316,12 +331,12 @@ func updateGamePhrases(gameID string, phrase Phrase) error {
 		return fmt.Errorf("could not get game id(%s): %s", g.ID, err)
 	}
 
-	if err := cache.UpdatePhrase(g, phrase); err != nil {
-		return fmt.Errorf("error saving update phrase in cache: %v", err)
-	}
-
 	if err := a.UpdatePhrase(g, phrase); err != nil {
 		return fmt.Errorf("error saving update phrase in firebase: %v", err)
+	}
+
+	if err := cache.UpdatePhrase(g, phrase); err != nil {
+		return fmt.Errorf("error saving update phrase in cache: %v", err)
 	}
 
 	messages := []Message{}
