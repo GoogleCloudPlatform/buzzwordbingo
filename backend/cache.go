@@ -72,7 +72,7 @@ func (c *Cache) SaveBoard(b Board) error {
 	}
 
 	conn.Send("MULTI")
-	conn.Send("SET", b.ID, json)
+	conn.Send("SET", "board-"+b.ID, json)
 	conn.Send("SET", b.Game+"_"+b.Player.Email, json)
 
 	if _, err := conn.Do("EXEC"); err != nil {
@@ -96,7 +96,7 @@ func (c *Cache) SaveGame(g Game) error {
 		return err
 	}
 
-	if _, err := conn.Do("SET", g.ID, json); err != nil {
+	if _, err := conn.Do("SET", "game-"+g.ID, json); err != nil {
 		return err
 	}
 	c.log("Successfully saved game to cache")
@@ -125,6 +125,7 @@ func (c *Cache) SaveGamesForKey(key string, g Games) error {
 	rkey := "games-" + key
 
 	if _, err := conn.Do("SET", rkey, json); err != nil {
+		ß
 		return err
 	}
 	c.log("Successfully saved game list to cache")
@@ -191,7 +192,7 @@ func (c *Cache) GetBoard(key string) (Board, error) {
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
-	s, err := redis.String(conn.Do("GET", key))
+	s, err := redis.String(conn.Do("GET", "board-"+key))
 	if err == redis.ErrNil {
 		return Board{}, ErrCacheMiss
 	} else if err != nil {
@@ -214,7 +215,7 @@ func (c *Cache) DeleteBoard(board Board) error {
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
-	if _, err := conn.Do("DEL", board.ID); err != nil {
+	if _, err := conn.Do("DEL", "board-"+board.ID); err != nil {
 		return err
 	}
 
@@ -268,7 +269,7 @@ func (c *Cache) UpdatePhrase(g Game, p Phrase) error {
 			return err
 		}
 
-		if err := conn.Send("SET", b.ID, json); err != nil {
+		if err := conn.Send("SET", "board-"+b.ID, json); err != nil {
 			return err
 		}
 
