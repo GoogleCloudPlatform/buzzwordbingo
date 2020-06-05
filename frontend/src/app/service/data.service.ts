@@ -5,7 +5,8 @@ import { AngularFirestore } from '@angular/fire/firestore';
 import {GameService, Game} from '../service/game.service'
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Router } from '@angular/router';
-import * as firebase from 'firebase'
+import firebase from 'firebase/app';
+import 'firebase/auth'; 
 import { environment } from '../../environments/environment';
 
 declare var gapi:any;
@@ -44,7 +45,6 @@ export class DataService {
   }
 
   getMessages(id:string, email:string) { 
-    console.log("email:", email)
     return this.firestore.collection("games").doc(id)
             .collection("messages", ref=> ref.where("audience", 'array-contains-any',
             ['all', email])).valueChanges();
