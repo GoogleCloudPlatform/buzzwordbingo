@@ -44,9 +44,10 @@ export class DataService {
   }
 
   getMessages(id:string, email:string) { 
+    console.log("email:", email)
     return this.firestore.collection("games").doc(id)
             .collection("messages", ref=> ref.where("audience", 'array-contains-any',
-            ['any', email])).valueChanges();
+            ['all', email])).valueChanges();
   }
 
   getMessagesAdmin(id) { 
