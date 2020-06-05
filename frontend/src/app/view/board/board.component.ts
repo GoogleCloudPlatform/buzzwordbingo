@@ -5,7 +5,7 @@ import {AuthService, Player} from '../../service/auth.service'
 import {GameService, Board, Message, Game} from '../../service/game.service'
 import { Router, ActivatedRoute } from '@angular/router';
 import {ItemComponent} from './item/item.component'
-import { map, share } from 'rxjs/operators';
+import { map, share, debounceTime } from 'rxjs/operators';
 
 
 
@@ -46,7 +46,7 @@ export class BoardComponent implements OnInit {
     let block = false;
     if (!block){
     
-      this.board = gameService.getBoard(this.player.name, this.gid).pipe(share());
+      this.board = gameService.getBoard(this.player.name, this.gid).pipe(debounceTime(1000),share());
     
       this.board.subscribe(val=>{
         block = true;
@@ -58,14 +58,13 @@ export class BoardComponent implements OnInit {
         }))
         if (val.bingodeclared){
           this.declareBingo()
+        } 
+        if (!this.bingo){
+          this.hideBingo();
         }
         block = false;
       })
     }
-   
-    
-    
-
 
     gameService.getGame(this.gid).subscribe(val=>{let g:Game = val as Game; this.game=observableOf(g)});
    }
@@ -73,7 +72,7 @@ export class BoardComponent implements OnInit {
   ngOnInit(): void {
     let player:Player = this.auth.getPlayer();
     this.messages = this.data.getMessages(this.gid, player.email);
-    this.messages.subscribe(ms=>{this.listenForBingo(ms),this.listenForReset(ms)})
+    this.messages.subscribe(ms=>{this.listenForBingo(ms);this.listenForReset(ms)})
   }
 
   ngOnChanges():void{
@@ -99,6 +98,11 @@ export class BoardComponent implements OnInit {
     board.classList.add("header-bingo");
   }
 
+  hideBingo(){
+    let board = document.querySelector(".header-container");
+    board.classList.remove("header-bingo");
+  }
+
   listenForReset(messages:Message[]){
     let self = this;
     let msg:Message = messages[messages.length-1] as Message;
@@ -120,8 +124,7 @@ export class BoardComponent implements OnInit {
     }
 
     if (msg.operation == "reset" && !msg.received){
-      console.log(msg);
-      this.gameService.messageReceived(this.gid, msg.id).subscribe(val=>{
+      this.gameService.messageReceived(this.gid, msg.id).pipe(debounceTime(1000)).subscribe(val=>{
         this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
           this.router.navigateByUrl('/game/'+this.gid);
         }); 
