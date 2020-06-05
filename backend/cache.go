@@ -125,7 +125,6 @@ func (c *Cache) SaveGamesForKey(key string, g Games) error {
 	rkey := "games-" + key
 
 	if _, err := conn.Do("SET", rkey, json); err != nil {
-		ß
 		return err
 	}
 	c.log("Successfully saved game list to cache")
