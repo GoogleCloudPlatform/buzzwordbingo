@@ -101,6 +101,10 @@ func handleIsAdmin(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/player/isadmin called")
 	statusCode, err := isGlobalAdmin(r)
 	if err != nil {
+		if err != ErrNotAdmin {
+			writeResponse(w, http.StatusOK, fmt.Sprintf("%t", false))
+			return
+		}
 		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
 		writeResponse(w, statusCode, msg)
 		return
@@ -382,14 +386,12 @@ func handleBoardDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	statusCode, err := isAdmin(r, g)
-	if err != nil {
+	if statusCode, err := isAdmin(r, g); err != nil && err != ErrNotAdmin {
 		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
 		writeResponse(w, statusCode, msg)
-		return
 	}
 
-	if !(board.Player.Email == email) {
+	if !(board.Player.Email == email) && err == ErrNotAdmin {
 		msg := fmt.Sprintf("{\"error\":\"Not an admin, game admin or player\"}")
 		writeResponse(w, http.StatusForbidden, msg)
 		return
