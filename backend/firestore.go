@@ -343,6 +343,7 @@ func (a *Agent) loadGameWithBoards(g Game) (Game, error) {
 }
 
 func (a *Agent) loadGameWithAdmins(g Game) (Game, error) {
+	g.Boards = map[string]Board{}
 
 	a.log("Loading players from game")
 	iter := a.client.Collection("games").Doc(g.ID).Collection("admins").Documents(a.ctx)
