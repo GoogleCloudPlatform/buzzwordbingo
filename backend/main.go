@@ -481,7 +481,6 @@ func handleGameDeactivate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	statusCode, err := isAdmin(r, g)
-	fmt.Printf("Results %v %v\n", statusCode, err)
 	if err != nil {
 		msg := fmt.Sprintf("{\"error\":\"%s\"}", err)
 		writeResponse(w, statusCode, msg)
