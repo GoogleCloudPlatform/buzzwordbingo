@@ -128,17 +128,11 @@ func getGamesForKey(key string) (Games, error) {
 }
 
 func getBoard(bid string, gid string) (Board, error) {
-	b := Board{}
 
-	game, err := getGame(gid)
-	if err != nil {
-		return b, fmt.Errorf("could not get active game for board: %s", err)
-	}
-
-	b, err = cache.GetBoard(bid)
+	b, err := cache.GetBoard(bid)
 	if err != nil {
 		if err == ErrCacheMiss {
-			b, err = a.GetBoard(bid, game.ID)
+			b, err = a.GetBoard(bid, gid)
 			if err != nil {
 				return b, fmt.Errorf("error getting board: %v", err)
 			}

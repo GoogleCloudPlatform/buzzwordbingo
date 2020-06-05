@@ -252,6 +252,7 @@ func (c *Cache) UpdatePhrase(g Game, p Phrase) error {
 	defer conn.Close()
 
 	g.UpdatePhrase(p)
+
 	json, err := g.JSON()
 	if err != nil {
 		return err
@@ -261,13 +262,7 @@ func (c *Cache) UpdatePhrase(g Game, p Phrase) error {
 	conn.Send("SET", g.ID, json)
 
 	for _, b := range g.Boards {
-		// TODO: Remove these comments when you are sure that the revert after
-		// update bug is fixed.
-		fmt.Printf("Before update  \n")
-		b.Print()
-		b.UpdatePhrase(p)
-		fmt.Printf("After  update  \n")
-		b.Print()
+
 		json, err := b.JSON()
 		if err != nil {
 			return err

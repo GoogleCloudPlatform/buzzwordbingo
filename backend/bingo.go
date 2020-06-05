@@ -174,6 +174,13 @@ func (g *Game) IsAdmin(p Player) bool {
 
 // Select marks a phrase as selected by one or more players
 func (g *Game) Select(ph Phrase, pl Player) Record {
+
+	for _, v := range g.Boards {
+		if v.Player.Email == pl.Email {
+			v.Select(ph)
+		}
+	}
+
 	return g.Master.Select(ph, pl)
 }
 
@@ -378,14 +385,6 @@ func (b *Board) Select(ph Phrase) Phrase {
 	for i, v := range b.Phrases {
 		if v.ID == ph.ID {
 			v.Selected = ph.Selected
-			b.log(fmt.Sprintf("Selected? %s %t\n", v.Position(), ph.Selected))
-			b.log(fmt.Sprintf("New %+v \n", ph))
-
-			// if ph.Selected {
-			// 	b.log(fmt.Sprintf("Selected %s", v.Position()))
-
-			// }
-			// b.log(fmt.Sprintf("Unselected %s", v.Position()))
 			b.Phrases[i] = v
 			return v
 		}

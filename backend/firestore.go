@@ -406,14 +406,10 @@ func (a *Agent) SaveGame(g Game) error {
 
 // UpdatePhrase updates a phrase on a particular game and all boards associated with it.
 func (a *Agent) UpdatePhrase(g Game, p Phrase) error {
-	b, err := a.GetBoardsForGame(g)
-	if err != nil {
-		return fmt.Errorf("failed to get list of boards: %v", err)
-	}
+	b := g.Boards
 
 	phraseMap := map[string]interface{}{"text": p.Text, "selected": false}
 
-	a.log("Starting batch operation")
 	batch := a.client.Batch()
 	record := Record{}
 	record.Phrase = p
@@ -421,14 +417,14 @@ func (a *Agent) UpdatePhrase(g Game, p Phrase) error {
 	batch.Set(recoref, record)
 
 	for _, v := range b {
-
+		msg := fmt.Sprintf("Updating to phrase %s on board %s on game %s", p.ID, v.ID, g.ID)
+		a.log(msg)
 		ref := a.client.Collection("games").Doc(g.ID).Collection("boards").Doc(v.ID).Collection("phrases").Doc(p.ID)
 		batch.Set(ref, phraseMap, firestore.MergeAll)
 	}
 
 	a.log("Committing Batch")
-	_, err = batch.Commit(a.ctx)
-	if err != nil {
+	if _, err := batch.Commit(a.ctx); err != nil {
 		return fmt.Errorf("failed to update phrase: %v", err)
 	}
 

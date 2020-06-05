@@ -334,7 +334,6 @@ func handleBoardGet(w http.ResponseWriter, r *http.Request) {
 		writeError(w, err.Error())
 		return
 	}
-	board.Print()
 
 	writeJSON(w, board)
 	return
