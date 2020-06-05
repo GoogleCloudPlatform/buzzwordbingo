@@ -7,7 +7,7 @@ export const unicornTheme = {
     'login-header-font':'"Roboto"',
     'header-before':'"🌈Unicorn "',
     'header-after':'"🦄"',
-    'body-bg-color':'rgb(52, 47, 55)',
+    'body-bg-color':'none',
     'body-bg':'url("assets/wallpaper.jpg")',
     'bingo-header-bg-image':'url("assets/celebration.jpeg")',
     'interface-bg-color':'#260252',

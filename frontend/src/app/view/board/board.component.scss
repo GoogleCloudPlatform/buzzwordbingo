@@ -33,6 +33,7 @@
         background-color:  var(--interface-bg-color);
         padding: 0;
         width: 60%;
+        flex-basis: 60%;
         display: flex;
         flex-wrap: wrap;
         align-items: flex-start;
@@ -45,6 +46,7 @@
         .board-toolbar{
             width: 100%;
             background-color: var(--body-bg-color);
+            transition: background-color .25s ease-in, color .25s ease-in;
             height: 30px;
             button{
                 margin: 2px auto;
