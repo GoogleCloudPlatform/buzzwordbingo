@@ -213,34 +213,52 @@ func (c *Cache) DeleteBoard(board Board) error {
 	}
 	conn := c.redisPool.Get()
 	defer conn.Close()
+	conn.Send("MULTI")
 
-	if _, err := conn.Do("DEL", "board-"+board.ID); err != nil {
+	if err := conn.Send("DEL", "board-"+board.ID); err != nil {
 		return err
 	}
 
-	if _, err := conn.Do("DEL", "board-"+board.Game+"_"+board.Player.Email); err != nil {
+	if err := conn.Send("DEL", "board-"+board.Game+"_"+board.Player.Email); err != nil {
+		return err
+	}
+
+	if err := conn.Send("DEL", "games-"+board.Player.Email); err != nil {
+		return err
+	}
+
+	if _, err := conn.Do("EXEC"); err != nil {
 		return err
 	}
 
 	c.log(fmt.Sprintf("Cleaning from cache %s", "board-"+board.ID))
 	c.log(fmt.Sprintf("Cleaning from cache %s", "board-"+board.Game+"_"+board.Player.Email))
+	c.log(fmt.Sprintf("Cleaning from cache %s", "games-"+board.Player.Email))
 	return nil
 }
 
 // DeleteGamesForKey will remove the list of games for a particular player
-func (c *Cache) DeleteGamesForKey(key string) error {
+func (c *Cache) DeleteGamesForKey(keys []string) error {
 	if !c.enabled {
 		return nil
 	}
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
-	rkey := "games-" + key
-	if _, err := conn.Do("DEL", rkey); err != nil {
+	conn.Send("MULTI")
+
+	for _, v := range keys {
+		rkey := "games-" + v
+		if _, err := conn.Do("DEL", rkey); err != nil {
+			return err
+		}
+	}
+
+	if _, err := conn.Do("EXEC"); err != nil {
 		return err
 	}
 
-	c.log(fmt.Sprintf("Cleaning games for key from cache %s", rkey))
+	c.log(fmt.Sprintf("Cleaning games for key from cache"))
 	return nil
 }
 

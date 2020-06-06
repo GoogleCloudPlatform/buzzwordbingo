@@ -494,11 +494,6 @@ func handleGameDeactivate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := cache.DeleteGamesForKey("admin-list"); err != nil {
-		writeError(w, err.Error())
-		return
-	}
-
 	writeSuccess(w, "ok")
 
 }

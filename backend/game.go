@@ -16,7 +16,7 @@ func getBoardForPlayer(p Player, g Game) (Board, error) {
 				return b, fmt.Errorf("error getting board for player: %v", err)
 			}
 		}
-		if err := cache.DeleteGamesForKey(p.Email); err != nil {
+		if err := cache.DeleteGamesForKey([]string{p.Email}); err != nil {
 			return b, fmt.Errorf("error clearing game cache for player: %v", err)
 		}
 		if err := cache.SaveBoard(b); err != nil {
@@ -119,7 +119,7 @@ func getGamesForKey(key string) (Games, error) {
 			}
 
 		}
-		if err := cache.SaveGamesForKey(key, g); err != nil {
+		if err := cache.SaveGamesForKey("games"+key, g); err != nil {
 			return g, fmt.Errorf("error caching games : %v", err)
 		}
 	}
@@ -192,7 +192,7 @@ func getNewGame(name string, p Player) (Game, error) {
 	if err != nil {
 		return game, fmt.Errorf("failed to get new game: %v", err)
 	}
-	if err := cache.DeleteGamesForKey(p.Email); err != nil {
+	if err := cache.DeleteGamesForKey([]string{p.Email}); err != nil {
 		return game, fmt.Errorf("failed to clear cache: %v", err)
 	}
 
@@ -249,7 +249,12 @@ func deactivateGame(gid string) error {
 		return fmt.Errorf("error saving game to firestore : %v", err)
 	}
 
-	if err := cache.DeleteGamesForKey("admin-list"); err != nil {
+	keys := []string{"admin-list"}
+	for _, v := range game.Boards {
+		keys = append(keys, v.Player.Email)
+	}
+
+	if err := cache.DeleteGamesForKey(keys); err != nil {
 		return fmt.Errorf("error caching game : %v", err)
 	}
 
