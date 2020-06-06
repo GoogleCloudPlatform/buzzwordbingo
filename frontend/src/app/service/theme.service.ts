@@ -40,7 +40,9 @@ export const unicornTheme = {
     "bingo-declared-header-color":"#fff",
     "login-color":"#121212",
     "login-header-text-color":" #fff",
-    'header-color':'#fff'
+    'header-color':'#fff',
+    'grayscale-filter' : 'grayscale(0%)',
+    'brightness-filter':'brightness(100%)'
 } 
 
 export const lightTheme = {
@@ -82,7 +84,9 @@ export const lightTheme = {
   'bingo-declared-header-bg-color':'#03DAc6',
   'bingo-declared-header-color':' #fff',
   'login-header-text-color':'#fff',
-  'header-color':'#121212'
+  'header-color':'#121212',
+  'grayscale-filter' : 'grayscale(100%)',
+  'brightness-filter':'brightness(0)'
 } 
 
 
@@ -124,7 +128,9 @@ export const darkTheme = {
   'input-border-color':'#000',
   'bingo-declared-header-bg-color':'#03DAc6',
   'bingo-declared-header-color':' #232323',
-  'header-color':'#fff'
+  'header-color':'#fff',
+  'grayscale-filter' : 'grayscale(100%)',
+  'brightness-filter':'brightness(100)'
 } 
 
 

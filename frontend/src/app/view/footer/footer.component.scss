@@ -5,8 +5,29 @@ footer{
     border-radius: 6px;
     display: flex;
     flex-wrap: wrap;
+    font-size: 14px;
     div {
+        display:none;
         margin-right: 10px;
+
+        .material-icons{
+            font-size: 14px;
+        }
+
+        .icon-unicorn{
+            line-height: 1em;
+            font-size: 20px;
+            filter: var(--grayscale-filter) var(--brightness-filter);
+            transition: filter .25s ease-in, color .25s ease-in;
+        }
+
+        input{
+            display:none;
+        }
         
     }
+    .active {
+        display: block;
+    }
+
 }
