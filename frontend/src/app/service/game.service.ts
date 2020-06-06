@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { share } from 'rxjs/operators';
+import { share , debounceTime } from 'rxjs/operators';
 import { Observable, of  } from 'rxjs';
 import { Player} from '../service/auth.service'
 import { HttpClient, HttpHeaders} from '@angular/common/http';
@@ -87,7 +87,7 @@ export class GameService {
       console.log("Name was unknown")
       return
     } 
-    return this.http.get<Board>(this.hostUrl +"/api/board?name="+name + "&g="+g).pipe(share());
+    return this.http.get<Board>(this.hostUrl +"/api/board?name="+name + "&g="+g).pipe(debounceTime(1000),share());
   }
 
   isAdmin (): Observable<boolean> {

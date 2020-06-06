@@ -30,6 +30,7 @@ export class BoardComponent implements OnInit {
   public bingo:boolean=false;
   public game:Observable<any>;
   public inviteLink:string;
+  
 
   constructor(public data:DataService, public auth:AuthService, public gameService:GameService, public router:Router, route: ActivatedRoute,) {
     if (!auth.isAuth()){
@@ -46,12 +47,12 @@ export class BoardComponent implements OnInit {
     let block = false;
     if (!block){
     
-      this.board = gameService.getBoard(this.player.name, this.gid).pipe(debounceTime(1000),share());
+      this.board = gameService.getBoard(this.player.name, this.gid).pipe();
     
       this.board.subscribe(val=>{
         block = true;
         this.boardid=val.id; 
-        this.phrases = data.getGameBoard(this.gid, this.boardid).pipe(map(val => {
+        this.phrases = data.getGameBoard(this.gid, this.boardid).pipe(debounceTime(1000),share(),map(val => {
           let phrases:Phrase[] = val as Phrase[]
           phrases= phrases.sort((a, b) => (a.displayorder > b.displayorder) ? 1 : -1)
           return phrases;
@@ -104,8 +105,10 @@ export class BoardComponent implements OnInit {
   }
 
   listenForReset(messages:Message[]){
+    
     let self = this;
     let msg:Message = messages[messages.length-1] as Message;
+    console.log("msg:", msg.id, msg.text)
     if (!msg || typeof msg == "undefined"){
       return;
     }

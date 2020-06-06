@@ -1,7 +1,7 @@
 <app-toolbar></app-toolbar>
 <div class="main">
-    <header>
-    <h2>{{(game | async)?.name}}</h2>
+    <header class="game-header">
+    <h2>{{(game | async)?.name}}&nbsp;</h2>
     <div class="invite-link">
         Invite others using this link:
         <a href="{{inviteLink}}/{{(game | async)?.id}}">
@@ -20,14 +20,14 @@
             <header>G</header>
             <header>O</header>
         </div>
-        <app-item #items class="cell"
-            *ngFor="let phrase of phrases | async; let i = index;" 
-            [phrase]='phrase' [bid]='boardid' 
-            (phraseEmitter)="recievePhrase($event)" 
-            (readyEmitter)="receiveChild($event)" 
-            [gid]="gid"
-            [position]="i+1" [currentState]='currentState'>
-        </app-item>
+            <app-item #items class="cell"
+                *ngFor="let phrase of phrases | async; let i = index;" 
+                [phrase]='phrase' [bid]='boardid' 
+                (phraseEmitter)="recievePhrase($event)" 
+                (readyEmitter)="receiveChild($event)" 
+                [gid]="gid"
+                [position]="i+1" [currentState]='currentState'>
+            </app-item>
     </div>
     <app-messages class="board-messages" [messages]='messages' [target]='player.email'></app-messages>
     <app-footer></app-footer>

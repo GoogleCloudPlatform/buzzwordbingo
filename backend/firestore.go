@@ -553,7 +553,7 @@ func (a *Agent) GetBoardForPlayer(id string, p Player) (Board, error) {
 	b := Board{}
 
 	a.log("get board for player")
-	iter := a.client.Collection("games").Doc(id).Collection("boards").Where("game", "==", id).Where("player.email", "==", p.Email).Documents(a.ctx)
+	iter := a.client.Collection("games").Doc(id).Collection("boards").Where("player.email", "==", p.Email).Documents(a.ctx)
 
 	for {
 		doc, err := iter.Next()
