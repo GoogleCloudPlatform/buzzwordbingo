@@ -19,7 +19,6 @@ export class LoginComponent implements OnInit {
 
   constructor(private auth:AuthService, public router:Router, route: ActivatedRoute, public game:GameService, public dataService:DataService) { 
     this.id = route.snapshot.paramMap.get('id');
-    console.log(this.id);
     this.identity =auth.identifyPlayer();
     this.game.GetGamesForKey().subscribe(val=>{this.games=val; } );
   }
