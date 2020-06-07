@@ -20,6 +20,8 @@
             <header>G</header>
             <header>O</header>
         </div>
+        <div class="board-phrases">
+            <span data-text="Loading" class="loading">Loading</span>
             <app-item #items class="cell"
                 *ngFor="let phrase of phrases | async; let i = index;" 
                 [phrase]='phrase' [bid]='boardid' 
@@ -28,6 +30,7 @@
                 [gid]="gid"
                 [position]="i+1" [currentState]='currentState'>
             </app-item>
+        </div>    
     </div>
     <app-messages class="board-messages" [messages]='messages' [target]='player.email'></app-messages>
     <app-footer></app-footer>

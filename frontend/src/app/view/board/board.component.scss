@@ -43,6 +43,8 @@
         border-top-left-radius: 6px;
         border-top-right-radius: 6px;
         transition: background-color .25s ease-in, color .25s ease-in;
+        position: relative;
+        align-items: top;
         
         .board-toolbar{
             width: 100%;
@@ -54,6 +56,42 @@
             }
         }
 
+        .board-phrases{
+            background-color:  var(--interface-bg-color);
+            transition: background-color .25s ease-in;
+            width: 600px;
+            height: 575px;
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+
+            .loading{
+                position: absolute;
+                top: 400px;
+                margin: 0 auto;
+                left: 215px;
+                font-size: 48px;
+                z-index: 0;
+                color: var(--interface-text-color);
+
+                &:before {
+                    content: attr(data-text);
+                    position: absolute;
+                    overflow: hidden;
+                    max-width: 7em;
+                    white-space: nowrap;
+                    color: var(--bingo-header-color);
+                    animation: loading 8s linear;
+                }
+                @keyframes loading {
+                    0% {
+                        max-width: 0;
+                    }
+                }
+            }
+        }
+
         .header-container{
             background-color:  var(--interface-bg-color);
             box-sizing: border-box;
@@ -62,6 +100,8 @@
             width: 600px;
             display: flex;
             flex-wrap: wrap;
+            align-items: flex-start;
+            transition: background-color .25s ease-in, background-image .25s ease-in;
             header{
                 box-sizing: border-box;
                 width: 20%;
@@ -79,7 +119,7 @@
         .header-bingo{
             background-image:  var(--bingo-header-bg-image);
             background-color: var(--bingo-declared-header-bg-color);
-            transition: background-color .25s ease-in, background-image .25s ease-in;
+            
             
             header{
                 color:  var(--bingo-declared-header-color);
@@ -122,6 +162,8 @@
         .phrases{
             width: 375px;
 
+            
+
             .header-container{
                 border-top-left-radius: 6px;
                 border-top-right-radius: 6px;
@@ -135,6 +177,18 @@
                     padding-top:2px;
                     line-height: 1.8;
                 }
+            }
+            .board-phrases{
+                width: 375px;
+                height: 350px;
+
+                .loading{
+                    position: absolute;
+                    top: 250px;
+                    margin: 0 auto;
+                    left: 140px;
+                    font-size: 24px;
+                }    
             }
         }    
         .board-messages{
