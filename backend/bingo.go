@@ -134,7 +134,7 @@ func (r Reports) IsDubious() bool {
 func (g *Game) CheckBoard(b Board) Reports {
 
 	results := Reports{}
-	total := g.CountPlayers()
+	total := len(g.Players)
 
 	for _, v := range b.Phrases {
 		if v.Selected && v.Text != "FREE" {
@@ -160,11 +160,6 @@ func (g Game) FindRecord(p Phrase) (int, Record) {
 		}
 	}
 	return -1, Record{}
-}
-
-// CountPlayers returns the count of all players who have selected phrases/
-func (g *Game) CountPlayers() int {
-	return len(g.Players)
 }
 
 // IsAdmin determines if a player is an admin for the game.
