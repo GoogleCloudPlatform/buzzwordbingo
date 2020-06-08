@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Observable, of as observableOf } from 'rxjs';
+import { Observable, of as observableOf, Subscription } from 'rxjs';
 import { DataService, Phrase} from '../../service/data.service'
 import {AuthService, Player} from '../../service/auth.service'
 import {GameService, Board, Message, Game} from '../../service/game.service'
@@ -31,11 +31,15 @@ export class BoardComponent implements OnInit {
   public game:Observable<any>;
   public inviteLink:string;
   
+  private messageSubscription:Subscription;
+  private gameSubscription:Subscription;
+  private boardSubscription:Subscription;
 
   constructor(public data:DataService, public auth:AuthService, public gameService:GameService, public router:Router, route: ActivatedRoute,) {
     if (!auth.isAuth()){
       auth.logout("not authed")
     }
+
     this.inviteLink = "http://" + window.location.hostname + "/invite";
     this.gid = route.snapshot.paramMap.get('id');
     this.player = auth.getPlayer(); 
@@ -47,14 +51,17 @@ export class BoardComponent implements OnInit {
     let block = false;
     if (!block){
     
-      this.board = gameService.getBoard(this.player.name, this.gid).pipe();
+      this.gameSubscription = gameService.getGame(this.gid).subscribe(val=>{let g:Game = val as Game; this.game=observableOf(g)});
+      this.messages = this.data.getMessages(this.gid, this.player.email);
+      this.messageSubscription = this.messages.subscribe(ms=>{this.listenForBingo(ms);this.listenForReset(ms)})
+      this.board = gameService.getBoard(this.player.name, this.gid).pipe(debounceTime(1000),share());
     
-      this.board.subscribe(val=>{
+      this.boardSubscription = this.board.subscribe(val=>{
         block = true;
-        this.boardid=val.id; 
-        this.phrases = data.getGameBoard(this.gid, this.boardid).pipe(debounceTime(1000),share(),map(val => {
+        this.boardid = val.id; 
+        this.phrases = data.getGameBoard(this.gid, this.boardid).pipe(map(val => {
           let phrases:Phrase[] = val as Phrase[]
-          phrases= phrases.sort((a, b) => (a.displayorder > b.displayorder) ? 1 : -1)
+          phrases = phrases.sort((a, b) => (a.displayorder > b.displayorder) ? 1 : -1)
           return phrases;
         }))
         if (val.bingodeclared){
@@ -67,13 +74,17 @@ export class BoardComponent implements OnInit {
       })
     }
 
-    gameService.getGame(this.gid).subscribe(val=>{let g:Game = val as Game; this.game=observableOf(g)});
+   
    }
 
   ngOnInit(): void {
-    let player:Player = this.auth.getPlayer();
-    this.messages = this.data.getMessages(this.gid, player.email);
-    this.messages.subscribe(ms=>{this.listenForBingo(ms);this.listenForReset(ms)})
+    
+  }
+
+  ngOnDestroy() {
+    this.messageSubscription.unsubscribe();
+    this.boardSubscription.unsubscribe();
+    this.gameSubscription.unsubscribe();
   }
 
   ngOnChanges():void{
@@ -108,7 +119,6 @@ export class BoardComponent implements OnInit {
     
     let self = this;
     let msg:Message = messages[messages.length-1] as Message;
-    console.log("msg:", msg.id, msg.text)
     if (!msg || typeof msg == "undefined"){
       return;
     }
