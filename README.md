@@ -4,24 +4,15 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+Run `make dev` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the js source files. If you update the Golang code, you will have to break out and rerun `make dev`
 
-## Code scaffolding
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Deploy to production
 
-## Build
+There are two ways to go about running this in production
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+1. Use `make deploy`
+1. Setup a CLI pipeline on a git repo that runs a Cloud Build job to deploy to 
+App Engine. There is a cloudbuild.yaml setup and a builder directory available 
+for doing that. 
 
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
