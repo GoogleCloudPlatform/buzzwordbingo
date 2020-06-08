@@ -101,7 +101,7 @@ func handleIsAdmin(w http.ResponseWriter, r *http.Request) {
 	weblog("/api/player/isadmin called")
 	statusCode, err := isGlobalAdmin(r)
 	if err != nil {
-		if err != ErrNotAdmin {
+		if err == ErrNotAdmin {
 			writeResponse(w, http.StatusOK, fmt.Sprintf("%t", false))
 			return
 		}
