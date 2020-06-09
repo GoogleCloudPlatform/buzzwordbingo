@@ -30,6 +30,7 @@ export class BoardComponent implements OnInit {
   public bingo:boolean=false;
   public game:Observable<any>;
   public inviteLink:string;
+  public showInvitelink:boolean = false;
   
   private messageSubscription:Subscription;
   private gameSubscription:Subscription;
@@ -40,9 +41,11 @@ export class BoardComponent implements OnInit {
       auth.logout("not authed")
     }
 
-    this.inviteLink = "http://" + window.location.hostname + "/invite";
+    
     this.gid = route.snapshot.paramMap.get('id');
     this.player = auth.getPlayer(); 
+
+    this.inviteLink = "http://" + window.location.hostname + "/invite/" + this.gid;
     
     if (this.player.email == "undefined"){
       auth.logout("not authed")
@@ -51,7 +54,13 @@ export class BoardComponent implements OnInit {
     let block = false;
     if (!block){
     
-      this.gameSubscription = gameService.getGame(this.gid).subscribe(val=>{let g:Game = val as Game; this.game=observableOf(g)});
+      this.gameSubscription = gameService.getGame(this.gid).subscribe(val=>{
+        let g:Game = val as Game; 
+        this.game=observableOf(g);
+        if (g.players.length == 1){
+          this.showInvitelink = true;
+        }
+      });
       this.messages = this.data.getMessages(this.gid, this.player.email);
       this.messageSubscription = this.messages.subscribe(ms=>{this.listenForBingo(ms);this.listenForReset(ms)})
       this.board = gameService.getBoard(this.player.name, this.gid).pipe(debounceTime(1000),share());
@@ -104,6 +113,13 @@ export class BoardComponent implements OnInit {
     this.gameService.resetboard(bid, gid);
   }
 
+  copyInviteLink(){
+      navigator.clipboard.writeText(this.inviteLink);
+  }
+
+  hideInviteLink(){
+    this.showInvitelink = false;
+  }
 
   showBingo(){
     let board = document.querySelector(".header-container");

@@ -9,17 +9,20 @@
 
 
     .game-header{
-        display:flex;
-        flex-basis: 100%;
+        width: 1000px;
         h2{
             color: var(--interface-text-color);
             transition:  color .25s ease-in;
             margin-right: 20px;
-            width: 100%;
         }
 
         .invite-link{
-            width: 100%;
+            position: relative;
+            max-width: 1000px;
+            background-color:  var(--interface-bg-color);
+            padding: 20px;
+            border-radius: 6px;
+            margin: 10px 0;
             a{
                 display: inline-block;
                 padding: 5px;
@@ -27,6 +30,21 @@
                 background-color: var(--link-text-bg-color);
                 transition: background-color .25s ease-in, color .25s ease-in;
             }
+
+            button{
+                position: absolute;
+                top: 0;
+                right: 0;
+                border: none;
+                background-color: transparent;
+                box-shadow: none;
+                outline: none;
+                &:hover{
+                    color: var(--btn-border-color);
+                    transition: background-color .25s ease-in, color .25s ease-in;
+                }
+            }
+            
             
         }
     }
@@ -52,7 +70,14 @@
             transition: background-color .25s ease-in, color .25s ease-in;
             height: 30px;
             button{
-                margin: 2px auto;
+                position: relative;
+                margin: 0 10px 0 0;
+                .material-icons{
+                    position: relative;
+                    font-size: 14px;
+                    top: 2px;
+                    margin: 0 2px;
+                }
             }
         }
 
