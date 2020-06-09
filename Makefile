@@ -1,22 +1,26 @@
 BASEDIR = $(shell pwd)
-PROJECT=bingo-collab
-NAME=bingocollab
+PROJECT=$(BINGO_PROJECT_ID)
+REDISNAME=bingocollab
 REGION=us-central1
 GAEREGION=us-central
 SAACCOUNT=bingo-developer-account
 PROJECTNUMBER=$(shell gcloud projects list --filter="$(PROJECT)" --format="value(PROJECT_NUMBER)")
+REDISIP=$(shell gcloud beta redis instances describe $(REDISNAME) --region $(REGION) --format='value(host)')
+VPCCONNECTOR=$(shell gcloud compute networks vpc-access connectors describe $(REDISNAME)connector --region $(REGION) --format='value(name)' )
 
 env:
 	gcloud config set project $(PROJECT)
 
 clean:
-	-rm -rf server/dist		
+	-rm -rf backend/static		
 
 frontend: clean
 	cd frontend && ng build --prod
 
-deploy: env
+deploy: env frontend
 	cd backend && gcloud app deploy -q
+
+
 
 init:
 	cd frontend && npm install
@@ -50,7 +54,7 @@ perms:
   	--member serviceAccount:$(SAACCOUNT)@$(PROJECT).iam.gserviceaccount.com \
   	--role roles/project.viewer  
 
-project: env services appengine cloudbuild memorystore serviceaccount perms
+project: env services appengine cloudbuild memorystore serviceaccount perms firestore-rules
 
 services: env
 	-gcloud services enable vpcaccess.googleapis.com
@@ -71,12 +75,12 @@ cloudbuild: env
   	--role roles/appengine.appAdmin	
 
 memorystore: env
-	-gcloud redis instances create $(NAME) --size=1 --region=$(REGION)
-	-gcloud compute networks vpc-access connectors create $(NAME)connector \
+	-gcloud redis instances create $(REDISNAME) --size=1 --region=$(REGION)
+	-gcloud compute networks vpc-access connectors create $(REDISNAME)connector \
 	--network default --region $(REGION) --range 10.8.0.0/28 	
 
 listvpc:
-	gcloud beta redis instances describe $(NAME)redis --region $(REGION)
+	echo $(VPCCONNECTOR)
 
 secure: env
 	gcloud services enable cloudresourcemanager.googleapis.com
@@ -111,4 +115,6 @@ dev: redis
 	go run main.go firestore.go bingo.go cache.go game.go & \
 	cd $(BASEDIR)/frontend && ng serve --open )	
 
+firestore-rules:
+	firebase deploy --only firestore
 	
