@@ -17,7 +17,6 @@ export class AdminGamesComponent implements OnInit {
   }
 
   deactivateGame($event){
-    console.log($event);
     let id = $event.target.id;
     $event.target.parentElement.parentElement.style.display = 'none';
     this.game.deactivateGame(id).subscribe(val=>{this.refreshGame();});
