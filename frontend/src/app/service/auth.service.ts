@@ -5,6 +5,7 @@ import { share } from 'rxjs/operators';
 import {GameService, Game} from '../service/game.service'
 import {Router} from '@angular/router';
 import { LocalstorageService } from './localstorage.service';
+import { GoogleAuthService } from './googleauth.service';
 
 export class Player{
   name:string
@@ -27,6 +28,7 @@ export class AuthService {
   constructor(private http: HttpClient, 
               public game:GameService, 
               private localStorageService:LocalstorageService, 
+              private googleAuth:GoogleAuthService,
               private router: Router) { 
     let player = localStorageService.getPlayer();
     if (player != null){
@@ -42,6 +44,7 @@ export class AuthService {
     this.isAuthed = true;
     this.localStorageService.setPlayer(this.player);
     this.game.isAdmin().pipe(share()).subscribe(val=>{this.isAdministrator = val})
+    this.googleAuth.login();
 
   } 
 
@@ -76,6 +79,7 @@ export class AuthService {
   logout (reason:string="logged out") {
     console.log("logged out, reason:", reason )
     this.localStorageService.clearGameData();
+    this.googleAuth.logout()
     this.router.navigateByUrl('/login');
     return 
   }

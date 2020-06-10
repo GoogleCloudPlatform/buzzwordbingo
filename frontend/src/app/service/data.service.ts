@@ -3,6 +3,7 @@
 import { Injectable, isDevMode } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore'; 
 import {GameService, Game} from '../service/game.service'
+import {GoogleAuthService} from '../service/googleauth.service'
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import firebase from 'firebase/app';
@@ -31,9 +32,8 @@ const GAPI_CONFIG = {
 
 export class DataService {
 
-  constructor(public auth: AngularFireAuth, private firestore: AngularFirestore, private game:GameService) { 
-    this.passCredentials();
-
+  constructor(private googleAuth:GoogleAuthService, private firestore: AngularFirestore, private game:GameService) { 
+    googleAuth.login();
   }
 
   getPhrases() { 
@@ -68,29 +68,6 @@ export class DataService {
 
 
 
-   passCredentials() {
-
-    let self = this;
-
-    gapi.load('client:auth2', function(){
-      gapi.auth2.init(GAPI_CONFIG).then(function(googleAuth){
-
-        if ( googleAuth.isSignedIn.get()){
-          let token = googleAuth.currentUser.get().getAuthResponse().id_token;
-          const credential = firebase.auth.GoogleAuthProvider.credential(token);
-          self.auth.signInWithCredential(credential);
-        } else {
-          googleAuth.signIn().then((guser) =>{
-            const token = guser.getAuthResponse().id_token;
-            const credential = firebase.auth.GoogleAuthProvider.credential(token);
-            self.auth.signInWithCredential(credential);
-          })
-        }
-      }, function(err){console.log(err);})
-
-    })
-
-  }
 
 
 }

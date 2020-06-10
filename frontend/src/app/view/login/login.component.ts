@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable, of  } from 'rxjs';
+import { Observable, of, Subscription, BehaviorSubject  } from 'rxjs';
 import {Router, ActivatedRoute} from '@angular/router';
 import {AuthService, Player} from '../../service/auth.service'
 import { GameService, Game } from 'src/app/service/game.service';
 import { DataService } from 'src/app/service/data.service';
+import { GoogleAuthService } from 'src/app/service/googleauth.service';
 
 
 @Component({
@@ -16,11 +17,26 @@ export class LoginComponent implements OnInit {
   public id:string="";
   public identity:Observable<any>;
   public games:any;
+  public ga:BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
-  constructor(private auth:AuthService, public router:Router, route: ActivatedRoute, public game:GameService, public dataService:DataService) { 
+  constructor(private auth:AuthService, 
+              public router:Router, 
+              route: ActivatedRoute, 
+              public game:GameService, 
+              public dataService:DataService,
+              public googleAuth:GoogleAuthService) { 
     this.id = route.snapshot.paramMap.get('id');
     this.identity =auth.identifyPlayer();
     this.game.GetGamesForKey().subscribe(val=>{this.games=val; } );
+    googleAuth.authed.subscribe(val=>{
+        this.ga.next(val);
+        if (val){
+          let login = document.querySelector(".login") as HTMLElement;
+          let message = document.querySelector(".message") as HTMLElement;
+          login.style.display="block";
+          message.style.display="none";
+        }
+    });
   }
 
   ngOnInit(): void {
@@ -55,5 +71,6 @@ export class LoginComponent implements OnInit {
     
 
   }
+
 
 }
