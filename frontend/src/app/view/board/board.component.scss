@@ -32,9 +32,7 @@
             }
 
             button{
-                position: absolute;
-                top: 0;
-                right: 0;
+                position: relative;
                 border: none;
                 background-color: transparent;
                 box-shadow: none;
@@ -43,6 +41,17 @@
                     color: var(--btn-border-color);
                     transition: background-color .25s ease-in, color .25s ease-in;
                 }
+
+                .material-icons{
+                    position: relative;
+                    top: 7px;
+                }
+            }
+
+            .close{
+                position: absolute;
+                top: 0;
+                right: 0;
             }
             
             

@@ -3,7 +3,7 @@
     <header class="game-header">
     <h2>{{(game | async)?.name}}&nbsp;</h2>
     <div class="invite-link" *ngIf="showInvitelink" >
-        <button (click)="hideInviteLink()"><i class="material-icons">close</i></button>
+        <button class="close" (click)="hideInviteLink()"><i class="material-icons">close</i></button>
         <p>You are the first player in the game. This gives you the ability to
             add and remove administrators, reset players boards, and see all of
             the selections that have been made.  
@@ -11,7 +11,7 @@
         <p>Invite others using this link:
         <a href="{{inviteLink}}">
             {{inviteLink}}
-        </a></p>
+        </a><button (click)="copyInviteLink()"><i class="material-icons">content_copy</i></button></p>
     </div>
     </header>
     <div class="phrases">
