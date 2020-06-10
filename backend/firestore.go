@@ -161,19 +161,13 @@ func (a *Agent) UpdateMasterPhrase(p Phrase) error {
 
 // NewGame will create a new game in the database and initialize it.
 func (a *Agent) NewGame(name string, p Player) (Game, error) {
-	g := Game{}
 
 	phrases, err := a.GetPhrases()
 	if err != nil {
-		return g, fmt.Errorf("failed to get phrases: %v", err)
+		return Game{}, fmt.Errorf("failed to get phrases: %v", err)
 	}
 
-	g.ID = uniqueID()
-	g.Admins = append(g.Admins, p)
-	g.Name = name
-	g.Active = true
-	g.Created = time.Now()
-	g.Master.Load(phrases)
+	g := NewGame(uniqueID(), name, p, phrases)
 
 	batch := a.client.Batch()
 	a.log(fmt.Sprintf("Creating new game, id: %s", g.ID))

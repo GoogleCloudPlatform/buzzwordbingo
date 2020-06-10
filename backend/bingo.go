@@ -44,6 +44,21 @@ type Game struct {
 	Created time.Time        `json:"created" firestore:"created"`
 }
 
+// NewGame initializes a new game object
+func NewGame(id, name string, p Player, ph []Phrase) Game {
+	g := Game{}
+	g.ID = id
+	g.Name = name
+	g.Active = true
+	g.Created = time.Now()
+	g.Boards = make(map[string]Board)
+	g.Admins.Add(p)
+	g.Players.Add(p)
+	g.Master.Load(ph)
+
+	return g
+}
+
 // Obscure will obscure the email address of every email in the game other than
 // the one that is input.
 func (g *Game) Obscure(email string) {
@@ -305,6 +320,13 @@ func (ps *Players) Remove(p Player) Players {
 
 // Add adds a particular player from the list.
 func (ps *Players) Add(p Player) {
+
+	for _, v := range *ps {
+		if p.Email == v.Email {
+			return
+		}
+	}
+
 	*ps = append(*ps, p)
 	return
 }
