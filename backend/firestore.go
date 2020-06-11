@@ -404,7 +404,7 @@ func (a *Agent) UpdatePhrase(g Game, p Phrase) error {
 	b := g.Boards
 
 	phraseMap := map[string]interface{}{"text": p.Text, "selected": false}
-	recordMap := map[string]interface{}{"phrase": phraseMap}
+	recordMap := map[string]interface{}{"phrase": phraseMap, "players": Players{}}
 
 	batch := a.client.Batch()
 	recoref := a.client.Collection("games").Doc(g.ID).Collection("records").Doc(p.ID)
@@ -613,13 +613,23 @@ func (a *Agent) loadBoardWithPhrases(b Board) (Board, error) {
 }
 
 // DeleteBoard delete a specifc board from firestore
-func (a *Agent) DeleteBoard(bid, gid string) error {
+func (a *Agent) DeleteBoard(b Board, g Game) error {
 	batch := a.client.Batch()
 	a.log("Deleting board")
-	bref := a.client.Collection("games").Doc(gid).Collection("boards").Doc(bid)
+	bref := a.client.Collection("games").Doc(g.ID).Collection("boards").Doc(b.ID)
 	batch.Delete(bref)
+
+	for _, v := range g.Master.Records {
+		id := v.ID
+		if id == "" {
+			id = v.Phrase.ID
+		}
+		rref := a.client.Collection("games").Doc(g.ID).Collection("records").Doc(id)
+		batch.Set(rref, v)
+	}
+
 	a.log("removing phrases from board")
-	ref := a.client.Collection("games").Doc(gid).Collection("boards").Doc(bid).Collection("phrases")
+	ref := a.client.Collection("games").Doc(g.ID).Collection("boards").Doc(b.ID).Collection("phrases")
 	for {
 		// Get a batch of documents
 		iter := ref.Limit(100).Documents(a.ctx)

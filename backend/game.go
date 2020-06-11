@@ -161,16 +161,13 @@ func deleteBoard(bid, gid string) error {
 		return fmt.Errorf("failed to get active game to delete board: %v", err)
 	}
 
-	if err := a.DeleteBoard(bid, game.ID); err != nil {
+	game.DeleteBoard(b)
+
+	if err := a.DeleteBoard(b, game); err != nil {
 		return fmt.Errorf("could not delete board from firestore: %s", err)
 	}
 	if err := cache.DeleteBoard(b); err != nil {
 		return fmt.Errorf("could not delete board from cache: %s", err)
-	}
-
-	game, err = a.GetGame(game.ID)
-	if err != nil {
-		return fmt.Errorf("failed to get updated game from database: %v", err)
 	}
 
 	if err := cache.SaveGame(game); err != nil {

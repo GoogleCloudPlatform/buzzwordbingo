@@ -96,7 +96,9 @@ func NewBoard() Board {
 // UpdatePhrase will change a given phrase in the master record of phrases.
 func (g *Game) UpdatePhrase(p Phrase) {
 	i, r := g.FindRecord(p)
+	p.Selected = false
 	r.Phrase = p
+	r.Players = Players{}
 	g.Master.Records[i] = r
 
 	for _, b := range g.Boards {
@@ -107,6 +109,7 @@ func (g *Game) UpdatePhrase(p Phrase) {
 
 // DeleteBoard removes a board from the game.
 func (g *Game) DeleteBoard(b Board) {
+	g.Master.RemovePlayer(b.Player)
 	delete(g.Boards, b.ID)
 }
 
@@ -260,6 +263,16 @@ func (m *Master) Select(ph Phrase, pl Player) Record {
 		}
 	}
 	return r
+}
+
+// RemovePlayer removes a selected player's selection from the master list.
+func (m *Master) RemovePlayer(pl Player) {
+	for i, r := range m.Records {
+		m.Records[i].Players = r.Players.Remove(pl)
+		if len(m.Records[i].Players) == 0 {
+			m.Records[i].Phrase.Selected = false
+		}
+	}
 }
 
 // Record is a structure that keeps track of who has selected which Phrase
