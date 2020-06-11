@@ -36,6 +36,11 @@ func getBoardForPlayer(p Player, g Game) (Board, error) {
 		if err := cache.SaveBoard(b); err != nil {
 			return b, fmt.Errorf("error caching board for player: %v", err)
 		}
+		g.Boards[b.ID] = b
+
+		if err := cache.SaveGame(g); err != nil {
+			return b, fmt.Errorf("error caching game for player: %v", err)
+		}
 		m.SetText("<strong>%s</strong> got a board and joined the game.", b.Player.Name)
 		m.SetAudience("all")
 
@@ -332,6 +337,8 @@ func updateGamePhrases(gameID string, phrase Phrase) error {
 	if err != nil {
 		return fmt.Errorf("could not get game id(%s): %s", g.ID, err)
 	}
+
+	g.UpdatePhrase(phrase)
 
 	if err := a.UpdatePhrase(g, phrase); err != nil {
 		return fmt.Errorf("error saving update phrase in firebase: %v", err)

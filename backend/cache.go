@@ -269,15 +269,13 @@ func (c *Cache) UpdatePhrase(g Game, p Phrase) error {
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
-	g.UpdatePhrase(p)
-
-	json, err := g.JSON()
+	gjson, err := g.JSON()
 	if err != nil {
 		return err
 	}
 
 	conn.Send("MULTI")
-	conn.Send("SET", g.ID, json)
+	conn.Send("SET", "game-"+g.ID, gjson)
 
 	for _, b := range g.Boards {
 

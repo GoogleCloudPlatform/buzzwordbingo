@@ -6,7 +6,6 @@ import (
 	"log"
 	"math"
 	"math/rand"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -78,11 +77,19 @@ func (g *Game) Obscure(email string) {
 
 // NewBoard creates a new board for a user.
 func (g *Game) NewBoard(p Player) Board {
-	b := Board{}
+	b := NewBoard()
 	b.log("Creating new board ")
 	b.Game = g.ID
 	b.Player = p
 	b.Load(g.Master.Phrases())
+
+	return b
+}
+
+// NewBoard creates a new board for a user.
+func NewBoard() Board {
+	b := Board{}
+	b.Phrases = make(map[string]Phrase)
 	return b
 }
 
@@ -215,6 +222,7 @@ type Master struct {
 func (m *Master) Load(p []Phrase) {
 	for _, v := range p {
 		r := Record{}
+		r.ID = v.ID
 		r.Phrase = v
 		m.Records = append(m.Records, r)
 	}
@@ -344,11 +352,11 @@ func (ps Players) JSON() (string, error) {
 
 // Board is an individual board that the players use to play bingo
 type Board struct {
-	ID            string   `json:"id" firestore:"id"`
-	Game          string   `json:"game" firestore:"game"`
-	Player        Player   `json:"player" firestore:"player"`
-	BingoDeclared bool     `json:"bingodeclared" firestore:"bingodeclared"`
-	Phrases       []Phrase `json:"phrases" firestore:"-"`
+	ID            string  `json:"id" firestore:"id"`
+	Game          string  `json:"game" firestore:"game"`
+	Player        Player  `json:"player" firestore:"player"`
+	BingoDeclared bool    `json:"bingodeclared" firestore:"bingodeclared"`
+	Phrases       Phrases `json:"phrases" firestore:"-"`
 }
 
 // Obscure obscures the email of every player in the slice other than the one
@@ -364,8 +372,7 @@ func (b *Board) Bingo() bool {
 	diag2 := []string{"B4", "I3", "N2", "G1", "O0"}
 	counts := make(map[string]int)
 
-	for i, v := range b.Phrases {
-		v.Column, v.Row = calcColumnsRows(i)
+	for _, v := range b.Phrases {
 		if v.Selected {
 			counts[v.Column]++
 			counts[v.Row]++
@@ -385,7 +392,7 @@ func (b *Board) Bingo() bool {
 			}
 		}
 	}
-	b.log(fmt.Sprintf("%v", counts))
+	b.log(fmt.Sprintf("%+v", counts))
 	for _, v := range counts {
 		if v == 5 {
 			b.log("Bingo Declared")
@@ -434,38 +441,35 @@ func (b *Board) Load(p []Phrase) {
 	for i, v := range p {
 		v.Column, v.Row = calcColumnsRows(i)
 		v.DisplayOrder = i
-		p[i] = v
+		b.Phrases[v.ID] = v
 	}
 
-	b.Phrases = p
 }
 
 // UpdatePhrase change the text of a given phrases.
 func (b *Board) UpdatePhrase(p Phrase) {
-	for i, v := range b.Phrases {
-		if p.ID == v.ID {
-			p.DisplayOrder = v.DisplayOrder
-			p.Row = v.Row
-			p.Column = v.Column
-			b.Phrases[i] = p
-			return
-		}
-	}
+
+	v := b.Phrases[p.ID]
+	v.Text = p.Text
+	v.Selected = false
+	b.Phrases[p.ID] = v
+
 	return
 }
 
 // Print prints out the board for debugging
 func (b *Board) Print() {
 
-	phrases := make([]Phrase, len(b.Phrases))
-	copy(phrases, b.Phrases)
+	phrases := make(Phrases, len(b.Phrases))
 
-	sort.Slice(phrases, func(i, j int) bool {
-		return phrases[i].DisplayOrder < phrases[j].DisplayOrder
-	})
+	for i, v := range b.Phrases {
+		phrases[i] = v
+	}
+
+	sorted := phrases.ByDisplayOrder()
 
 	fmt.Printf("|*************** %s   ****************|\n", b.ID)
-	for i, v := range phrases {
+	for i, v := range sorted {
 		text := strings.ToLower(v.Text)
 		if len(text) > 10 {
 			text = text[0:9]
@@ -540,4 +544,18 @@ func (b Board) log(msg string) {
 	if noisy {
 		log.Printf("Bingo     : %s\n", msg)
 	}
+}
+
+// Phrases is a map of Phrase structs
+type Phrases map[string]Phrase
+
+// ByDisplayOrder returns a slice of Phrase sorted by DisplayOrder
+func (ps Phrases) ByDisplayOrder() []Phrase {
+	phrases := make([]Phrase, len(ps))
+
+	for _, v := range ps {
+		phrases[v.DisplayOrder] = v
+	}
+
+	return phrases
 }

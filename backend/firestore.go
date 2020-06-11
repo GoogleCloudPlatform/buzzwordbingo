@@ -322,7 +322,7 @@ func (a *Agent) loadGameWithBoards(g Game) (Game, error) {
 		if err != nil {
 			return g, fmt.Errorf("failed getting game boards: %v", err)
 		}
-		b := Board{}
+		b := NewBoard()
 		doc.DataTo(&b)
 
 		b, err = a.loadBoardWithPhrases(b)
@@ -404,12 +404,11 @@ func (a *Agent) UpdatePhrase(g Game, p Phrase) error {
 	b := g.Boards
 
 	phraseMap := map[string]interface{}{"text": p.Text, "selected": false}
+	recordMap := map[string]interface{}{"phrase": phraseMap}
 
 	batch := a.client.Batch()
-	record := Record{}
-	record.Phrase = p
 	recoref := a.client.Collection("games").Doc(g.ID).Collection("records").Doc(p.ID)
-	batch.Set(recoref, record)
+	batch.Set(recoref, recordMap, firestore.MergeAll)
 
 	for _, v := range b {
 		msg := fmt.Sprintf("Updating to phrase %s on board %s on game %s", p.ID, v.ID, g.ID)
@@ -544,7 +543,7 @@ func (a *Agent) AcknowledgeMessage(g Game, m Message) error {
 
 // GetBoardForPlayer returns the board for a given player
 func (a *Agent) GetBoardForPlayer(id string, p Player) (Board, error) {
-	b := Board{}
+	b := NewBoard()
 
 	a.log("get board for player")
 	iter := a.client.Collection("games").Doc(id).Collection("boards").Where("player.email", "==", p.Email).Documents(a.ctx)
@@ -575,7 +574,7 @@ func (a *Agent) GetBoardForPlayer(id string, p Player) (Board, error) {
 
 // GetBoard retrieves a specifc board from firestore
 func (a *Agent) GetBoard(bid, gid string) (Board, error) {
-	b := Board{}
+	b := NewBoard()
 
 	a.log("Getting board")
 	doc, err := a.client.Collection("games").Doc(gid).Collection("boards").Doc(bid).Get(a.ctx)
@@ -607,7 +606,7 @@ func (a *Agent) loadBoardWithPhrases(b Board) (Board, error) {
 		}
 		p := Phrase{}
 		doc.DataTo(&p)
-		b.Phrases = append(b.Phrases, p)
+		b.Phrases[p.ID] = p
 	}
 
 	return b, nil
