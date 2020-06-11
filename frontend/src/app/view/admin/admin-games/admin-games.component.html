@@ -2,9 +2,10 @@
 
 <div>
     
-    <table>
+    
+    <table class="game-list">
         <thead>
-            <tr><th>Name</th><th>Admins</th><th>Date</th></tr>
+            <tr><th>Name</th><th>Admins</th><th>Date</th><th></th></tr>
         </thead>
         <tr *ngFor="let game of games | async" [class.active]="game.active">
             <td class="game-name"><a routerLink="/game/{{game.id}}">{{game.name}}</a></td>
@@ -12,5 +13,10 @@
             <td>{{game.created | date:'short'}}</td>
             <td><button [id]="game.id" (click)="deactivateGame($event)">Deactivate Game</button></td>
         </tr>
+        <tfoot>
+            <tr>
+                <td colspan="4"><app-progressbar></app-progressbar></td>
+            </tr>
+        </tfoot>
     </table>   
 </div>

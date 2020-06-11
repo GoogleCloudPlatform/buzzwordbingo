@@ -28,6 +28,7 @@ import { ManageAdminsComponent } from './view/manage/manage-admins/manage-admins
 import { AdminAdminsComponent } from './view/admin/admin-admins/admin-admins.component';
 import { FooterComponent } from './view/footer/footer.component';
 import { AdminGamesComponent } from './view/admin/admin-games/admin-games.component';
+import { ProgressbarComponent } from './view/widgets/progressbar/progressbar.component';
 
 @NgModule({
   declarations: [
@@ -51,7 +52,8 @@ import { AdminGamesComponent } from './view/admin/admin-games/admin-games.compon
     ManageAdminsComponent,
     AdminAdminsComponent,
     FooterComponent,
-    AdminGamesComponent
+    AdminGamesComponent,
+    ProgressbarComponent
   ],
   imports: [
     BrowserModule,
