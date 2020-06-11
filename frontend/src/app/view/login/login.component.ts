@@ -33,8 +33,11 @@ export class LoginComponent implements OnInit {
         if (val){
           let login = document.querySelector(".login") as HTMLElement;
           let message = document.querySelector(".message") as HTMLElement;
-          login.style.display="block";
-          message.style.display="none";
+          if (login != null && message != null){
+            login.style.display="block";
+            message.style.display="none";
+          }
+         
         }
     });
   }
