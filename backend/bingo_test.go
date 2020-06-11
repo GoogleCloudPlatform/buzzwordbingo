@@ -12,24 +12,24 @@ func TestBoardBingo(t *testing.T) {
 		want  bool
 	}{
 		{"Empty", Board{}, false},
-		{"Top Row", Board{Phrases: []Phrase{
-			Phrase{Row: "0", Column: "B", Selected: true},
-			Phrase{Row: "0", Column: "I", Selected: true},
-			Phrase{Row: "0", Column: "N", Selected: true},
-			Phrase{Row: "0", Column: "G", Selected: true},
-			Phrase{Row: "0", Column: "O", Selected: true}}}, true},
-		{"Diagonal", Board{Phrases: []Phrase{
-			Phrase{Row: "0", Column: "B", Selected: true},
-			Phrase{Row: "1", Column: "I", Selected: true},
-			Phrase{Row: "2", Column: "N", Selected: true},
-			Phrase{Row: "3", Column: "G", Selected: true},
-			Phrase{Row: "4", Column: "O", Selected: true}}}, true},
-		{"V pattern", Board{Phrases: []Phrase{
-			Phrase{Row: "0", Column: "B", Selected: true},
-			Phrase{Row: "1", Column: "I", Selected: true},
-			Phrase{Row: "2", Column: "N", Selected: true},
-			Phrase{Row: "1", Column: "G", Selected: true},
-			Phrase{Row: "0", Column: "O", Selected: true}}}, false},
+		{"Top Row", Board{Phrases: map[string]Phrase{
+			"1": {Row: "0", Column: "B", Selected: true},
+			"2": {Row: "0", Column: "I", Selected: true},
+			"3": {Row: "0", Column: "N", Selected: true},
+			"4": {Row: "0", Column: "G", Selected: true},
+			"5": {Row: "0", Column: "O", Selected: true}}}, true},
+		{"Diagonal", Board{Phrases: map[string]Phrase{
+			"1": {Row: "0", Column: "B", Selected: true},
+			"2": {Row: "1", Column: "I", Selected: true},
+			"3": {Row: "2", Column: "N", Selected: true},
+			"4": {Row: "3", Column: "G", Selected: true},
+			"5": {Row: "4", Column: "O", Selected: true}}}, true},
+		{"V pattern", Board{Phrases: map[string]Phrase{
+			"1": {Row: "0", Column: "B", Selected: true},
+			"2": {Row: "1", Column: "I", Selected: true},
+			"3": {Row: "2", Column: "N", Selected: true},
+			"4": {Row: "1", Column: "G", Selected: true},
+			"5": {Row: "0", Column: "O", Selected: true}}}, false},
 	}
 
 	for _, c := range cases {
@@ -55,15 +55,18 @@ func TestBoardLoad(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		b := Board{}
+		b := NewBoard()
 		randseedfunc = c.in
 		b.Load(phrases)
-		gotfirst := b.Phrases[0].ID
+
+		phrases := b.Phrases.ByDisplayOrder()
+
+		gotfirst := phrases[0].ID
 		if gotfirst != c.first {
 			t.Errorf("Board.Load() first got %s, want %s", gotfirst, c.first)
 		}
 
-		gotlast := b.Phrases[len(b.Phrases)-1].ID
+		gotlast := phrases[len(phrases)-1].ID
 		if gotlast != c.last {
 			t.Errorf("Board.Load() last got %s, want %s", gotlast, c.last)
 		}
@@ -125,7 +128,7 @@ func TestPhraseUpdate(t *testing.T) {
 	for _, v := range board.Phrases {
 		if v.ID == phrase.ID {
 			if v.Text != phrase.Text {
-				t.Errorf("Board.UpdatePhrase() got %s, want %s", board.Phrases[0].Text, phrase.Text)
+				t.Errorf("Board.UpdatePhrase() got %s, want %s", v.Text, phrase.Text)
 			}
 			return
 		}
@@ -134,46 +137,45 @@ func TestPhraseUpdate(t *testing.T) {
 }
 
 func getTestBoard() Board {
-	board := Board{}
+	board := NewBoard()
 	board.Load(getTestPhrases())
 
 	return board
 }
 
 func getTestGame() Game {
-	game := Game{}
-	game.Master.Load(getTestPhrases())
+	game := NewGame("1", "A Test Game", Player{"Test", "t@t"}, getTestPhrases())
 
 	return game
 }
 
 func getTestPhrases() []Phrase {
 	phrases := []Phrase{
-		Phrase{"1", "Filler 1", false, "", "", 0},
-		Phrase{"2", "Filler 2", false, "", "", 1},
-		Phrase{"3", "Filler 3", false, "", "", 2},
-		Phrase{"4", "Filler 4", false, "", "", 3},
-		Phrase{"5", "Filler 5", false, "", "", 4},
-		Phrase{"6", "Filler 6", false, "", "", 5},
-		Phrase{"7", "Filler 7", false, "", "", 6},
-		Phrase{"8", "Filler 8", false, "", "", 0},
-		Phrase{"9", "Filler 9", false, "", "", 1},
-		Phrase{"10", "Filler 10", false, "", "", 2},
-		Phrase{"11", "Filler 11", false, "", "", 3},
-		Phrase{"12", "Filler 12", false, "", "", 4},
-		Phrase{"13", "Filler 13", false, "", "", 5},
-		Phrase{"14", "Filler 14", false, "", "", 6},
-		Phrase{"15", "Filler 15", false, "", "", 0},
-		Phrase{"16", "Filler 16", false, "", "", 1},
-		Phrase{"17", "Filler 17", false, "", "", 2},
-		Phrase{"18", "Filler 18", false, "", "", 3},
-		Phrase{"19", "Filler 19", false, "", "", 4},
-		Phrase{"20", "Filler 20", false, "", "", 5},
-		Phrase{"21", "Filler 21", false, "", "", 6},
-		Phrase{"22", "Filler 22", false, "", "", 3},
-		Phrase{"23", "Filler 23", false, "", "", 4},
-		Phrase{"24", "Filler 24", false, "", "", 5},
-		Phrase{"25", "Filler 25", false, "", "", 6},
+		{"1", "Filler 1", false, "", "", 0},
+		{"2", "Filler 2", false, "", "", 1},
+		{"3", "Filler 3", false, "", "", 2},
+		{"4", "Filler 4", false, "", "", 3},
+		{"5", "Filler 5", false, "", "", 4},
+		{"6", "Filler 6", false, "", "", 5},
+		{"7", "Filler 7", false, "", "", 6},
+		{"8", "Filler 8", false, "", "", 0},
+		{"9", "Filler 9", false, "", "", 1},
+		{"10", "Filler 10", false, "", "", 2},
+		{"11", "Filler 11", false, "", "", 3},
+		{"12", "Filler 12", false, "", "", 4},
+		{"13", "Filler 13", false, "", "", 5},
+		{"14", "Filler 14", false, "", "", 6},
+		{"15", "Filler 15", false, "", "", 0},
+		{"16", "Filler 16", false, "", "", 1},
+		{"17", "Filler 17", false, "", "", 2},
+		{"18", "Filler 18", false, "", "", 3},
+		{"19", "Filler 19", false, "", "", 4},
+		{"20", "Filler 20", false, "", "", 5},
+		{"21", "Filler 21", false, "", "", 6},
+		{"22", "Filler 22", false, "", "", 3},
+		{"23", "Filler 23", false, "", "", 4},
+		{"24", "Filler 24", false, "", "", 5},
+		{"25", "Filler 25", false, "", "", 6},
 	}
 
 	return phrases
