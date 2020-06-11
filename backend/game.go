@@ -37,6 +37,7 @@ func getBoardForPlayer(p Player, g Game) (Board, error) {
 			return b, fmt.Errorf("error caching board for player: %v", err)
 		}
 		g.Boards[b.ID] = b
+		g.Players.Add(p)
 
 		if err := cache.SaveGame(g); err != nil {
 			return b, fmt.Errorf("error caching game for player: %v", err)
@@ -124,7 +125,7 @@ func getGamesForKey(key string) (Games, error) {
 			}
 
 		}
-		if err := cache.SaveGamesForKey("games"+key, g); err != nil {
+		if err := cache.SaveGamesForKey(key, g); err != nil {
 			return g, fmt.Errorf("error caching games : %v", err)
 		}
 	}
