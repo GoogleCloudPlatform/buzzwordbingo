@@ -57,6 +57,24 @@ func (c *Cache) Clear() error {
 	return nil
 }
 
+func boardKeys(b Board) (boardkey string, playerkey string) {
+	boardkey = "board-" + b.ID
+	playerkey = "board-" + b.Game + "_" + b.Player.Email
+	return boardkey, playerkey
+}
+
+func gameKey(key string) string {
+	return "game-" + key
+}
+
+func gamesKey(key string) string {
+	return "games-" + key
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BOARDS
+////////////////////////////////////////////////////////////////////////////////
+
 // SaveBoard records a board into the cache.
 func (c *Cache) SaveBoard(b Board) error {
 	if !c.enabled {
@@ -71,115 +89,17 @@ func (c *Cache) SaveBoard(b Board) error {
 		return err
 	}
 
+	boardkey, playerkey := boardKeys(b)
+
 	conn.Send("MULTI")
-	conn.Send("SET", "board-"+b.ID, json)
-	conn.Send("SET", "board-"+b.Game+"_"+b.Player.Email, json)
+	conn.Send("SET", boardkey, json)
+	conn.Send("SET", playerkey, json)
 
 	if _, err := conn.Do("EXEC"); err != nil {
 		return err
 	}
 	c.log("Successfully saved board to cache")
 	return nil
-}
-
-// SaveGame records a game in the cache.
-func (c *Cache) SaveGame(g Game) error {
-	if !c.enabled {
-		return nil
-	}
-
-	conn := c.redisPool.Get()
-	defer conn.Close()
-
-	json, err := g.JSON()
-	if err != nil {
-		return err
-	}
-
-	if _, err := conn.Do("SET", "game-"+g.ID, json); err != nil {
-		return err
-	}
-	c.log("Successfully saved game to cache")
-
-	if len(g.Boards) == 0 {
-		c.log("WARNING game saved to cache without the boards.")
-	}
-
-	return nil
-}
-
-// SaveGamesForKey saves a list of all of the games a player is in.
-func (c *Cache) SaveGamesForKey(key string, g Games) error {
-	if !c.enabled {
-		return nil
-	}
-
-	conn := c.redisPool.Get()
-	defer conn.Close()
-
-	json, err := g.JSON()
-	if err != nil {
-		return err
-	}
-
-	rkey := "games-" + key
-
-	if _, err := conn.Do("SET", rkey, json); err != nil {
-		return err
-	}
-	c.log("Successfully saved game list to cache")
-	return nil
-}
-
-// GetGamesForKey retrieves a list of games from the cache
-func (c *Cache) GetGamesForKey(key string) (Games, error) {
-	g := []Game{}
-	if !c.enabled {
-		return g, ErrCacheMiss
-	}
-	conn := c.redisPool.Get()
-	defer conn.Close()
-
-	rkey := "games-" + key
-
-	s, err := redis.String(conn.Do("GET", rkey))
-	if err == redis.ErrNil {
-		return g, ErrCacheMiss
-	} else if err != nil {
-		return g, err
-	}
-
-	if err := json.Unmarshal([]byte(s), &g); err != nil {
-		return g, err
-	}
-	c.log("Successfully retrieved games from cache")
-
-	return g, nil
-}
-
-// GetGame retrieves an game from the cache
-func (c *Cache) GetGame(key string) (Game, error) {
-	g := Game{}
-	if !c.enabled {
-		return g, ErrCacheMiss
-	}
-
-	conn := c.redisPool.Get()
-	defer conn.Close()
-
-	s, err := redis.String(conn.Do("GET", "game-"+key))
-	if err == redis.ErrNil {
-		return Game{}, ErrCacheMiss
-	} else if err != nil {
-		return Game{}, err
-	}
-
-	if err := json.Unmarshal([]byte(s), &g); err != nil {
-		return Game{}, err
-	}
-	c.log("Successfully retrieved game from cache")
-
-	return g, nil
 }
 
 // GetBoard retrieves an board from the cache
@@ -213,17 +133,21 @@ func (c *Cache) DeleteBoard(board Board) error {
 	}
 	conn := c.redisPool.Get()
 	defer conn.Close()
+
+	boardkey, playerkey := boardKeys(board)
+	gameskey := gamesKey(board.Player.Email)
+
 	conn.Send("MULTI")
 
-	if err := conn.Send("DEL", "board-"+board.ID); err != nil {
+	if err := conn.Send("DEL", boardkey); err != nil {
 		return err
 	}
 
-	if err := conn.Send("DEL", "board-"+board.Game+"_"+board.Player.Email); err != nil {
+	if err := conn.Send("DEL", playerkey); err != nil {
 		return err
 	}
 
-	if err := conn.Send("DEL", "games-"+board.Player.Email); err != nil {
+	if err := conn.Send("DEL", gameskey); err != nil {
 		return err
 	}
 
@@ -231,10 +155,118 @@ func (c *Cache) DeleteBoard(board Board) error {
 		return err
 	}
 
-	c.log(fmt.Sprintf("Cleaning from cache %s", "board-"+board.ID))
-	c.log(fmt.Sprintf("Cleaning from cache %s", "board-"+board.Game+"_"+board.Player.Email))
-	c.log(fmt.Sprintf("Cleaning from cache %s", "games-"+board.Player.Email))
+	c.log(fmt.Sprintf("Cleaning from cache %s", boardkey))
+	c.log(fmt.Sprintf("Cleaning from cache %s", playerkey))
+	c.log(fmt.Sprintf("Cleaning from cache %s", gameskey))
 	return nil
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// GAMES
+////////////////////////////////////////////////////////////////////////////////
+
+// SaveGame records a game in the cache.
+func (c *Cache) SaveGame(g Game) error {
+	if !c.enabled {
+		return nil
+	}
+
+	conn := c.redisPool.Get()
+	defer conn.Close()
+
+	json, err := g.JSON()
+	if err != nil {
+		return err
+	}
+
+	gamekey := gameKey(g.ID)
+
+	if _, err := conn.Do("SET", gamekey, json); err != nil {
+		return err
+	}
+	c.log("Successfully saved game to cache")
+
+	if len(g.Boards) == 0 {
+		c.log("WARNING game saved to cache without the boards.")
+	}
+
+	return nil
+}
+
+// GetGame retrieves an game from the cache
+func (c *Cache) GetGame(key string) (Game, error) {
+	g := Game{}
+	if !c.enabled {
+		return g, ErrCacheMiss
+	}
+
+	conn := c.redisPool.Get()
+	defer conn.Close()
+
+	gamekey := gameKey(key)
+
+	s, err := redis.String(conn.Do("GET", gamekey))
+	if err == redis.ErrNil {
+		return Game{}, ErrCacheMiss
+	} else if err != nil {
+		return Game{}, err
+	}
+
+	if err := json.Unmarshal([]byte(s), &g); err != nil {
+		return Game{}, err
+	}
+	c.log("Successfully retrieved game from cache")
+
+	return g, nil
+}
+
+// SaveGamesForKey saves a list of all of the games a player is in.
+func (c *Cache) SaveGamesForKey(key string, g Games) error {
+	if !c.enabled {
+		return nil
+	}
+
+	conn := c.redisPool.Get()
+	defer conn.Close()
+
+	json, err := g.JSON()
+	if err != nil {
+		return err
+	}
+
+	rkey := gamesKey(key)
+
+	if _, err := conn.Do("SET", rkey, json); err != nil {
+		return err
+	}
+	c.log("Successfully saved game list to cache")
+	return nil
+}
+
+// GetGamesForKey retrieves a list of games from the cache
+func (c *Cache) GetGamesForKey(key string) (Games, error) {
+	g := []Game{}
+	if !c.enabled {
+		return g, ErrCacheMiss
+	}
+	conn := c.redisPool.Get()
+	defer conn.Close()
+
+	rkey := gamesKey(key)
+
+	s, err := redis.String(conn.Do("GET", rkey))
+	if err == redis.ErrNil {
+		return g, ErrCacheMiss
+	} else if err != nil {
+		return g, err
+	}
+
+	if err := json.Unmarshal([]byte(s), &g); err != nil {
+		return g, err
+	}
+	c.log("Successfully retrieved games from cache")
+
+	return g, nil
 }
 
 // DeleteGamesForKey will remove the list of games for a particular player
@@ -248,7 +280,7 @@ func (c *Cache) DeleteGamesForKey(keys []string) error {
 	conn.Send("MULTI")
 
 	for _, v := range keys {
-		rkey := "games-" + v
+		rkey := gamesKey(v)
 		if _, err := conn.Do("DEL", rkey); err != nil {
 			return err
 		}
@@ -262,6 +294,10 @@ func (c *Cache) DeleteGamesForKey(keys []string) error {
 	return nil
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// PHRASES
+////////////////////////////////////////////////////////////////////////////////
+
 // UpdatePhrase will update all of the versions of a phrase in a game and all
 // of the boards in that game.
 func (c *Cache) UpdatePhrase(g Game, p Phrase) error {
@@ -269,26 +305,30 @@ func (c *Cache) UpdatePhrase(g Game, p Phrase) error {
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
+	gamekey := gameKey(g.ID)
+
 	gjson, err := g.JSON()
 	if err != nil {
 		return err
 	}
 
 	conn.Send("MULTI")
-	conn.Send("SET", "game-"+g.ID, gjson)
+	conn.Send("SET", gamekey, gjson)
 
 	for _, b := range g.Boards {
+
+		boardkey, playerkey := boardKeys(b)
 
 		json, err := b.JSON()
 		if err != nil {
 			return err
 		}
 
-		if err := conn.Send("SET", "board-"+b.ID, json); err != nil {
+		if err := conn.Send("SET", boardkey, json); err != nil {
 			return err
 		}
 
-		if err := conn.Send("SET", b.Game+"_"+b.Player.Email, json); err != nil {
+		if err := conn.Send("SET", playerkey, json); err != nil {
 			return err
 		}
 
@@ -299,5 +339,4 @@ func (c *Cache) UpdatePhrase(g Game, p Phrase) error {
 	}
 
 	return nil
-
 }
