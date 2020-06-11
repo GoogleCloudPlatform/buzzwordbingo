@@ -57,7 +57,7 @@ export class BoardComponent implements OnInit {
       this.gameSubscription = gameService.getGame(this.gid).subscribe(val=>{
         let g:Game = val as Game; 
         this.game=observableOf(g);
-        if (g.players.length == 1){
+        if (g.players.length == 1 && g.players[0].email == this.player.email){
           this.showInvitelink = true;
         }
       });
