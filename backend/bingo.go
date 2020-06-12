@@ -328,11 +328,13 @@ func (ps Players) IsMember(p Player) bool {
 
 // Remove removes a particular player from the list.
 func (ps *Players) Remove(p Player) {
+	new := Players{}
 	for _, v := range *ps {
 		if v.Email != p.Email {
-			*ps = append(*ps, v)
+			new = append(new, v)
 		}
 	}
+	*ps = new
 	return
 }
 
