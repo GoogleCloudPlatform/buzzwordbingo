@@ -335,12 +335,43 @@ func updateMasterPhrase(phrase Phrase) error {
 }
 
 func updateGamePhrases(gameID string, phrase Phrase) error {
+	messages := []Message{}
+	m := Message{}
+	m.SetText("A square has been changed and reset for all players. ")
+	m.SetAudience("all")
+	messages = append(messages, m)
+
 	g, err := getGame(gameID)
 	if err != nil {
 		return fmt.Errorf("could not get game id(%s): %s", g.ID, err)
 	}
 
+	bingos := make(map[string]Board)
+
+	for _, v := range g.Boards {
+		if v.Bingo() {
+			bingos[v.ID] = v
+		}
+	}
+	fmt.Printf("Bingos!!!!!!!!!!!! %+v\n", bingos)
+
 	g.UpdatePhrase(phrase)
+
+	for _, v := range bingos {
+		if !v.Bingo() {
+			m := Message{}
+			m.SetText("An action from the <strong>game managers</strong> has rescinded your <em><strong>BINGO</strong></em>")
+			m.SetAudience(v.Player.Email)
+			m.Bingo = true
+			messages = append(messages, m)
+
+			m2 := Message{}
+			m2.SetText("<strong>%s</strong> just lost their <em><strong>BINGO</strong></em>", v.Player.Name)
+			m2.SetAudience("admin")
+			m2.Bingo = true
+			messages = append(messages, m2)
+		}
+	}
 
 	if err := a.UpdatePhrase(g, phrase); err != nil {
 		return fmt.Errorf("error saving update phrase in firebase: %v", err)
@@ -349,12 +380,6 @@ func updateGamePhrases(gameID string, phrase Phrase) error {
 	if err := cache.UpdatePhrase(g, phrase); err != nil {
 		return fmt.Errorf("error saving update phrase in cache: %v", err)
 	}
-
-	messages := []Message{}
-	m := Message{}
-	m.SetText("A square has been changed and reset for all players. ")
-	m.SetAudience("all")
-	messages = append(messages, m)
 
 	if err := a.AddMessagesToGame(g, messages); err != nil {
 		return fmt.Errorf("could not send message announce bingo on select: %s", err)

@@ -127,6 +127,20 @@ export class ItemComponent implements OnInit {
     
   }
 
+  public enable(){
+    let self = this;
+    this.disabled = false;
+    let item:HTMLElement = document.querySelector("#id_"+ this.phrase.id);
+    if (item != null){
+      item.classList.remove("disabled");
+      item.classList.remove("board-disabled");
+      return;
+    } else{
+      setTimeout(function(){ self.enable();}, 100);
+    }
+    
+  }
+
   
 
 

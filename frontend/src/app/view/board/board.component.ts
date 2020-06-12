@@ -86,6 +86,8 @@ export class BoardComponent implements OnInit {
                 self.declareBingo();
               } else{
                 self.hideBingo();
+                self.bingo = false;
+                self.enableBoard();
               }
             });
           }
@@ -235,6 +237,12 @@ export class BoardComponent implements OnInit {
     }
 
     
+  }
+
+  enableBoard(){
+    this.itemComponents.forEach(function(child){
+      child.enable();
+    })
   }
 
 
