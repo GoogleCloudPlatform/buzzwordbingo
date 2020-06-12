@@ -2,7 +2,7 @@
 <div class="main">
     <header class="game-header">
     <h2>{{(game | async)?.name}}&nbsp;</h2>
-    <div class="invite-link" *ngIf="showInvitelink" >
+    <div class="invite-link interface" *ngIf="showInvitelink" >
         <button class="close" (click)="hideInviteLink()">
             <i class="material-icons">close</i>
         </button>
@@ -27,14 +27,14 @@
                 Get a new board<i class="material-icons">fiber_new</i>
             </button>
         </div>
-        <div class="header-container">
+        <div class="header-container interface">
             <header>B</header>
             <header>I</header>
             <header>N</header>
             <header>G</header>
             <header>O</header>
         </div>
-        <div class="board-phrases">
+        <div class="board-phrases interface">
             <span data-text="Loading" class="loading">Loading</span>
             <app-item #items class="cell"
                 *ngFor="let phrase of phrases | async; let i = index;" 

@@ -43,7 +43,9 @@ export const unicornTheme = {
     "login-header-text-color":" #fff",
     'header-color':'#fff',
     'grayscale-filter' : 'grayscale(0%)',
-    'brightness-filter':'brightness(100%)'
+    'brightness-filter':'brightness(100%)',
+    'interface-shadow1':'rgba(160,164,167,0.35)',
+    'interface-shadow2':'rgba(160,164,167,0.17)'
 } 
 
 export const lightTheme = {
@@ -88,7 +90,9 @@ export const lightTheme = {
   'login-header-text-color':'#fff',
   'header-color':'#121212',
   'grayscale-filter' : 'grayscale(100%)',
-  'brightness-filter':'brightness(0)'
+  'brightness-filter':'brightness(0)',
+  'interface-shadow1':'rgba(60,64,67,0.15)',
+  'interface-shadow2':'rgba(60,64,67,0.07)'
 } 
 
 
@@ -133,7 +137,9 @@ export const darkTheme = {
   'bingo-declared-header-color':' #232323',
   'header-color':'#fff',
   'grayscale-filter' : 'grayscale(100%)',
-  'brightness-filter':'brightness(100)'
+  'brightness-filter':'brightness(100)',
+  'interface-shadow1':'rgba(160,164,167,0.35)',
+  'interface-shadow2':'rgba(160,164,167,0.17)'
 } 
 
 
