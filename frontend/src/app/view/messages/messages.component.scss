@@ -7,6 +7,7 @@
     border-radius: 6px;
     color: var(--interface-text-color);
     transition: background-color .25s ease-in, color .25s ease-in;
+    position: relative;
 
     .message{
         
@@ -23,5 +24,11 @@
             color: var(--bingo-color);
             transition: background-color .25s ease-in, color .25s ease-in;
         }
+    }
+
+    .spinner{
+        top: 100px;
+        left: calc(50% - 40px);
+        position: absolute;
     }
 }

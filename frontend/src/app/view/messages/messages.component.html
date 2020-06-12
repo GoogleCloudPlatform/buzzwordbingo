@@ -1,4 +1,5 @@
 <div class="messages" #scrollMe >
+    <app-progressspinner class="spinner"></app-progressspinner>
     <div class="message"  *ngFor="let message of messages | async">
         <span class="content" *ngIf="findInAudience(message)" [innerHTML]="message.text" [class.bingo]="message.bingo"></span>
     </div>

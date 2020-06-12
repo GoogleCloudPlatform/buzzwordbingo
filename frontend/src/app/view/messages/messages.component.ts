@@ -1,6 +1,7 @@
-import { Component, OnInit, Input, ChangeDetectorRef, AfterContentChecked} from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectorRef, ViewChild} from '@angular/core';
 import {GameService, Message} from '../../service/game.service'
 import { Observable } from 'rxjs';
+import { ProgressspinnerComponent } from '../widgets/progressspinner/progressspinner.component';
 
 
 @Component({
@@ -9,6 +10,7 @@ import { Observable } from 'rxjs';
   styleUrls: ['./messages.component.scss']
 })
 export class MessagesComponent implements OnInit {
+  @ViewChild(ProgressspinnerComponent ) spinner: ProgressspinnerComponent ; 
   @Input() messages: Observable<any>;
   @Input() target:string;
   
@@ -17,7 +19,11 @@ export class MessagesComponent implements OnInit {
 
   ngOnInit(): void {
     this.scrollDownWindow();
-    this.messages.subscribe(val=>{this.scrollDownWindow();})
+    this.messages.subscribe(
+      val=>{
+        this.scrollDownWindow();
+        this.spinner.toggle();
+      })
   }
 
   ngAfterViewInit(): void {
