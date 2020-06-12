@@ -1,7 +1,15 @@
 <h2>Game Tracker</h2>
 <table class="records">
+    <thead>
+        <tr><th>Phrase</th><th>Count</th></tr>
+    </thead>
     <tr *ngFor="let record of records | async" class="record" [class.active]="isActive(record)">
         <td class="text" [innerHTML]="record.phrase.text"></td>    
         <td class="count" [innerHTML]="playerCount(record)"></td>
     </tr>
+    <tfoot>
+        <tr>
+            <td colspan="2"><app-progressbar></app-progressbar></td>
+        </tr>
+    </tfoot>
 </table>

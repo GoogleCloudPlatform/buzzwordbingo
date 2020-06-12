@@ -1,9 +1,17 @@
 <h2>Players</h2>
 <table class="boards">
+    <thead>
+        <tr><th>Name</th><th>Email</th><th>Bingo?</th><th></th></tr>
+    </thead>
     <tr *ngFor="let board of boards | async" [class.bingo]="board.bingodeclared">
         <td class="name">{{board.player.name}}</td>
         <td>{{board.player.email}}</td>
         <td><span *ngIf="board.bingodeclared">BINGO</span></td>
         <td><button class="reset" (click)="reset(board.id, board.game)">Reset</button></td>
     </tr>
+    <tfoot>
+        <tr>
+            <td colspan="4"><app-progressbar></app-progressbar></td>
+        </tr>
+    </tfoot>
 </table>

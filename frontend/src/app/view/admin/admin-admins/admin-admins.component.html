@@ -1,5 +1,6 @@
 <h2>Manage Global Administrators</h2>
-
+<p>This is the list of people that can manage the entire system.  They can also join and manage any game in the network. </p>
+<app-progressspinner class="spinner"></app-progressspinner>
 <div class="admin-item" *ngFor="let admin of admins | async" >
     <input  readonly  [value]="admin.email">
     <button [id]="admin.email" (click)="onAdminRemove($event)">Remove</button>

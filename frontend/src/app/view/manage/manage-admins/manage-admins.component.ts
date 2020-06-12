@@ -1,7 +1,8 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ViewChild } from '@angular/core';
 import { GameService, Game } from 'src/app/service/game.service';
 import { BehaviorSubject, Observable, of as observableOf  } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
+import { ProgressspinnerComponent } from '../../widgets/progressspinner/progressspinner.component';
 
 
 
@@ -11,6 +12,7 @@ import { Router, ActivatedRoute } from '@angular/router';
   styleUrls: ['./manage-admins.component.scss']
 })
 export class ManageAdminsComponent implements OnInit {
+  @ViewChild(ProgressspinnerComponent ) spinner: ProgressspinnerComponent ;
   public id:string;
   public game:BehaviorSubject<Game> = new BehaviorSubject(new Game);
   public gameid:string;
@@ -20,7 +22,12 @@ export class ManageAdminsComponent implements OnInit {
   }
 
   refreshGame(){
-    this.gameService.getGame(this.id).subscribe(val=>{let g:Game = val as Game; this.gameid=g.id; this.game.next(g);});
+    this.gameService.getGame(this.id).subscribe(val=>{
+      let g:Game = val as Game; 
+      this.gameid=g.id; 
+      this.game.next(g);
+      this.spinner.toggle();
+    });
   }
 
   ngOnInit(): void {

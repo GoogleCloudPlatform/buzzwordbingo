@@ -3,6 +3,7 @@
 </p>
 
 <div class="phrases">
+    <app-progressspinner class="spinner"></app-progressspinner>
     <app-manage-phrase-form class="manage-phrase-form" [game]="(game | async)"
     *ngFor="let record of (game | async)?.master.record" [record]='record'>
         {{record.phrase.text}}

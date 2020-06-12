@@ -1,7 +1,9 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ViewChild } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { DataService, Phrase} from '../../../service/data.service'
 import {GameService, Board, Message, Record} from '../../../service/game.service'
+import {ProgressbarComponent} from 'src/app/view/widgets/progressbar/progressbar.component'
+
 
 @Component({
   selector: 'app-manage-master',
@@ -9,13 +11,14 @@ import {GameService, Board, Message, Record} from '../../../service/game.service
   styleUrls: ['./manage-master.component.scss']
 })
 export class ManageMasterComponent implements OnInit {
+  @ViewChild(ProgressbarComponent ) bar: ProgressbarComponent ; 
   @Input() id:string;
   public records: Observable<any[]>;
   constructor(public data:DataService, public game:GameService) { }
 
   ngOnInit(): void {
      this.records = this.data.getRecords(this.id)
-     this.records.subscribe();
+     this.records.subscribe(val=>{this.bar.toggle()});
   }
 
   playerCount(record:Record):number{
