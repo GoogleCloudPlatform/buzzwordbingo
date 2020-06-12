@@ -1,4 +1,5 @@
 <h2>Create New Game</h2>
 
-<input name="name" #gameInput [(ngModel)]='gameName' type="text" class="name form-control" required placeholder="Give the game a meaningful name" >
+<input name="name" #gameInput [(ngModel)]='gameName' 
+type="text" class="name form-control" required placeholder="Set a meaningful name for game" >
 <button class="" (click)="createNewGame(gameName)">New Game</button>
