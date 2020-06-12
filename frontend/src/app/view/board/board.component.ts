@@ -80,10 +80,10 @@ export class BoardComponent implements OnInit {
         // bingo by eliminating a selelcted square
         phrases.forEach(function(v){
           let old = self.currentState[v.id];
-          if (old != null && old.selected && !v.selected){
+          if (old != null && old.text != v.text){
             self.gameService.getBoard(self.player.name, self.gid).subscribe(val=>{
               if (val.bingodeclared){
-                self.declareBingo()
+                self.declareBingo();
               } else{
                 self.hideBingo();
               }
