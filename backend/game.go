@@ -95,7 +95,11 @@ func generateBingoMessages(b Board, g Game, first bool) []Message {
 
 		for _, v := range reports {
 			mr := Message{}
-			mr.SetText("<strong>%s</strong> was selected by %d of %d other players", v.Phrase.Text, v.Count, v.Total-1)
+			mr.SetText("<strong>%s</strong> was selected by only %d of the other %d players", v.Phrase.Text, v.Count-1, v.Total-1)
+			if v.Count == 1 {
+				mr.SetText("<strong>%s</strong> was selected by none of the other %d players", v.Phrase.Text, v.Total-1)
+			}
+
 			mr.SetAudience("admin", b.Player.Email)
 			mr.Bingo = true
 			messages = append(messages, mr)

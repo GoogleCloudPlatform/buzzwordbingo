@@ -638,8 +638,7 @@ func handleGameAdminDelete(w http.ResponseWriter, r *http.Request) {
 	p := Player{}
 	p.Email = email
 
-	new := game.Admins.Remove(p)
-	game.Admins = new
+	game.Admins.Remove(p)
 
 	if err := cache.SaveGame(game); err != nil {
 		writeError(w, err.Error())

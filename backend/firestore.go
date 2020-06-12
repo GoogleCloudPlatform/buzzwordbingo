@@ -304,7 +304,7 @@ func (a *Agent) loadGameWithPlayers(g Game) (Game, error) {
 		}
 		p := Player{}
 		doc.DataTo(&p)
-		g.Players = append(g.Players, p)
+		g.Players.Add(p)
 	}
 
 	return g, nil

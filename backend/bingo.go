@@ -164,11 +164,11 @@ func (g *Game) CheckBoard(b Board) Reports {
 	for _, v := range b.Phrases {
 		if v.Selected && v.Text != "FREE" {
 
-			_, master := g.FindRecord(v)
+			_, record := g.FindRecord(v)
 			r := Report{}
 			r.Phrase = v
-			r.Percent = float32(len(master.Players)) / float32(total)
-			r.Count = len(master.Players)
+			r.Percent = float32(len(record.Players)) / float32(total)
+			r.Count = len(record.Players)
 			r.Total = total
 			results = append(results, r)
 		}
@@ -247,8 +247,7 @@ func (m *Master) Select(ph Phrase, pl Player) Record {
 
 		if v.Phrase.ID == ph.ID {
 			if v.Players.IsMember(pl) {
-				new := v.Players.Remove(pl)
-				v.Players = new
+				v.Players.Remove(pl)
 
 				if !ph.Selected {
 					v.Phrase.Selected = false
@@ -257,8 +256,7 @@ func (m *Master) Select(ph Phrase, pl Player) Record {
 				return v
 			}
 			v.Phrase.Selected = ph.Selected
-			v.Players = append(v.Players, pl)
-			m.Records[i] = v
+			m.Records[i].Players.Add(pl)
 			return v
 		}
 	}
@@ -267,8 +265,8 @@ func (m *Master) Select(ph Phrase, pl Player) Record {
 
 // RemovePlayer removes a selected player's selection from the master list.
 func (m *Master) RemovePlayer(pl Player) {
-	for i, r := range m.Records {
-		m.Records[i].Players = r.Players.Remove(pl)
+	for i := range m.Records {
+		m.Records[i].Players.Remove(pl)
 		if len(m.Records[i].Players) == 0 {
 			m.Records[i].Phrase.Selected = false
 		}
@@ -329,25 +327,22 @@ func (ps Players) IsMember(p Player) bool {
 }
 
 // Remove removes a particular player from the list.
-func (ps *Players) Remove(p Player) Players {
-	out := Players{}
+func (ps *Players) Remove(p Player) {
 	for _, v := range *ps {
 		if v.Email != p.Email {
-			out = append(out, v)
+			*ps = append(*ps, v)
 		}
 	}
-	return out
+	return
 }
 
 // Add adds a particular player from the list.
 func (ps *Players) Add(p Player) {
-
 	for _, v := range *ps {
 		if p.Email == v.Email {
 			return
 		}
 	}
-
 	*ps = append(*ps, p)
 	return
 }
@@ -456,7 +451,6 @@ func (b *Board) Load(p []Phrase) {
 		v.DisplayOrder = i
 		b.Phrases[v.ID] = v
 	}
-
 }
 
 // UpdatePhrase change the text of a given phrases.
