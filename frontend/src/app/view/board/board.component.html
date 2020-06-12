@@ -9,15 +9,21 @@
             the selections that have been made.  
         </p>
         <p>Invite others using this link:
-        <a href="{{inviteLink}}">
-            {{inviteLink}}
-        </a><button (click)="copyInviteLink()"><i class="material-icons">content_copy</i></button></p>
+            <a href="{{inviteLink}}">{{inviteLink}}</a>
+            <button (click)="copyInviteLink()">
+                <i class="material-icons">content_copy</i>
+            </button>
+        </p>
     </div>
     </header>
     <div class="phrases">
         <div class="board-toolbar">
-            <button (click)="copyInviteLink()">Copy Invite Link <i class="material-icons">content_copy</i></button>
-            <button *ngIf="bingo" class="reset" (click)="reset(boardid, gid)">Get a new board<i class="material-icons">fiber_new</i></button>
+            <button (click)="copyInviteLink()">
+                Copy Invite Link <i class="material-icons">content_copy</i>
+            </button>
+            <button *ngIf="bingo" class="reset" (click)="reset(boardid, gid)">
+                Get a new board<i class="material-icons">fiber_new</i>
+            </button>
         </div>
         <div class="header-container">
             <header>B</header>

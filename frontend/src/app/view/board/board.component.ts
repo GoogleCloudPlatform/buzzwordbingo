@@ -23,7 +23,7 @@ export class BoardComponent implements OnInit {
   public gid:string;
   public board: Observable<any>;
   public phrases: Observable<any[]>;
-  public currentState:any = {};
+  public currentState:any = {"started":false};
   public player:Player;
   public boardid:string;
   public messages: Observable<any[]>;
@@ -40,50 +40,72 @@ export class BoardComponent implements OnInit {
     if (!auth.isAuth()){
       auth.logout("not authed")
     }
-
+    
     
     this.gid = route.snapshot.paramMap.get('id');
     this.player = auth.getPlayer(); 
-
     this.inviteLink = "http://" + window.location.hostname + "/invite/" + this.gid;
     
     if (this.player.email == "undefined"){
       auth.logout("not authed")
     }
 
-    let block = false;
-    if (!block){
-    
-      this.gameSubscription = gameService.getGame(this.gid).subscribe(val=>{
-        let g:Game = val as Game; 
-        this.game=observableOf(g);
-        if (g.players.length == 1 && g.players[0].email == this.player.email){
-          this.showInvitelink = true;
-        }
-      });
-      this.messages = this.data.getMessages(this.gid, this.player.email);
-      this.messageSubscription = this.messages.subscribe(ms=>{this.listenForBingo(ms);this.listenForReset(ms)})
-      this.board = gameService.getBoard(this.player.name, this.gid).pipe(debounceTime(1000),share());
-    
-      this.boardSubscription = this.board.subscribe(val=>{
-        block = true;
-        this.boardid = val.id; 
-        this.phrases = data.getGameBoard(this.gid, this.boardid).pipe(map(val => {
-          let phrases:Phrase[] = val as Phrase[]
-          phrases = phrases.sort((a, b) => (a.displayorder > b.displayorder) ? 1 : -1)
-          return phrases;
-        }))
-        if (val.bingodeclared){
-          this.declareBingo()
-        } 
-        if (!this.bingo){
-          this.hideBingo();
-        }
-        block = false;
-      })
-    }
+    this.gameSubscription = gameService.getGame(this.gid).subscribe(val=>{
+      let g:Game = val as Game; 
+      this.game=observableOf(g);
+      if (g.players.length == 1 && g.players[0].email == this.player.email){
+        this.showInvitelink = true;
+      }
+    });
+    this.messages = this.data.getMessages(this.gid, this.player.email);
+    this.messageSubscription = this.messages.subscribe(ms=>{this.listenForBingo(ms);this.listenForReset(ms)})
+    this.board = gameService.getBoard(this.player.name, this.gid).pipe(debounceTime(1000),share());
+
+    this.handleBoard();
 
    
+   }
+
+   handleBoard(){
+    let self = this;
+    let block = false;
+    if (!block){
+    this.boardSubscription = this.board.subscribe(val=>{
+      block = true;
+      this.boardid = val.id; 
+      this.phrases = this.data.getGameBoard(this.gid, this.boardid).pipe(map(val => {
+        let phrases:Phrase[] = val as Phrase[];
+
+        // This section is weird, but basically it allows an admin to revert a 
+        // bingo by eliminating a selelcted square
+        phrases.forEach(function(v){
+          let old = self.currentState[v.id];
+          if (old != null && old.selected && !v.selected){
+            self.gameService.getBoard(self.player.name, self.gid).subscribe(val=>{
+              if (val.bingodeclared){
+                self.declareBingo()
+              } else{
+                self.hideBingo();
+              }
+            });
+          }
+          self.currentState[v.id] = v;
+        });
+        if (!self.currentState.started){
+          self.currentState.started = true;
+        } 
+
+
+        phrases = phrases.sort((a, b) => (a.displayorder > b.displayorder) ? 1 : -1)
+        return phrases;
+      }))
+      if (val.bingodeclared){
+        this.declareBingo()
+      } 
+      block = false;
+    })
+
+    }
    }
 
   ngOnInit(): void {
@@ -191,7 +213,6 @@ export class BoardComponent implements OnInit {
 
   recievePhrase($event) {
     let phrase = $event;
-
     if (phrase.selected){
       this.currentState[phrase.id] = phrase;
     } else {
@@ -203,13 +224,17 @@ export class BoardComponent implements OnInit {
 
   receiveChild($event) {
     let child = $event;
-    this.itemComponents.push(child)
+    this.itemComponents.push(child);
 
     if(this.itemComponents.length == 25 && this.bingo){
       this.itemComponents.forEach(function(child){
         child.disable();
       })
+    } else if (!this.bingo){
+        this.hideBingo();
     }
+
+    
   }
 
 
