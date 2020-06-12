@@ -77,6 +77,7 @@ func main() {
 	r.HandleFunc("/api/admin/remove", handleAdminDelete)
 	r.HandleFunc("/api/admin/list", handleAdminList)
 	r.HandleFunc("/api/message/receive", handleMessageAcknowledge)
+	r.HandleFunc("/api/cache/clear", handleClearCache)
 
 	routes := []string{"login", "invite", "game", "manage", "gamenew", "gamepicker", "admin"}
 
@@ -94,6 +95,18 @@ func main() {
 	if err := http.ListenAndServe(port, nil); err != nil {
 		log.Fatal(err)
 	}
+
+}
+
+func handleClearCache(w http.ResponseWriter, r *http.Request) {
+	weblog("/api/cache/clear called")
+
+	if err := cache.Clear(); err != nil {
+		writeError(w, err.Error())
+		return
+	}
+
+	writeSuccess(w, "ok")
 
 }
 

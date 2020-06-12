@@ -264,6 +264,8 @@ func deactivateGame(gid string) error {
 		keys = append(keys, v.Player.Email)
 	}
 
+	msg := fmt.Sprintf("Deleting games for caches: %+v", keys)
+	cache.log(msg)
 	if err := cache.DeleteGamesForKey(keys); err != nil {
 		return fmt.Errorf("error caching game : %v", err)
 	}

@@ -22,4 +22,11 @@ steps:
     - name: gcr.io/cloud-builders/gcloud
       args: ['app', 'deploy', '-q']
       dir: "backend"
+    - name: gcr.io/cloud-builders/gcloud
+      entrypoint: "bash"
+      args:
+        - "-c"
+        - |
+            RESPONSE=$(curl -i https://$PROJECT_ID.appspot.com/api/cache/clear | grep HTTP | cut -d' ' -f2)
+            if [ "200" != "$$RESPONSE" ]; then exit 1; fi
   
