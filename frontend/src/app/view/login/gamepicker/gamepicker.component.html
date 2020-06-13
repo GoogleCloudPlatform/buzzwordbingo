@@ -1,26 +1,30 @@
 
 
 <app-toolbar></app-toolbar>
-<div class="main interface">
-    <app-admin-game class="game"></app-admin-game>
+<div class="main">
+
+    <div class="game-picker interface">
+        <app-admin-game class="game"></app-admin-game>
 
 
-    <h2>Join a game</h2>
-    <table class="games-list">
-        <thead>
-            <tr><th>Name</th><th>Admins</th><th>Date</th></tr>
-        </thead>
-        <tr *ngFor="let game of (games | async)" [class.active]="game.active">
-            <td class="game-name"><a routerLink="/game/{{game.id}}">{{game.name}}</a></td>
-            <td><span *ngFor="let admin of game.admins">{{admin.name}}</span></td>
-            <td>{{game.created | date:'short'}}</td>
-        </tr>
-        <tfoot>
-            <tr>
-                <td colspan="4"><app-progressbar></app-progressbar></td>
+        <h2>Join a game</h2>
+        <table class="games-list">
+            <thead>
+                <tr><th>Name</th><th>Admins</th><th>Date</th></tr>
+            </thead>
+            <tr *ngFor="let game of (games | async)" [class.active]="game.active">
+                <td class="game-name"><a routerLink="/game/{{game.id}}">{{game.name}}</a></td>
+                <td><span *ngFor="let admin of game.admins">{{admin.name}}</span></td>
+                <td>{{game.created | date:'short'}}</td>
             </tr>
-        </tfoot>
-    </table>   
-     
+            <tfoot>
+                <tr>
+                    <td colspan="4"><app-progressbar></app-progressbar></td>
+                </tr>
+            </tfoot>
+        </table>   
+
+    </div>
+    <app-footer class="picker"></app-footer> 
 </div>
-<app-footer class="picker"></app-footer>
+

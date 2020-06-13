@@ -145,6 +145,7 @@ input {
     color: var(--input-color);
     border-color:  var(--input-border-color);
     transition: border-color .25s ease-in, background-color .25s ease-in, color .25s ease-in;
+    border-radius: 6px;
 }
 
 button{
