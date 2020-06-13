@@ -13,18 +13,18 @@
 # limitations under the License.
 
 steps:
-    - name: 'gcr.io/cloud-builders/npm'
-      args: [ 'install' ]
-      dir: "frontend"
-    - name: 'gcr.io/$PROJECT_ID/ng:latest'
-      args: ["build", "--prod"]
-      dir: "frontend"
     - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
       args: ['gsutil', 'cp', 'gs://${PROJECT_ID}_creds/environment.ts','frontend/src/environments/environment.ts']
     - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
       args: ['gsutil', 'cp', 'gs://${PROJECT_ID}_creds/environment.prod.ts','frontend/src/environments/environment.prod.ts']
     - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
       args: ['gsutil', 'cp', 'gs://${PROJECT_ID}_creds/app.yaml','backend/app.yaml']
+    - name: 'gcr.io/cloud-builders/npm'
+      args: [ 'install' ]
+      dir: "frontend"
+    - name: 'gcr.io/$PROJECT_ID/ng:latest'
+      args: ["build", "--prod"]
+      dir: "frontend"
     - name: gcr.io/cloud-builders/gcloud
       args: ['app', 'deploy', '-q']
       dir: "backend"
