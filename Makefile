@@ -117,4 +117,9 @@ dev: redis
 
 firestore-rules:
 	firebase deploy --only firestore
-	
+
+savecreds: env
+	-gsutil mb gs://$(PROJECT)_creds/
+	-gsutil cp $(BASEDIR)/frontend/src/environments/environment.ts gs://$(PROJECT)_creds/environment.ts
+	-gsutil cp $(BASEDIR)/frontend/src/environments/environment.prod.ts gs://$(PROJECT)_creds/environment.prod.ts
+	-gsutil cp $(BASEDIR)/backend/app.yaml gs://$(PROJECT)_creds/app.yaml
