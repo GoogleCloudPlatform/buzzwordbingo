@@ -82,6 +82,8 @@
 
     }
 
+    
+
 }
 
 .message{
@@ -96,6 +98,12 @@
         margin: 20px;
         padding: 20px 0;    
     }
+}
+
+.footer{
+    display: block;
+    width: 500px;
+    margin: 0 auto;
 }
 
 @media screen and (max-width: 499px){
