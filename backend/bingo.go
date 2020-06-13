@@ -11,6 +11,21 @@ import (
 	"time"
 )
 
+// I stole this code from firestore/collref.go basically it generates the ids
+// so I can use batch sets instead of adds for anything
+const alphanum = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+func uniqueID() string {
+	b := make([]byte, 20)
+	if _, err := rand.Read(b); err != nil {
+		panic(fmt.Sprintf("agent: crypto/rand.Read error: %v", err))
+	}
+	for i, byt := range b {
+		b[i] = alphanum[int(byt)%len(alphanum)]
+	}
+	return string(b)
+}
+
 // Message is a message that will be broadcast from the server to all players
 type Message struct {
 	ID        string   `json:"id" firestore:"id"`
@@ -44,9 +59,9 @@ type Game struct {
 }
 
 // NewGame initializes a new game object
-func NewGame(id, name string, p Player, ph []Phrase) Game {
+func NewGame(name string, p Player, ph []Phrase) Game {
 	g := Game{}
-	g.ID = id
+	g.ID = uniqueID()
 	g.Name = name
 	g.Active = true
 	g.Created = time.Now()
@@ -77,17 +92,20 @@ func (g *Game) Obscure(email string) {
 
 // NewBoard creates a new board for a user.
 func (g *Game) NewBoard(p Player) Board {
-	b := NewBoard()
+	b := InitBoard()
 	b.log("Creating new board ")
+	b.ID = uniqueID()
 	b.Game = g.ID
 	b.Player = p
 	b.Load(g.Master.Phrases())
+	g.Players.Add(p)
+	g.Boards[b.ID] = b
 
 	return b
 }
 
-// NewBoard creates a new board for a user.
-func NewBoard() Board {
+// InitBoard creates a new board and inits Phrases
+func InitBoard() Board {
 	b := Board{}
 	b.Phrases = make(map[string]Phrase)
 	return b

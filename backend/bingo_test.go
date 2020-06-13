@@ -38,7 +38,6 @@ func TestBoardBingo(t *testing.T) {
 			t.Errorf("Board.TestBingo(%s) got %t, want %t", c.label, got, c.want)
 		}
 	}
-
 }
 
 func TestBoardLoad(t *testing.T) {
@@ -55,7 +54,7 @@ func TestBoardLoad(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		b := NewBoard()
+		b := InitBoard()
 		randseedfunc = c.in
 		b.Load(phrases)
 
@@ -71,7 +70,6 @@ func TestBoardLoad(t *testing.T) {
 			t.Errorf("Board.Load() last got %s, want %s", gotlast, c.last)
 		}
 	}
-
 }
 
 func TestRowCalc(t *testing.T) {
@@ -116,7 +114,6 @@ func TestRowCalc(t *testing.T) {
 			t.Errorf("Board.CalcColumnsRows(%d) row got %s, want %s", c.in, gotrow, c.row)
 		}
 	}
-
 }
 
 func TestPhraseUpdate(t *testing.T) {
@@ -133,18 +130,144 @@ func TestPhraseUpdate(t *testing.T) {
 			return
 		}
 	}
+}
+
+func TestNewGame(t *testing.T) {
+	pl := Player{}
+	pl.Email = "test@example.com"
+	pl2 := Player{}
+	pl2.Email = "test2@example.com"
+	game := NewGame("test name", pl, getTestPhrases())
+
+	if !game.IsAdmin(pl) {
+		t.Errorf("NewGame() expected player passed into be an admin, but they were not")
+	}
+
+	if game.IsAdmin(pl2) {
+		t.Errorf("NewGame() expected player not passed into to not be an admin, but they were")
+	}
+
+	if !game.Players.IsMember(pl) {
+		t.Errorf("NewGame() expected player passed into be a player, but they were not")
+	}
+
+	if game.Players.IsMember(pl2) {
+		t.Errorf("NewGame() expected player not passed into to not be a player, but they were")
+	}
+
+}
+
+func TestGameNewBoard(t *testing.T) {
+	pl := Player{}
+	pl.Email = "test@example.com"
+	pl2 := Player{}
+	pl2.Email = "test2@example.com"
+	game := NewGame("test name", pl, getTestPhrases())
+
+	board := game.NewBoard(pl2)
+
+	if !game.IsAdmin(pl) {
+		t.Errorf("NewGame() expected player passed into be an admin, but they were not")
+	}
+
+	if game.IsAdmin(pl2) {
+		t.Errorf("NewGame() expected player not passed into to not be an admin, but they were")
+	}
+
+	if !game.Players.IsMember(pl) {
+		t.Errorf("NewGame() expected player passed into be a player, but they were not")
+	}
+
+	if !game.Players.IsMember(pl2) {
+		t.Errorf("NewGame() expected player getting board to be a player, but they were not")
+	}
+
+	if board.Game != game.ID {
+		t.Errorf("NewGame() expected board to have game.id set as board.game, it was not. ")
+	}
+
+	_, ok := game.Boards[board.ID]
+
+	if !ok {
+		t.Errorf("NewGame() expected board to be in the list of boards for the game, it was not. ")
+	}
+}
+
+func TestGameDeletingBoard(t *testing.T) {
+	pl := Player{}
+	pl.Email = "test@example.com"
+	pl2 := Player{}
+	pl2.Email = "test2@example.com"
+	game := NewGame("test name", pl, getTestPhrases())
+
+	board := game.NewBoard(pl2)
+
+	game.DeleteBoard(board)
+
+	_, ok := game.Boards[board.ID]
+
+	if ok {
+		t.Errorf("Game.Delete() expected board to not be in the list of boards for the game, it was. ")
+	}
+
+}
+
+func TestGameObscure(t *testing.T) {
+	pl := Player{}
+	pl.Email = "test@example.com"
+	pl2 := Player{}
+	pl2.Email = "test2@example.com"
+	game := NewGame("test name", pl, getTestPhrases())
+	game.Admins.Add(pl2)
+	board := game.NewBoard(pl2)
+
+	game.Obscure("test@example.com")
+
+	targetFoundInPlayers := false
+	for _, v := range game.Players {
+		if v.Email == "test2@example.com" {
+			t.Errorf("Game.Obscure() expected email address to be xxxxxx@xxxxxx.xxx got %s", v.Email)
+		}
+		if v.Email == "test@example.com" {
+			targetFoundInPlayers = true
+		}
+	}
+
+	if !targetFoundInPlayers {
+		t.Errorf("Game.Obscure() expected email address to find email address %s", pl)
+	}
+
+	targetFoundInAdmins := false
+	for _, v := range game.Admins {
+		if v.Email == "test2@example.com" {
+			t.Errorf("Game.Obscure() expected email address to be xxxxxx@xxxxxx.xxx got %s", v.Email)
+		}
+		if v.Email == "test@example.com" {
+			targetFoundInAdmins = true
+		}
+	}
+
+	if !targetFoundInAdmins {
+		t.Errorf("Game.Obscure() expected email address to find email address %s", pl)
+	}
+
+	savedBoard, _ := game.Boards[board.ID]
+
+	if savedBoard.Player.Email == "test2@example.com" {
+		t.Errorf("Game.Obscure() expected email address to be xxxxxx@xxxxxx.xxx got %s", board.Player.Email)
+	}
 
 }
 
 func getTestBoard() Board {
-	board := NewBoard()
+	board := InitBoard()
 	board.Load(getTestPhrases())
 
 	return board
 }
 
 func getTestGame() Game {
-	game := NewGame("1", "A Test Game", Player{"Test", "t@t"}, getTestPhrases())
+	game := NewGame("A Test Game", Player{"Test", "t@t"}, getTestPhrases())
 
 	return game
 }

@@ -37,7 +37,6 @@ func getBoardForPlayer(p Player, g Game) (Board, error) {
 			return b, fmt.Errorf("error caching board for player: %v", err)
 		}
 		g.Boards[b.ID] = b
-		g.Players.Add(p)
 
 		if err := cache.SaveGame(g); err != nil {
 			return b, fmt.Errorf("error caching game for player: %v", err)

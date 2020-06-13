@@ -13,21 +13,6 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-// I stole this code from firestore/collref.go basically it generates the ids
-// so I can use batch sets instead of adds for anything
-const alphanum = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-
-func uniqueID() string {
-	b := make([]byte, 20)
-	if _, err := rand.Read(b); err != nil {
-		panic(fmt.Sprintf("agent: crypto/rand.Read error: %v", err))
-	}
-	for i, byt := range b {
-		b[i] = alphanum[int(byt)%len(alphanum)]
-	}
-	return string(b)
-}
-
 // NewAgent intializes and returns a fresh agent.
 func NewAgent(ctx context.Context, projectID string) (Agent, error) {
 	var err error
@@ -167,7 +152,7 @@ func (a *Agent) NewGame(name string, p Player) (Game, error) {
 		return Game{}, fmt.Errorf("failed to get phrases: %v", err)
 	}
 
-	g := NewGame(uniqueID(), name, p, phrases)
+	g := NewGame(name, p, phrases)
 
 	batch := a.client.Batch()
 	a.log(fmt.Sprintf("Creating new game, id: %s", g.ID))
@@ -304,7 +289,6 @@ func (a *Agent) loadGameWithPlayers(g Game) (Game, error) {
 		}
 		p := Player{}
 		doc.DataTo(&p)
-		g.Players.Add(p)
 	}
 
 	return g, nil
@@ -322,7 +306,7 @@ func (a *Agent) loadGameWithBoards(g Game) (Game, error) {
 		if err != nil {
 			return g, fmt.Errorf("failed getting game boards: %v", err)
 		}
-		b := NewBoard()
+		b := InitBoard()
 		doc.DataTo(&b)
 
 		b, err = a.loadBoardWithPhrases(b)
@@ -543,7 +527,7 @@ func (a *Agent) AcknowledgeMessage(g Game, m Message) error {
 
 // GetBoardForPlayer returns the board for a given player
 func (a *Agent) GetBoardForPlayer(id string, p Player) (Board, error) {
-	b := NewBoard()
+	b := InitBoard()
 
 	a.log("get board for player")
 	iter := a.client.Collection("games").Doc(id).Collection("boards").Where("player.email", "==", p.Email).Documents(a.ctx)
@@ -574,7 +558,7 @@ func (a *Agent) GetBoardForPlayer(id string, p Player) (Board, error) {
 
 // GetBoard retrieves a specifc board from firestore
 func (a *Agent) GetBoard(bid, gid string) (Board, error) {
-	b := NewBoard()
+	b := InitBoard()
 
 	a.log("Getting board")
 	doc, err := a.client.Collection("games").Doc(gid).Collection("boards").Doc(bid).Get(a.ctx)
@@ -657,10 +641,6 @@ func (a *Agent) DeleteBoard(b Board, g Game) error {
 
 // SaveBoard persists a board to firestore
 func (a *Agent) SaveBoard(b Board) (Board, error) {
-
-	if b.ID == "" {
-		b.ID = uniqueID()
-	}
 
 	a.log("Starting batch operation")
 	batch := a.client.Batch()
