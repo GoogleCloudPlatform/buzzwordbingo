@@ -7,7 +7,7 @@
         <td class="name">{{board.player.name}}</td>
         <td>{{board.player.email}}</td>
         <td><span *ngIf="board.bingodeclared">BINGO</span></td>
-        <td><button class="reset" (click)="reset(board.id, board.game)">Reset</button></td>
+        <td><button class="reset" (click)="reset(board.id, board.game)"><i class="material-icons">refresh</i></button></td>
     </tr>
     <tfoot>
         <tr>

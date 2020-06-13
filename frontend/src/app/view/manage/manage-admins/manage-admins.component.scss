@@ -14,8 +14,11 @@ input{
 }
 
 button{
-    font-size: 20px;
-    width: 100px;
+    font-size: 15px;
+    position: relative;
+    text-align: left;
+    padding: 0;
+    top: 5px;
 }
 
 form{

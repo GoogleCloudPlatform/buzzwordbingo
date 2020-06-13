@@ -11,7 +11,7 @@
             <td class="game-name"><a routerLink="/game/{{game.id}}">{{game.name}}</a></td>
             <td><span *ngFor="let admin of game.admins">{{admin.name}}</span></td>
             <td>{{game.created | date:'short'}}</td>
-            <td><button [id]="game.id" (click)="deactivateGame($event)">Deactivate Game</button></td>
+            <td><button [id]="game.id" (click)="deactivateGame($event)"><span>Deactivate Game</span> <i class="material-icons">cancel</i></button></td>
         </tr>
         <tfoot>
             <tr>
