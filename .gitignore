@@ -6,3 +6,6 @@ temp
 node_modules
 .firebaserc
 firestore-debug.log
+backend/app.yaml
+frontend/src/environments/environment.prod.ts
+frontend/src/environments/environment.ts
