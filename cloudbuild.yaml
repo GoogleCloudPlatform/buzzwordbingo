@@ -20,11 +20,11 @@ steps:
       args: ["build", "--prod"]
       dir: "frontend"
     - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-      args: ['gsutil', 'cp', 'gs://$PROJECT_ID_creds/environment.ts','frontend/src/environments/environment.ts']
+      args: ['gsutil', 'cp', 'gs://${PROJECT_ID}_creds/environment.ts','frontend/src/environments/environment.ts']
     - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-      args: ['gsutil', 'cp', 'gs://$PROJECT_ID_creds/environment.prod.ts','frontend/src/environments/environment.prod.ts']
+      args: ['gsutil', 'cp', 'gs://${PROJECT_ID}_creds/environment.prod.ts','frontend/src/environments/environment.prod.ts']
     - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-      args: ['gsutil', 'cp', 'gs://$PROJECT_ID_creds/app.yaml','backend/app.yaml']
+      args: ['gsutil', 'cp', 'gs://${PROJECT_ID}_creds/app.yaml','backend/app.yaml']
     - name: gcr.io/cloud-builders/gcloud
       args: ['app', 'deploy', '-q']
       dir: "backend"
