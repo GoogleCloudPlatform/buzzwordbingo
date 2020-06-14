@@ -8,12 +8,33 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
+type RedisPool interface {
+	Get() redis.Conn
+}
+
+// Cacher is an interface for testing caching
+type Cacher interface {
+	Init(string, string)
+	Clear() error
+	SaveBoard(Board) error
+	GetBoard(string) (Board, error)
+	DeleteBoard(Board) error
+	SaveGame(Game) error
+	GetGame(string) (Game, error)
+	SaveGamesForKey(string, Games) error
+	GetGamesForKey(string) (Games, error)
+	DeleteGamesForKey([]string) error
+	UpdatePhrase(Game, Phrase) error
+	log(string)
+	SetRedisPool(RedisPool)
+}
+
 // ErrCacheMiss error indicates that an item is not in the cache
 var ErrCacheMiss = fmt.Errorf("item is not in cache")
 
 // NewCache returns an initialized cache ready to go.
-func NewCache(redisHost, redisPort string, enabled bool) (Cache, error) {
-	c := Cache{}
+func NewCache(redisHost, redisPort string, enabled bool) (*Cache, error) {
+	c := &Cache{}
 	c.Init(redisHost, redisPort)
 	c.enabled = enabled
 	return c, nil
@@ -21,7 +42,8 @@ func NewCache(redisHost, redisPort string, enabled bool) (Cache, error) {
 
 // Cache abstracts all of the operations of caching for the application
 type Cache struct {
-	redisPool *redis.Pool
+	// redisPool *redis.Pool
+	redisPool RedisPool
 	enabled   bool
 }
 
@@ -32,7 +54,7 @@ func (c *Cache) log(msg string) {
 }
 
 // Init starts the cache off
-func (c *Cache) Init(redisHost, redisPort string) {
+func (c Cache) Init(redisHost, redisPort string) {
 	redisAddr := fmt.Sprintf("%s:%s", redisHost, redisPort)
 	msg := fmt.Sprintf("Initialized Redis at %s", redisAddr)
 	c.log(msg)
@@ -40,11 +62,14 @@ func (c *Cache) Init(redisHost, redisPort string) {
 	c.redisPool = redis.NewPool(func() (redis.Conn, error) {
 		return redis.Dial("tcp", redisAddr)
 	}, maxConnections)
+}
+
+func (c *Cache) SetRedisPool(r RedisPool) {
 
 }
 
 // Clear removes all items from the cache.
-func (c *Cache) Clear() error {
+func (c Cache) Clear() error {
 	if !c.enabled {
 		return nil
 	}
@@ -57,17 +82,17 @@ func (c *Cache) Clear() error {
 	return nil
 }
 
-func boardKeys(b Board) (boardkey string, playerkey string) {
+func (c Cache) boardKeys(b Board) (boardkey string, playerkey string) {
 	boardkey = "board-" + b.ID
 	playerkey = "board-" + b.Game + "_" + b.Player.Email
 	return boardkey, playerkey
 }
 
-func gameKey(key string) string {
+func (c *Cache) gameKey(key string) string {
 	return "game-" + key
 }
 
-func gamesKey(key string) string {
+func (c *Cache) gamesKey(key string) string {
 	return "games-" + key
 }
 
@@ -89,7 +114,7 @@ func (c *Cache) SaveBoard(b Board) error {
 		return err
 	}
 
-	boardkey, playerkey := boardKeys(b)
+	boardkey, playerkey := c.boardKeys(b)
 
 	conn.Send("MULTI")
 	conn.Send("SET", boardkey, json)
@@ -134,8 +159,8 @@ func (c *Cache) DeleteBoard(board Board) error {
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
-	boardkey, playerkey := boardKeys(board)
-	gameskey := gamesKey(board.Player.Email)
+	boardkey, playerkey := c.boardKeys(board)
+	gameskey := c.gamesKey(board.Player.Email)
 
 	conn.Send("MULTI")
 
@@ -179,7 +204,7 @@ func (c *Cache) SaveGame(g Game) error {
 		return err
 	}
 
-	gamekey := gameKey(g.ID)
+	gamekey := c.gameKey(g.ID)
 
 	if _, err := conn.Do("SET", gamekey, json); err != nil {
 		return err
@@ -203,7 +228,7 @@ func (c *Cache) GetGame(key string) (Game, error) {
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
-	gamekey := gameKey(key)
+	gamekey := c.gameKey(key)
 
 	s, err := redis.String(conn.Do("GET", gamekey))
 	if err == redis.ErrNil {
@@ -234,7 +259,7 @@ func (c *Cache) SaveGamesForKey(key string, g Games) error {
 		return err
 	}
 
-	rkey := gamesKey(key)
+	rkey := c.gamesKey(key)
 
 	if _, err := conn.Do("SET", rkey, json); err != nil {
 		return err
@@ -252,7 +277,7 @@ func (c *Cache) GetGamesForKey(key string) (Games, error) {
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
-	rkey := gamesKey(key)
+	rkey := c.gamesKey(key)
 
 	s, err := redis.String(conn.Do("GET", rkey))
 	if err == redis.ErrNil {
@@ -280,8 +305,8 @@ func (c *Cache) DeleteGamesForKey(keys []string) error {
 	conn.Send("MULTI")
 
 	for _, v := range keys {
-		rkey := gamesKey(v)
-		if _, err := conn.Do("DEL", rkey); err != nil {
+		rkey := c.gamesKey(v)
+		if err := conn.Send("DEL", rkey); err != nil {
 			return err
 		}
 	}
@@ -305,7 +330,7 @@ func (c *Cache) UpdatePhrase(g Game, p Phrase) error {
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
-	gamekey := gameKey(g.ID)
+	gamekey := c.gameKey(g.ID)
 
 	gjson, err := g.JSON()
 	if err != nil {
@@ -317,7 +342,7 @@ func (c *Cache) UpdatePhrase(g Game, p Phrase) error {
 
 	for _, b := range g.Boards {
 
-		boardkey, playerkey := boardKeys(b)
+		boardkey, playerkey := c.boardKeys(b)
 
 		json, err := b.JSON()
 		if err != nil {

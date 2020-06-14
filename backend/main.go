@@ -19,7 +19,7 @@ import (
 var (
 	randseedfunc  = randomseed
 	a             Agent
-	cache         Cache
+	cache         *Cache
 	cacheEnabled  = true
 	port          = ":8080"
 	noisy         = true

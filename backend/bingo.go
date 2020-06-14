@@ -84,8 +84,7 @@ func (g *Game) Obscure(email string) {
 	}
 
 	for i, v := range g.Boards {
-		p := v.Player.Obscure(email)
-		v.Player = *p
+		v.Obscure(email)
 		g.Boards[i] = v
 	}
 }
@@ -274,6 +273,7 @@ func (m *Master) Select(ph Phrase, pl Player) Record {
 				return v
 			}
 			v.Phrase.Selected = ph.Selected
+			m.Records[i] = v
 			m.Records[i].Players.Add(pl)
 			return v
 		}
@@ -305,11 +305,10 @@ type Player struct {
 }
 
 // Obscure will replace the email, if it isn't the one input.
-func (p *Player) Obscure(email string) *Player {
+func (p *Player) Obscure(email string) {
 	if p.Email != email {
 		p.Email = "xxxxxx@xxxxxx.xxx"
 	}
-	return p
 }
 
 // JSON Returns the given Board struct as a JSON string
@@ -328,9 +327,8 @@ type Players []Player
 
 // Obscure will obscure the email of any email that isn't the email input.
 func (ps Players) Obscure(email string) {
-	for i, v := range ps {
-		p := v.Obscure(email)
-		ps[i] = *p
+	for i := range ps {
+		ps[i].Obscure(email)
 	}
 }
 
@@ -387,8 +385,7 @@ type Board struct {
 	Phrases       Phrases `json:"phrases" firestore:"-"`
 }
 
-// Obscure obscures the email of every player in the slice other than the one
-// input.
+// Obscure obscures the email of the board's player
 func (b *Board) Obscure(email string) {
 	b.Player.Obscure(email)
 }
@@ -434,14 +431,10 @@ func (b *Board) Bingo() bool {
 
 // Select records if a phrase on the board has been selected.
 func (b *Board) Select(ph Phrase) Phrase {
-	for i, v := range b.Phrases {
-		if v.ID == ph.ID {
-			v.Selected = ph.Selected
-			b.Phrases[i] = v
-			return v
-		}
-	}
-	return ph
+	v := b.Phrases[ph.ID]
+	v.Selected = ph.Selected
+	b.Phrases[ph.ID] = v
+	return v
 }
 
 // Load adds the phrases to the board and randomly orders them.
