@@ -6,6 +6,7 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -362,6 +363,16 @@ func (ps *Players) Add(p Player) {
 		}
 	}
 	*ps = append(*ps, p)
+	return
+}
+
+// Sort orders Players by email
+func (ps *Players) Sort() {
+	tmp := *ps
+	sort.Slice(tmp, func(i, j int) bool {
+		return tmp[i].Email < tmp[j].Email
+	})
+	ps = &tmp
 	return
 }
 

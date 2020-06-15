@@ -12,23 +12,6 @@ type RedisPool interface {
 	Get() redis.Conn
 }
 
-// Cacher is an interface for testing caching
-type Cacher interface {
-	Init(string, string)
-	Clear() error
-	SaveBoard(Board) error
-	GetBoard(string) (Board, error)
-	DeleteBoard(Board) error
-	SaveGame(Game) error
-	GetGame(string) (Game, error)
-	SaveGamesForKey(string, Games) error
-	GetGamesForKey(string) (Games, error)
-	DeleteGamesForKey([]string) error
-	UpdatePhrase(Game, Phrase) error
-	log(string)
-	SetRedisPool(RedisPool)
-}
-
 // ErrCacheMiss error indicates that an item is not in the cache
 var ErrCacheMiss = fmt.Errorf("item is not in cache")
 
@@ -83,9 +66,17 @@ func (c Cache) Clear() error {
 }
 
 func (c Cache) boardKeys(b Board) (boardkey string, playerkey string) {
-	boardkey = "board-" + b.ID
-	playerkey = "board-" + b.Game + "_" + b.Player.Email
+	boardkey = c.boardKeyForBoard(b.ID)
+	playerkey = c.boardKeyForPlayer(b.Game, b.Player.Email)
 	return boardkey, playerkey
+}
+
+func (c Cache) boardKeyForPlayer(gid, email string) string {
+	return "board-" + gid + "_" + email
+}
+
+func (c Cache) boardKeyForBoard(bid string) string {
+	return "board-" + bid
 }
 
 func (c *Cache) gameKey(key string) string {
@@ -127,8 +118,17 @@ func (c *Cache) SaveBoard(b Board) error {
 	return nil
 }
 
-// GetBoard retrieves an board from the cache
-func (c *Cache) GetBoard(key string) (Board, error) {
+// GetBoard retrieves an board from the cache usign board pattern
+func (c *Cache) GetBoard(bid string) (Board, error) {
+	return c.getBoardForKey(c.boardKeyForBoard(bid))
+}
+
+// GetBoardForPlayer retrieves an board from the cache using player patern
+func (c *Cache) GetBoardForPlayer(gid, email string) (Board, error) {
+	return c.getBoardForKey(c.boardKeyForPlayer(gid, email))
+}
+
+func (c *Cache) getBoardForKey(key string) (Board, error) {
 	b := Board{}
 	if !c.enabled {
 		return b, ErrCacheMiss
@@ -136,7 +136,7 @@ func (c *Cache) GetBoard(key string) (Board, error) {
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
-	s, err := redis.String(conn.Do("GET", "board-"+key))
+	s, err := redis.String(conn.Do("GET", key))
 	if err == redis.ErrNil {
 		return Board{}, ErrCacheMiss
 	} else if err != nil {
@@ -316,6 +316,30 @@ func (c *Cache) DeleteGamesForKey(keys []string) error {
 	}
 
 	c.log(fmt.Sprintf("Cleaning games for key from cache"))
+	return nil
+}
+
+// DeleteGame will remove a game from the cache completely.
+func (c *Cache) DeleteGame(game Game) error {
+	if !c.enabled {
+		return nil
+	}
+	conn := c.redisPool.Get()
+	defer conn.Close()
+
+	gamekey := c.gameKey(game.ID)
+
+	conn.Send("MULTI")
+
+	if err := conn.Send("DEL", gamekey); err != nil {
+		return err
+	}
+
+	if _, err := conn.Do("EXEC"); err != nil {
+		return err
+	}
+
+	c.log(fmt.Sprintf("Cleaning from cache %s", gamekey))
 	return nil
 }
 

@@ -118,7 +118,17 @@ func TestCacheBoard(t *testing.T) {
 		t.Errorf("Cache.GetBoard() err want %v got %s ", nil, err)
 	}
 
-	if !boardsEqual(board, boardFromCache) {
+	if !boardEquals(board, boardFromCache) {
+		t.Errorf("Cache.GetBoard() should return an unchanged board")
+	}
+
+	boardFromCacheForPlayer, err := cache.GetBoardForPlayer(board.Game, board.Player.Email)
+
+	if err != nil {
+		t.Errorf("Cache.GetBoard() err want %v got %s ", nil, err)
+	}
+
+	if !boardEquals(board, boardFromCacheForPlayer) {
 		t.Errorf("Cache.GetBoard() err want %+v got %+v ", board, boardFromCache)
 	}
 
@@ -130,10 +140,169 @@ func TestCacheBoard(t *testing.T) {
 	if err != ErrCacheMiss {
 		t.Errorf("Cache.GetBoard() post delete err want %v got %v ", nil, boardFromCachePostDelete)
 	}
+}
+
+func TestClearCache(t *testing.T) {
+	board := getTestBoard()
+	player := Player{}
+	player.Email = "test@example.com"
+	board.Player = player
+	game := NewGame("test game", player, getTestPhrases())
+
+	cacheTestSetup()
+
+	if err := cache.SaveBoard(board); err != nil {
+		t.Errorf("Cache.SaveBoard() err want %v got %s ", nil, err)
+	}
+
+	if err := cache.SaveGame(game); err != nil {
+		t.Errorf("Cache.SaveGame() err want %v got %s ", nil, err)
+	}
+
+	if err := cache.Clear(); err != nil {
+		t.Errorf("Cache.Clear() err want %v got %s ", nil, err)
+	}
+
+	boardFromCachePostClear, err := cache.GetBoard(board.ID)
+	if err != ErrCacheMiss {
+		t.Errorf("Cache.GetBoard() post delete err want %v got %v ", nil, boardFromCachePostClear)
+	}
+
+	gameFromCachePostDelete, err := cache.GetGame(game.ID)
+	if err != ErrCacheMiss {
+		t.Errorf("Cache.GetBoard() post delete err want %v got %v ", nil, gameFromCachePostDelete)
+	}
+}
+
+func TestUpdatePhrase(t *testing.T) {
+	player := Player{}
+	player.Email = "test@example.com"
+	game := NewGame("test game", player, getTestPhrases())
+	phrase := getTestPhrases()[0]
+	phrase.Text = "Totally new text"
+	board := game.NewBoard(player)
+
+	cacheTestSetup()
+
+	if err := cache.SaveBoard(board); err != nil {
+		t.Errorf("Cache.SaveBoard() err want %v got %s ", nil, err)
+	}
+
+	if err := cache.SaveGame(game); err != nil {
+		t.Errorf("Cache.SaveGame() err want %v got %s ", nil, err)
+	}
+
+	game.UpdatePhrase(phrase)
+
+	if err := cache.UpdatePhrase(game, phrase); err != nil {
+		t.Errorf("Cache.UpdatePhrase() err want %v got %s ", nil, err)
+	}
+
+	gameFromCache, err := cache.GetGame(game.ID)
+	if err != nil {
+		t.Errorf("Cache.GetGame() err want %v got %s ", nil, err)
+	}
+
+	boardFromCache, err := cache.GetBoard(board.ID)
+	if err != nil {
+		t.Errorf("Cache.GetBoard() err want %v got %s ", nil, err)
+	}
+
+	boardFromCacheForPlayer, err := cache.GetBoardForPlayer(board.Game, board.Player.Email)
+	if err != nil {
+		t.Errorf("Cache.GetBoard() err want %v got %s ", nil, err)
+	}
+
+	_, record := gameFromCache.FindRecord(phrase)
+	if record.Phrase.Text != phrase.Text {
+		t.Errorf("Cache.UpdatePhrase() game master phrase text want %s got %s ", phrase.Text, record.Phrase.Text)
+	}
+
+	for _, v := range gameFromCache.Boards {
+		if v.Phrases[phrase.ID].Text != phrase.Text {
+			t.Errorf("Cache.UpdatePhrase() game baords phrase text want %s got %s ", phrase.Text, v.Phrases[phrase.ID].Text)
+		}
+	}
+
+	if boardFromCache.Phrases[phrase.ID].Text != phrase.Text {
+		t.Errorf("Cache.UpdatePhrase() boardFromCache phrase text want %s got %s ", phrase.Text, boardFromCache.Phrases[phrase.ID].Text)
+	}
+
+	if boardFromCacheForPlayer.Phrases[phrase.ID].Text != phrase.Text {
+		t.Errorf("Cache.UpdatePhrase() boardFromCacheForPlayer phrase text want %s got %s ", phrase.Text, boardFromCacheForPlayer.Phrases[phrase.ID].Text)
+	}
 
 }
 
-func boardsEqual(b1, b2 Board) bool {
+func TestCacheGame(t *testing.T) {
+	player := Player{}
+	player.Email = "test@example.com"
+	game := NewGame("test game", player, getTestPhrases())
+
+	cacheTestSetup()
+
+	if err := cache.SaveGame(game); err != nil {
+		t.Errorf("Cache.SaveGame() err want %v got %s ", nil, err)
+	}
+
+	gameFromCache, err := cache.GetGame(game.ID)
+
+	if err != nil {
+		t.Errorf("Cache.GetGame() err want %v got %s ", nil, err)
+	}
+
+	if !gameEquals(game, gameFromCache) {
+		t.Errorf("Cache.GetGame() should return an unchanged game")
+	}
+
+	if err := cache.DeleteGame(game); err != nil {
+		t.Errorf("Cache.DeleteGame() err want %v got %s ", nil, err)
+	}
+
+	gameFromCachePostDelete, err := cache.GetGame(game.ID)
+	if err != ErrCacheMiss {
+		t.Errorf("Cache.GetBoard() post delete err want %v got %v ", nil, gameFromCachePostDelete)
+	}
+}
+
+func TestCacheGames(t *testing.T) {
+	player := Player{}
+	player.Email = "test@example.com"
+	game1 := NewGame("test game", player, getTestPhrases())
+	game2 := NewGame("test game2", player, getTestPhrases())
+
+	games := Games{}
+	games = append(games, game1)
+	games = append(games, game2)
+	key := "uniqueid"
+
+	cacheTestSetup()
+
+	if err := cache.SaveGamesForKey(key, games); err != nil {
+		t.Errorf("Cache.SaveGamesForKey() err want %v got %s ", nil, err)
+	}
+
+	gamesFromCache, err := cache.GetGamesForKey(key)
+
+	if err != nil {
+		t.Errorf("Cache.GetGamesForKey() err want %v got %s ", nil, err)
+	}
+
+	if !gamesEquals(games, gamesFromCache) {
+		t.Errorf("Cache.GetGames() should return an unchanged set of games")
+	}
+
+	if err := cache.DeleteGamesForKey([]string{key}); err != nil {
+		t.Errorf("Cache.DeleteGamesForKey() err want %v got %s ", nil, err)
+	}
+
+	gamesFromCachePostDelete, err := cache.GetGamesForKey(key)
+	if err != ErrCacheMiss {
+		t.Errorf("Cache.GetGamesForKey() post delete err want %v got %v ", nil, gamesFromCachePostDelete)
+	}
+}
+
+func boardEquals(b1, b2 Board) bool {
 	if b1.ID != b2.ID {
 		return false
 	}
@@ -151,26 +320,124 @@ func boardsEqual(b1, b2 Board) bool {
 	}
 
 	for i, v := range b1.Phrases {
-		if v.ID != b2.Phrases[i].ID {
+		if !phraseEquals(v, b2.Phrases[i]) {
 			return false
 		}
 
-		if v.Text != b2.Phrases[i].Text {
+	}
+	return true
+}
+
+func gameEquals(g1, g2 Game) bool {
+
+	if g1.ID != g2.ID {
+		return false
+	}
+
+	if g1.Active != g2.Active {
+		return false
+	}
+
+	if g1.Name != g2.Name {
+		return false
+	}
+
+	if g1.Created.Round(0) != g2.Created.Round(0) {
+		return false
+	}
+
+	for i, v := range g1.Boards {
+		if !boardEquals(v, g2.Boards[i]) {
 			return false
 		}
+	}
 
-		if v.Column != b2.Phrases[i].Column {
+	if !playersEquals(g1.Admins, g2.Admins) {
+		return false
+	}
+
+	if !playersEquals(g1.Players, g2.Players) {
+		return false
+	}
+
+	return true
+}
+
+func gamesEquals(gs1, gs2 Games) bool {
+	for i, v := range gs1 {
+		if !gameEquals(v, gs2[i]) {
 			return false
 		}
+	}
+	return true
+}
 
-		if v.Row != b2.Phrases[i].Row {
+func playersEquals(pl1, pl2 Players) bool {
+	pl1.Sort()
+	pl2.Sort()
+
+	for i, v := range pl1 {
+		if !playerEquals(v, pl2[i]) {
 			return false
 		}
+	}
+	return true
+}
 
-		if v.DisplayOrder != b2.Phrases[i].DisplayOrder {
+func playerEquals(p1, p2 Player) bool {
+	if p1.Email != p2.Email {
+		return false
+	}
+	if p1.Name != p2.Name {
+		return false
+	}
+
+	return true
+}
+
+func phraseEquals(p1, p2 Phrase) bool {
+	if p1.ID != p2.ID {
+		return false
+	}
+
+	if p1.Text != p2.Text {
+		return false
+	}
+
+	if p1.Column != p2.Column {
+		return false
+	}
+
+	if p1.Row != p2.Row {
+		return false
+	}
+
+	if p1.DisplayOrder != p2.DisplayOrder {
+		return false
+	}
+
+	return true
+}
+
+func masterEquals(m1, m2 Master) bool {
+	for i, v := range m1.Records {
+		if !recordEquals(v, m2.Records[i]) {
 			return false
 		}
+	}
+	return true
+}
 
+func recordEquals(r1, r2 Record) bool {
+	if r1.ID != r2.ID {
+		return false
+	}
+	if !playersEquals(r1.Players, r2.Players) {
+		return false
+	}
+
+	if !phraseEquals(r1.Phrase, r2.Phrase) {
+		return false
 	}
 
 	return true

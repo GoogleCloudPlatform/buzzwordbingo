@@ -7,7 +7,7 @@ func getBoardForPlayer(p Player, g Game) (Board, error) {
 	b := Board{}
 	messages := []Message{}
 	weblog("Trying Cache")
-	b, err = cache.GetBoard(g.ID + "_" + p.Email)
+	b, err = cache.GetBoardForPlayer(g.ID, p.Email)
 	if err != nil {
 		if err == ErrCacheMiss {
 			weblog("Cache Empty trying DB")
@@ -354,7 +354,6 @@ func updateGamePhrases(gameID string, phrase Phrase) error {
 			bingos[v.ID] = v
 		}
 	}
-	fmt.Printf("Bingos!!!!!!!!!!!! %+v\n", bingos)
 
 	g.UpdatePhrase(phrase)
 
