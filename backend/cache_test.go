@@ -1,6 +1,7 @@
 package main
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/gomodule/redigo/redis"
@@ -106,8 +107,6 @@ func TestCacheBoard(t *testing.T) {
 	player.Email = "test@example.com"
 	board.Player = player
 
-	cacheTestSetup()
-
 	if err := cache.SaveBoard(board); err != nil {
 		t.Errorf("Cache.SaveBoard() err want %v got %s ", nil, err)
 	}
@@ -149,8 +148,6 @@ func TestClearCache(t *testing.T) {
 	board.Player = player
 	game := NewGame("test game", player, getTestPhrases())
 
-	cacheTestSetup()
-
 	if err := cache.SaveBoard(board); err != nil {
 		t.Errorf("Cache.SaveBoard() err want %v got %s ", nil, err)
 	}
@@ -181,8 +178,6 @@ func TestUpdatePhrase(t *testing.T) {
 	phrase := getTestPhrases()[0]
 	phrase.Text = "Totally new text"
 	board := game.NewBoard(player)
-
-	cacheTestSetup()
 
 	if err := cache.SaveBoard(board); err != nil {
 		t.Errorf("Cache.SaveBoard() err want %v got %s ", nil, err)
@@ -239,8 +234,6 @@ func TestCacheGame(t *testing.T) {
 	player.Email = "test@example.com"
 	game := NewGame("test game", player, getTestPhrases())
 
-	cacheTestSetup()
-
 	if err := cache.SaveGame(game); err != nil {
 		t.Errorf("Cache.SaveGame() err want %v got %s ", nil, err)
 	}
@@ -275,8 +268,6 @@ func TestCacheGames(t *testing.T) {
 	games = append(games, game1)
 	games = append(games, game2)
 	key := "uniqueid"
-
-	cacheTestSetup()
 
 	if err := cache.SaveGamesForKey(key, games); err != nil {
 		t.Errorf("Cache.SaveGamesForKey() err want %v got %s ", nil, err)
@@ -342,7 +333,7 @@ func gameEquals(g1, g2 Game) bool {
 		return false
 	}
 
-	if g1.Created.Round(0) != g2.Created.Round(0) {
+	if g1.Created.Unix() != g2.Created.Unix() {
 		return false
 	}
 
@@ -416,6 +407,36 @@ func phraseEquals(p1, p2 Phrase) bool {
 		return false
 	}
 
+	return true
+}
+
+func phrasesEquals(ps1, ps2 []Phrase) bool {
+	for i, v := range ps1 {
+		if !phraseEquals(v, ps2[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func masterPhrasesEquals(ps1, ps2 []Phrase) bool {
+	sort.Slice(ps1, func(i, j int) bool {
+		return ps1[i].ID < ps1[j].ID
+	})
+
+	sort.Slice(ps2, func(i, j int) bool {
+		return ps2[i].ID < ps2[j].ID
+	})
+
+	for i, v := range ps1 {
+		if v.ID != ps2[i].ID {
+			return false
+		}
+
+		if v.Text != ps2[i].Text {
+			return false
+		}
+	}
 	return true
 }
 

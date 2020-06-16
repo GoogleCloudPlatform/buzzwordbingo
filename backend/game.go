@@ -61,6 +61,62 @@ func getBoardForPlayer(p Player, g Game) (Board, error) {
 	return b, nil
 }
 
+func getBoard(bid string, gid string) (Board, error) {
+
+	b, err := cache.GetBoard(bid)
+	if err != nil {
+		if err == ErrCacheMiss {
+			b, err = a.GetBoard(bid, gid)
+			if err != nil {
+				return b, fmt.Errorf("error getting board: %v", err)
+			}
+		}
+		if err := cache.SaveBoard(b); err != nil {
+			return b, fmt.Errorf("error caching board : %v", err)
+		}
+	}
+
+	return b, nil
+}
+
+func deleteBoard(bid, gid string) error {
+	b, err := getBoard(bid, gid)
+	if err != nil {
+		return fmt.Errorf("could not retrieve board from firestore: %s", err)
+	}
+
+	game, err := getGame(b.Game)
+	if err != nil {
+		return fmt.Errorf("failed to get active game to delete board: %v", err)
+	}
+
+	game.DeleteBoard(b)
+
+	if err := a.DeleteBoard(b, game); err != nil {
+		return fmt.Errorf("could not delete board from firestore: %s", err)
+	}
+	if err := cache.DeleteBoard(b); err != nil {
+		return fmt.Errorf("could not delete board from cache: %s", err)
+	}
+
+	if err := cache.SaveGame(game); err != nil {
+		return fmt.Errorf("could not reset game in cache: %s", err)
+	}
+
+	messages := []Message{}
+	m := Message{}
+	m.SetText("Your game is being reset")
+	m.SetAudience(b.Player.Email)
+	m.Operation = "reset"
+	messages = append(messages, m)
+
+	if err := a.AddMessagesToGame(game, messages); err != nil {
+		return fmt.Errorf("could not send message to delete board: %s", err)
+	}
+
+	return nil
+}
+
 func generateBingoMessages(b Board, g Game, first bool) []Message {
 
 	messages := []Message{}
@@ -134,62 +190,6 @@ func getGamesForKey(key string) (Games, error) {
 	}
 
 	return g, nil
-}
-
-func getBoard(bid string, gid string) (Board, error) {
-
-	b, err := cache.GetBoard(bid)
-	if err != nil {
-		if err == ErrCacheMiss {
-			b, err = a.GetBoard(bid, gid)
-			if err != nil {
-				return b, fmt.Errorf("error getting board: %v", err)
-			}
-		}
-		if err := cache.SaveBoard(b); err != nil {
-			return b, fmt.Errorf("error caching board : %v", err)
-		}
-	}
-
-	return b, nil
-}
-
-func deleteBoard(bid, gid string) error {
-	b, err := getBoard(bid, gid)
-	if err != nil {
-		return fmt.Errorf("could not retrieve board from firestore: %s", err)
-	}
-
-	game, err := getGame(b.Game)
-	if err != nil {
-		return fmt.Errorf("failed to get active game to delete board: %v", err)
-	}
-
-	game.DeleteBoard(b)
-
-	if err := a.DeleteBoard(b, game); err != nil {
-		return fmt.Errorf("could not delete board from firestore: %s", err)
-	}
-	if err := cache.DeleteBoard(b); err != nil {
-		return fmt.Errorf("could not delete board from cache: %s", err)
-	}
-
-	if err := cache.SaveGame(game); err != nil {
-		return fmt.Errorf("could not reset game in cache: %s", err)
-	}
-
-	messages := []Message{}
-	m := Message{}
-	m.SetText("Your game is being reset")
-	m.SetAudience(b.Player.Email)
-	m.Operation = "reset"
-	messages = append(messages, m)
-
-	if err := a.AddMessagesToGame(game, messages); err != nil {
-		return fmt.Errorf("could not send message to delete board: %s", err)
-	}
-
-	return nil
 }
 
 func getNewGame(name string, p Player) (Game, error) {
