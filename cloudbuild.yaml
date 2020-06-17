@@ -25,6 +25,13 @@ steps:
     - name: 'gcr.io/$PROJECT_ID/ng:latest'
       args: ["build", "--prod"]
       dir: "frontend"
+    - name: 'golang'
+      args: ["go", "mod", "vendor"]
+      dir: "backend"  
+    - name: 'gcr.io/$PROJECT_ID/gotester:latest'
+      args: [test"]
+      dir: "backend"
+      entrypoint: "/go"  
     - name: gcr.io/cloud-builders/gcloud
       args: ['app', 'deploy', '-q']
       dir: "backend"

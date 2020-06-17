@@ -26,7 +26,7 @@ func newFirestoreTestClient(ctx context.Context) *firestore.Client {
 
 func TestMain(m *testing.M) {
 	// command to start firestore emulator
-	cmd := exec.Command("gcloud", "beta", "emulators", "firestore", "start", fmt.Sprintf("--host-port=localhost:%d", 8181))
+	cmd := exec.Command("gcloud", "beta", "emulators", "firestore", "start", fmt.Sprintf("--host-port=localhost:%d", 8181), "--quiet")
 
 	// this makes it killable
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}

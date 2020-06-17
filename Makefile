@@ -20,7 +20,8 @@ frontend: clean
 deploy: env frontend
 	cd backend && gcloud app deploy -q
 
-
+build:
+	gcloud builds submit --config cloudbuild.yaml --timeout=1200s . 
 
 init:
 	cd frontend && npm install
@@ -123,3 +124,7 @@ savecreds: env
 	-gsutil cp $(BASEDIR)/frontend/src/environments/environment.ts gs://$(PROJECT)_creds/environment.ts
 	-gsutil cp $(BASEDIR)/frontend/src/environments/environment.prod.ts gs://$(PROJECT)_creds/environment.prod.ts
 	-gsutil cp $(BASEDIR)/backend/app.yaml gs://$(PROJECT)_creds/app.yaml
+
+builders:
+	cd builders/gotester && make build
+	cd builders/ng && make build	
