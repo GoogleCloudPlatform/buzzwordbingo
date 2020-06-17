@@ -21,7 +21,10 @@ deploy: env frontend
 	cd backend && gcloud app deploy -q
 
 build:
-	gcloud builds submit --config cloudbuild.yaml --timeout=1200s . 
+	gcloud builds submit --config cloudbuild.yaml --timeout=1200s --machine-type=n1-highcpu-8 . 	
+
+test:
+	gcloud builds submit --config cloudbuild.test.yaml --timeout=1200s --machine-type=n1-highcpu-8 . 	
 
 init:
 	cd frontend && npm install

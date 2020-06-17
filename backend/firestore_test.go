@@ -95,6 +95,7 @@ func TestMain(m *testing.M) {
 
 	agentTestSetup()
 	cacheTestSetup()
+	noisy = false
 
 	// now it's running, we can run our unit tests
 	result = m.Run()

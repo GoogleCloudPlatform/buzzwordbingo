@@ -18,8 +18,9 @@ var ErrCacheMiss = fmt.Errorf("item is not in cache")
 // NewCache returns an initialized cache ready to go.
 func NewCache(redisHost, redisPort string, enabled bool) (*Cache, error) {
 	c := &Cache{}
-	c.Init(redisHost, redisPort)
+	pool := c.InitPool(redisHost, redisPort)
 	c.enabled = enabled
+	c.redisPool = pool
 	return c, nil
 }
 
@@ -37,14 +38,17 @@ func (c *Cache) log(msg string) {
 }
 
 // Init starts the cache off
-func (c Cache) Init(redisHost, redisPort string) {
+func (c Cache) InitPool(redisHost, redisPort string) RedisPool {
 	redisAddr := fmt.Sprintf("%s:%s", redisHost, redisPort)
 	msg := fmt.Sprintf("Initialized Redis at %s", redisAddr)
 	c.log(msg)
 	const maxConnections = 10
-	c.redisPool = redis.NewPool(func() (redis.Conn, error) {
+
+	pool := redis.NewPool(func() (redis.Conn, error) {
 		return redis.Dial("tcp", redisAddr)
 	}, maxConnections)
+
+	return pool
 }
 
 func (c *Cache) SetRedisPool(r RedisPool) {
@@ -274,6 +278,7 @@ func (c *Cache) GetGamesForKey(key string) (Games, error) {
 	if !c.enabled {
 		return g, ErrCacheMiss
 	}
+
 	conn := c.redisPool.Get()
 	defer conn.Close()
 

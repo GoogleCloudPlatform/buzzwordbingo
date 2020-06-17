@@ -1,4 +1,4 @@
-FROM golang:stretch
+FROM gcr.io/cloud-builders/go:debian
 RUN apt-get update && apt-get -y upgrade && apt-get install wget default-jre default-jdk  -y 
 RUN curl https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz > /tmp/google-cloud-sdk.tar.gz
 RUN mkdir -p /usr/local/gcloud \

@@ -29,9 +29,13 @@ steps:
       args: ["go", "mod", "vendor"]
       dir: "backend"  
     - name: 'gcr.io/$PROJECT_ID/gotester:latest'
-      args: [test"]
+      env: ['PROJECT_ROOT=/workspace/backend', 'FIRESTORE_EMULATOR_HOST=localhost:8181']
+      args: ["test", "-v", "-timeout", "20m"]
       dir: "backend"
-      entrypoint: "/go"  
+    - name: 'debian'
+      args: ["rm", "-rf", "/workspace/backend/gopath/"]
+      dir: "backend"  
     - name: gcr.io/cloud-builders/gcloud
       args: ['app', 'deploy', '-q']
       dir: "backend"
+timeout: 1500s      

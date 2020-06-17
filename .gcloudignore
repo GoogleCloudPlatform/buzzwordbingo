@@ -28,3 +28,4 @@ creds
 builder
 temp
 vendorfix
+backend/gopath
