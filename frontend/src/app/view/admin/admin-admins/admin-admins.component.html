@@ -3,7 +3,7 @@
 <app-progressspinner class="spinner"></app-progressspinner>
 <div class="admin-item" *ngFor="let admin of admins | async" >
     <input  readonly  [value]="admin.email">
-    <button [id]="admin.email" (click)="onAdminRemove($event)"><i class="material-icons">remove</i></button>
+    <button [id]="admin.email" (click)="onAdminRemove($event, admin.email)"><i class="material-icons">remove</i></button>
 </div>
 
 <form> 

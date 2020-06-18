@@ -29,14 +29,11 @@ export class AdminAdminsComponent implements OnInit {
 
   onAdminAdd(email:string){
     this.gameService.addAdmin(email).subscribe(val=>{this.refreshAdmins()});
-    
   }
 
-  onAdminRemove($event){
+  onAdminRemove($event, email:string ){
     $event.target.parentElement.style.display = 'none';
-    this.gameService.removeAdmin($event.target.id).subscribe(val=>{$event.target.parentElement.style.display = 'none'; this.refreshAdmins();});
-    
-    
+    this.gameService.removeAdmin(email).subscribe(val=>{$event.target.parentElement.style.display = 'none'; this.refreshAdmins();});
   }
 
 }
