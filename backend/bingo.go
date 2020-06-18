@@ -60,16 +60,16 @@ type Game struct {
 }
 
 // NewGame initializes a new game object
-func NewGame(name string, p Player, ph []Phrase) Game {
+func NewGame(name string, player Player, phrases []Phrase) Game {
 	g := Game{}
 	g.ID = uniqueID()
 	g.Name = name
 	g.Active = true
 	g.Created = time.Now()
 	g.Boards = make(map[string]Board)
-	g.Admins.Add(p)
-	g.Players.Add(p)
-	g.Master.Load(ph)
+	g.Admins.Add(player)
+	g.Players.Add(player)
+	g.Master.Load(phrases)
 
 	return g
 }
@@ -91,14 +91,14 @@ func (g *Game) Obscure(email string) {
 }
 
 // NewBoard creates a new board for a user.
-func (g *Game) NewBoard(p Player) Board {
+func (g *Game) NewBoard(player Player) Board {
 	b := InitBoard()
 	b.log("Creating new board ")
 	b.ID = uniqueID()
 	b.Game = g.ID
-	b.Player = p
+	b.Player = player
 	b.Load(g.Master.Phrases())
-	g.Players.Add(p)
+	g.Players.Add(player)
 	g.Boards[b.ID] = b
 
 	return b
@@ -112,23 +112,23 @@ func InitBoard() Board {
 }
 
 // UpdatePhrase will change a given phrase in the master record of phrases.
-func (g *Game) UpdatePhrase(p Phrase) {
-	i, r := g.FindRecord(p)
-	p.Selected = false
-	r.Phrase = p
+func (g *Game) UpdatePhrase(phrase Phrase) {
+	i, r := g.FindRecord(phrase)
+	phrase.Selected = false
+	r.Phrase = phrase
 	r.Players = Players{}
 	g.Master.Records[i] = r
 
 	for _, b := range g.Boards {
-		b.UpdatePhrase(p)
+		b.UpdatePhrase(phrase)
 	}
 
 }
 
 // DeleteBoard removes a board from the game.
-func (g *Game) DeleteBoard(b Board) {
-	g.Master.RemovePlayer(b.Player)
-	delete(g.Boards, b.ID)
+func (g *Game) DeleteBoard(board Board) {
+	g.Master.RemovePlayer(board.Player)
+	delete(g.Boards, board.ID)
 }
 
 // Games is a collection of game objects.
@@ -174,12 +174,12 @@ func (r Reports) IsDubious() bool {
 }
 
 // CheckBoard checks a particular board against the master records
-func (g *Game) CheckBoard(b Board) Reports {
+func (g *Game) CheckBoard(board Board) Reports {
 
 	results := Reports{}
 	total := len(g.Players)
 
-	for _, v := range b.Phrases {
+	for _, v := range board.Phrases {
 		if v.Selected && v.Text != "FREE" {
 
 			_, record := g.FindRecord(v)
@@ -196,9 +196,9 @@ func (g *Game) CheckBoard(b Board) Reports {
 }
 
 // FindRecord retrieves the report of a particular phrase
-func (g Game) FindRecord(p Phrase) (int, Record) {
+func (g Game) FindRecord(phrase Phrase) (int, Record) {
 	for i, v := range g.Master.Records {
-		if v.Phrase.ID == p.ID {
+		if v.Phrase.ID == phrase.ID {
 			return i, v
 		}
 	}
@@ -206,20 +206,20 @@ func (g Game) FindRecord(p Phrase) (int, Record) {
 }
 
 // IsAdmin determines if a player is an admin for the game.
-func (g *Game) IsAdmin(p Player) bool {
-	return g.Admins.IsMember(p)
+func (g *Game) IsAdmin(player Player) bool {
+	return g.Admins.IsMember(player)
 }
 
 // Select marks a phrase as selected by one or more players
-func (g *Game) Select(ph Phrase, pl Player) Record {
+func (g *Game) Select(phrase Phrase, player Player) Record {
 
 	for _, v := range g.Boards {
-		if v.Player.Email == pl.Email {
-			v.Select(ph)
+		if v.Player.Email == player.Email {
+			v.Select(phrase)
 		}
 	}
 
-	return g.Master.Select(ph, pl)
+	return g.Master.Select(phrase, player)
 }
 
 // JSON marshalls the content of a game to json.
@@ -240,8 +240,8 @@ type Master struct {
 }
 
 // Load adds the master list of phrases to the game.
-func (m *Master) Load(p []Phrase) {
-	for _, v := range p {
+func (m *Master) Load(phrases []Phrase) {
+	for _, v := range phrases {
 		r := Record{}
 		r.ID = v.ID
 		r.Phrase = v
@@ -259,23 +259,23 @@ func (m Master) Phrases() []Phrase {
 }
 
 // Select marks a phrase as selected by one or more players
-func (m *Master) Select(ph Phrase, pl Player) Record {
+func (m *Master) Select(phrase Phrase, player Player) Record {
 	r := Record{}
 	for i, v := range m.Records {
 
-		if v.Phrase.ID == ph.ID {
-			if v.Players.IsMember(pl) {
-				v.Players.Remove(pl)
+		if v.Phrase.ID == phrase.ID {
+			if v.Players.IsMember(player) {
+				v.Players.Remove(player)
 
-				if !ph.Selected {
+				if !phrase.Selected {
 					v.Phrase.Selected = false
 				}
 				m.Records[i] = v
 				return v
 			}
-			v.Phrase.Selected = ph.Selected
+			v.Phrase.Selected = phrase.Selected
 			m.Records[i] = v
-			m.Records[i].Players.Add(pl)
+			m.Records[i].Players.Add(player)
 			return v
 		}
 	}
@@ -283,9 +283,9 @@ func (m *Master) Select(ph Phrase, pl Player) Record {
 }
 
 // RemovePlayer removes a selected player's selection from the master list.
-func (m *Master) RemovePlayer(pl Player) {
+func (m *Master) RemovePlayer(player Player) {
 	for i := range m.Records {
-		m.Records[i].Players.Remove(pl)
+		m.Records[i].Players.Remove(player)
 		if len(m.Records[i].Players) == 0 {
 			m.Records[i].Phrase.Selected = false
 		}
@@ -334,9 +334,9 @@ func (ps Players) Obscure(email string) {
 }
 
 // IsMember checks to see if a player is in the collection already
-func (ps Players) IsMember(p Player) bool {
+func (ps Players) IsMember(player Player) bool {
 	for _, v := range ps {
-		if v.Email == p.Email {
+		if v.Email == player.Email {
 			return true
 		}
 	}
@@ -344,10 +344,10 @@ func (ps Players) IsMember(p Player) bool {
 }
 
 // Remove removes a particular player from the list.
-func (ps *Players) Remove(p Player) {
+func (ps *Players) Remove(player Player) {
 	new := Players{}
 	for _, v := range *ps {
-		if v.Email != p.Email {
+		if v.Email != player.Email {
 			new = append(new, v)
 		}
 	}
@@ -356,13 +356,13 @@ func (ps *Players) Remove(p Player) {
 }
 
 // Add adds a particular player from the list.
-func (ps *Players) Add(p Player) {
+func (ps *Players) Add(player Player) {
 	for _, v := range *ps {
-		if p.Email == v.Email {
+		if player.Email == v.Email {
 			return
 		}
 	}
-	*ps = append(*ps, p)
+	*ps = append(*ps, player)
 	return
 }
 
@@ -441,10 +441,10 @@ func (b *Board) Bingo() bool {
 }
 
 // Select records if a phrase on the board has been selected.
-func (b *Board) Select(ph Phrase) Phrase {
-	v := b.Phrases[ph.ID]
-	v.Selected = ph.Selected
-	b.Phrases[ph.ID] = v
+func (b *Board) Select(phrase Phrase) Phrase {
+	v := b.Phrases[phrase.ID]
+	v.Selected = phrase.Selected
+	b.Phrases[phrase.ID] = v
 	return v
 }
 
@@ -478,12 +478,12 @@ func (b *Board) Load(p []Phrase) {
 }
 
 // UpdatePhrase change the text of a given phrases.
-func (b *Board) UpdatePhrase(p Phrase) {
+func (b *Board) UpdatePhrase(phrase Phrase) {
 
-	v := b.Phrases[p.ID]
-	v.Text = p.Text
+	v := b.Phrases[phrase.ID]
+	v.Text = phrase.Text
 	v.Selected = false
-	b.Phrases[p.ID] = v
+	b.Phrases[phrase.ID] = v
 
 	return
 }

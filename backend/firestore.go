@@ -61,16 +61,16 @@ func (a *Agent) IsAdmin(email string) (bool, error) {
 }
 
 // AddAdmin adds an admin to the over all system
-func (a *Agent) AddAdmin(p Player) error {
-	if _, err := a.client.Collection("admins").Doc(p.Email).Set(ctx, p); err != nil {
+func (a *Agent) AddAdmin(player Player) error {
+	if _, err := a.client.Collection("admins").Doc(player.Email).Set(ctx, player); err != nil {
 		return fmt.Errorf("unable to add admin: %s", err)
 	}
 	return nil
 }
 
 // DeleteAdmin Deletes an admin to the over all system
-func (a *Agent) DeleteAdmin(p Player) error {
-	if _, err := a.client.Collection("admins").Doc(p.Email).Delete(ctx); err != nil {
+func (a *Agent) DeleteAdmin(player Player) error {
+	if _, err := a.client.Collection("admins").Doc(player.Email).Delete(ctx); err != nil {
 		return fmt.Errorf("unable to delete admin: %s", err)
 	}
 	return nil
@@ -147,9 +147,9 @@ func (a *Agent) LoadPhrases(phrases []Phrase) error {
 }
 
 // UpdateMasterPhrase updates a phrase in the master collection of phrases
-func (a *Agent) UpdateMasterPhrase(p Phrase) error {
+func (a *Agent) UpdateMasterPhrase(phrase Phrase) error {
 
-	if _, err := a.client.Collection("phrases").Doc(p.ID).Set(a.ctx, p); err != nil {
+	if _, err := a.client.Collection("phrases").Doc(phrase.ID).Set(a.ctx, phrase); err != nil {
 		return fmt.Errorf("failed to update phrase: %v", err)
 	}
 
@@ -161,14 +161,14 @@ func (a *Agent) UpdateMasterPhrase(p Phrase) error {
 ////////////////////////////////////////////////////////////////////////////////
 
 // NewGame will create a new game in the database and initialize it.
-func (a *Agent) NewGame(name string, p Player) (Game, error) {
+func (a *Agent) NewGame(name string, player Player) (Game, error) {
 
 	phrases, err := a.GetPhrases()
 	if err != nil {
 		return Game{}, fmt.Errorf("failed to get phrases: %v", err)
 	}
 
-	g := NewGame(name, p, phrases)
+	g := NewGame(name, player, phrases)
 
 	batch := a.client.Batch()
 	a.log(fmt.Sprintf("Creating new game, id: %s", g.ID))
@@ -176,11 +176,11 @@ func (a *Agent) NewGame(name string, p Player) (Game, error) {
 	gref := a.client.Collection("games").Doc(g.ID)
 	batch.Set(gref, g)
 
-	aref := a.client.Collection("games").Doc(g.ID).Collection("admins").Doc(p.Email)
-	batch.Set(aref, p)
+	aref := a.client.Collection("games").Doc(g.ID).Collection("admins").Doc(player.Email)
+	batch.Set(aref, player)
 
-	pref := a.client.Collection("games").Doc(g.ID).Collection("players").Doc(p.Email)
-	batch.Set(pref, p)
+	pref := a.client.Collection("games").Doc(g.ID).Collection("players").Doc(player.Email)
+	batch.Set(pref, player)
 
 	a.log("Adding phrases to new game")
 	for _, v := range g.Master.Records {
@@ -239,18 +239,18 @@ func (a *Agent) GetGames() (Games, error) {
 }
 
 // GetGame gets a given game from the database
-func (a *Agent) GetGame(id string) (Game, error) {
+func (a *Agent) GetGame(gid string) (Game, error) {
 	g := Game{}
 	g.Boards = map[string]Board{}
 
 	a.log("Getting existing game")
-	doc, err := a.client.Collection("games").Doc(id).Get(a.ctx)
+	doc, err := a.client.Collection("games").Doc(gid).Get(a.ctx)
 	if err != nil {
 		return g, fmt.Errorf("failed to get game: %v", err)
 	}
 
 	doc.DataTo(&g)
-	g.ID = id
+	g.ID = gid
 	g, err = a.loadGameWithRecords(g)
 	if err != nil {
 		return g, fmt.Errorf("failed to load records for game: %v", err)
@@ -274,125 +274,125 @@ func (a *Agent) GetGame(id string) (Game, error) {
 	return g, nil
 }
 
-func (a *Agent) loadGameWithRecords(g Game) (Game, error) {
+func (a *Agent) loadGameWithRecords(game Game) (Game, error) {
 
 	a.log("Loading records from game")
-	iter := a.client.Collection("games").Doc(g.ID).Collection("records").Documents(a.ctx)
+	iter := a.client.Collection("games").Doc(game.ID).Collection("records").Documents(a.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
 			break
 		}
 		if err != nil {
-			return g, fmt.Errorf("failed getting game records: %v", err)
+			return game, fmt.Errorf("failed getting game records: %v", err)
 		}
 		r := Record{}
 		doc.DataTo(&r)
-		g.Master.Records = append(g.Master.Records, r)
+		game.Master.Records = append(game.Master.Records, r)
 	}
 
-	return g, nil
+	return game, nil
 }
 
-func (a *Agent) loadGameWithPlayers(g Game) (Game, error) {
+func (a *Agent) loadGameWithPlayers(game Game) (Game, error) {
 
 	a.log("Loading players from game")
-	iter := a.client.Collection("games").Doc(g.ID).Collection("players").Documents(a.ctx)
+	iter := a.client.Collection("games").Doc(game.ID).Collection("players").Documents(a.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
 			break
 		}
 		if err != nil {
-			return g, fmt.Errorf("failed getting game records: %v", err)
+			return game, fmt.Errorf("failed getting game records: %v", err)
 		}
 		p := Player{}
 		doc.DataTo(&p)
-		g.Players.Add(p)
+		game.Players.Add(p)
 	}
 
-	return g, nil
+	return game, nil
 }
 
-func (a *Agent) loadGameWithBoards(g Game) (Game, error) {
+func (a *Agent) loadGameWithBoards(game Game) (Game, error) {
 
 	a.log("Loading boards from game")
-	iter := a.client.Collection("games").Doc(g.ID).Collection("boards").Documents(a.ctx)
+	iter := a.client.Collection("games").Doc(game.ID).Collection("boards").Documents(a.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
 			break
 		}
 		if err != nil {
-			return g, fmt.Errorf("failed getting game boards: %v", err)
+			return game, fmt.Errorf("failed getting game boards: %v", err)
 		}
 		b := InitBoard()
 		doc.DataTo(&b)
 
 		b, err = a.loadBoardWithPhrases(b)
 		if err != nil {
-			return g, fmt.Errorf("Failed to populare board: %v", err)
+			return game, fmt.Errorf("Failed to populare board: %v", err)
 		}
 
-		g.Boards[b.ID] = b
+		game.Boards[b.ID] = b
 	}
 
-	return g, nil
+	return game, nil
 }
 
-func (a *Agent) loadGameWithAdmins(g Game) (Game, error) {
-	g.Boards = map[string]Board{}
+func (a *Agent) loadGameWithAdmins(game Game) (Game, error) {
+	game.Boards = map[string]Board{}
 
 	a.log("Loading players from game")
-	iter := a.client.Collection("games").Doc(g.ID).Collection("admins").Documents(a.ctx)
+	iter := a.client.Collection("games").Doc(game.ID).Collection("admins").Documents(a.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
 			break
 		}
 		if err != nil {
-			return g, fmt.Errorf("failed getting game records: %v", err)
+			return game, fmt.Errorf("failed getting game records: %v", err)
 		}
 		p := Player{}
 		doc.DataTo(&p)
-		g.Admins.Add(p)
+		game.Admins.Add(p)
 	}
 
-	return g, nil
+	return game, nil
 }
 
 // SaveGame records a game to firestore.
-func (a *Agent) SaveGame(g Game) error {
+func (a *Agent) SaveGame(game Game) error {
 
-	oldgame, err := a.GetGame(g.ID)
+	oldgame, err := a.GetGame(game.ID)
 	if err != nil {
 		return fmt.Errorf("error getting old data for game: %s", err)
 	}
 
 	a.log("Save game")
 	batch := a.client.Batch()
-	gref := a.client.Collection("games").Doc(g.ID)
-	batch.Set(gref, g)
+	gref := a.client.Collection("games").Doc(game.ID)
+	batch.Set(gref, game)
 
 	// TODO: deal with other parts of game.
 
 	for _, v := range oldgame.Players {
-		ref := a.client.Collection("games").Doc(g.ID).Collection("players").Doc(v.Email)
+		ref := a.client.Collection("games").Doc(game.ID).Collection("players").Doc(v.Email)
 		batch.Delete(ref)
 	}
 
 	for _, v := range oldgame.Admins {
-		ref := a.client.Collection("games").Doc(g.ID).Collection("admins").Doc(v.Email)
+		ref := a.client.Collection("games").Doc(game.ID).Collection("admins").Doc(v.Email)
 		batch.Delete(ref)
 	}
 
-	for _, v := range g.Players {
-		ref := a.client.Collection("games").Doc(g.ID).Collection("players").Doc(v.Email)
+	for _, v := range game.Players {
+		ref := a.client.Collection("games").Doc(game.ID).Collection("players").Doc(v.Email)
 		batch.Set(ref, v)
 	}
 
-	for _, v := range g.Admins {
-		ref := a.client.Collection("games").Doc(g.ID).Collection("admins").Doc(v.Email)
+	for _, v := range game.Admins {
+		ref := a.client.Collection("games").Doc(game.ID).Collection("admins").Doc(v.Email)
 		batch.Set(ref, v)
 	}
 
@@ -404,20 +404,20 @@ func (a *Agent) SaveGame(g Game) error {
 }
 
 // UpdatePhrase updates a phrase on a particular game and all boards associated with it.
-func (a *Agent) UpdatePhrase(g Game, p Phrase) error {
-	b := g.Boards
+func (a *Agent) UpdatePhrase(game Game, phrase Phrase) error {
+	b := game.Boards
 
-	phraseMap := map[string]interface{}{"text": p.Text, "selected": false}
+	phraseMap := map[string]interface{}{"text": phrase.Text, "selected": false}
 	recordMap := map[string]interface{}{"phrase": phraseMap, "players": Players{}}
 
 	batch := a.client.Batch()
-	recoref := a.client.Collection("games").Doc(g.ID).Collection("records").Doc(p.ID)
+	recoref := a.client.Collection("games").Doc(game.ID).Collection("records").Doc(phrase.ID)
 	batch.Set(recoref, recordMap, firestore.MergeAll)
 
 	for _, v := range b {
-		msg := fmt.Sprintf("Updating to phrase %s on board %s on game %s", p.ID, v.ID, g.ID)
+		msg := fmt.Sprintf("Updating to phrase %s on board %s on game %s", phrase.ID, v.ID, game.ID)
 		a.log(msg)
-		ref := a.client.Collection("games").Doc(g.ID).Collection("boards").Doc(v.ID).Collection("phrases").Doc(p.ID)
+		ref := a.client.Collection("games").Doc(game.ID).Collection("boards").Doc(v.ID).Collection("phrases").Doc(phrase.ID)
 		batch.Set(ref, phraseMap, firestore.MergeAll)
 	}
 
@@ -430,12 +430,12 @@ func (a *Agent) UpdatePhrase(g Game, p Phrase) error {
 }
 
 // GetBoardsForGame gets all the boards for a give game.
-func (a *Agent) GetBoardsForGame(g Game) ([]Board, error) {
+func (a *Agent) GetBoardsForGame(game Game) ([]Board, error) {
 
 	b := []Board{}
 
 	a.log("Getting boards for game")
-	iter := a.client.Collection("games").Doc(g.ID).Collection("boards").Documents(a.ctx)
+	iter := a.client.Collection("games").Doc(game.ID).Collection("boards").Documents(a.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -508,39 +508,39 @@ func (a *Agent) GetGamesForKey(email string) (Games, error) {
 }
 
 // DeleteGame delete a specifc game from firestore
-func (a *Agent) DeleteGame(g Game) error {
+func (a *Agent) DeleteGame(game Game) error {
 	batch := a.client.Batch()
 	a.log("Deleting board")
-	gref := a.client.Collection("games").Doc(g.ID)
+	gref := a.client.Collection("games").Doc(game.ID)
 	batch.Delete(gref)
 
-	for _, v := range g.Admins {
-		rref := a.client.Collection("games").Doc(g.ID).Collection("admins").Doc(v.Email)
+	for _, v := range game.Admins {
+		rref := a.client.Collection("games").Doc(game.ID).Collection("admins").Doc(v.Email)
 		batch.Delete(rref)
 	}
 
-	for _, v := range g.Players {
-		rref := a.client.Collection("games").Doc(g.ID).Collection("players").Doc(v.Email)
+	for _, v := range game.Players {
+		rref := a.client.Collection("games").Doc(game.ID).Collection("players").Doc(v.Email)
 		batch.Delete(rref)
 	}
 
-	for _, v := range g.Master.Records {
-		rref := a.client.Collection("games").Doc(g.ID).Collection("records").Doc(v.ID)
+	for _, v := range game.Master.Records {
+		rref := a.client.Collection("games").Doc(game.ID).Collection("records").Doc(v.ID)
 		batch.Delete(rref)
 	}
 
-	for _, v := range g.Boards {
-		rref := a.client.Collection("games").Doc(g.ID).Collection("boards").Doc(v.ID)
+	for _, v := range game.Boards {
+		rref := a.client.Collection("games").Doc(game.ID).Collection("boards").Doc(v.ID)
 		batch.Delete(rref)
 
 		for _, subv := range v.Phrases {
-			pref := a.client.Collection("games").Doc(g.ID).Collection("boards").Doc(v.ID).Collection("phrases").Doc(subv.ID)
+			pref := a.client.Collection("games").Doc(game.ID).Collection("boards").Doc(v.ID).Collection("phrases").Doc(subv.ID)
 			batch.Delete(pref)
 		}
 	}
 
 	a.log("removing phrases from board")
-	ref := a.client.Collection("games").Doc(g.ID).Collection("messages")
+	ref := a.client.Collection("games").Doc(game.ID).Collection("messages")
 	for {
 		// Get a batch of documents
 		iter := ref.Limit(1000).Documents(a.ctx)
@@ -571,14 +571,14 @@ func (a *Agent) DeleteGame(g Game) error {
 ////////////////////////////////////////////////////////////////////////////////
 
 // AddMessagesToGame broadcasts a message to the game players
-func (a *Agent) AddMessagesToGame(g Game, m []Message) error {
+func (a *Agent) AddMessagesToGame(game Game, messages []Message) error {
 
 	batch := a.client.Batch()
-	for _, v := range m {
+	for _, v := range messages {
 		a.log("Adding message to game")
 		timestamp := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
 		v.ID = timestamp
-		ref := a.client.Collection("games").Doc(g.ID).Collection("messages").Doc(timestamp)
+		ref := a.client.Collection("games").Doc(game.ID).Collection("messages").Doc(timestamp)
 		batch.Set(ref, v)
 	}
 
@@ -590,10 +590,10 @@ func (a *Agent) AddMessagesToGame(g Game, m []Message) error {
 }
 
 // AcknowledgeMessage marks the message as having been received.
-func (a *Agent) AcknowledgeMessage(g Game, m Message) error {
+func (a *Agent) AcknowledgeMessage(game Game, message Message) error {
 
 	update := map[string]interface{}{"received": true}
-	if _, err := a.client.Collection("games").Doc(g.ID).Collection("messages").Doc(m.ID).Set(ctx, update, firestore.MergeAll); err != nil {
+	if _, err := a.client.Collection("games").Doc(game.ID).Collection("messages").Doc(message.ID).Set(ctx, update, firestore.MergeAll); err != nil {
 		return fmt.Errorf("unable to acknowledge message: %s", err)
 	}
 
@@ -655,44 +655,44 @@ func (a *Agent) GetBoard(bid, gid string) (Board, error) {
 	return b, nil
 }
 
-func (a *Agent) loadBoardWithPhrases(b Board) (Board, error) {
+func (a *Agent) loadBoardWithPhrases(board Board) (Board, error) {
 
 	a.log("Adding phrases to existing board")
-	iter := a.client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID).Collection("phrases").OrderBy("displayorder", firestore.Asc).Documents(a.ctx)
+	iter := a.client.Collection("games").Doc(board.Game).Collection("boards").Doc(board.ID).Collection("phrases").OrderBy("displayorder", firestore.Asc).Documents(a.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
 			break
 		}
 		if err != nil {
-			return b, fmt.Errorf("failed getting board records: %v", err)
+			return board, fmt.Errorf("failed getting board records: %v", err)
 		}
 		p := Phrase{}
 		doc.DataTo(&p)
-		b.Phrases[p.ID] = p
+		board.Phrases[p.ID] = p
 	}
 
-	return b, nil
+	return board, nil
 }
 
 // DeleteBoard delete a specifc board from firestore
-func (a *Agent) DeleteBoard(b Board, g Game) error {
+func (a *Agent) DeleteBoard(board Board, game Game) error {
 	batch := a.client.Batch()
 	a.log("Deleting board")
-	bref := a.client.Collection("games").Doc(g.ID).Collection("boards").Doc(b.ID)
+	bref := a.client.Collection("games").Doc(game.ID).Collection("boards").Doc(board.ID)
 	batch.Delete(bref)
 
-	for _, v := range g.Master.Records {
+	for _, v := range game.Master.Records {
 		id := v.ID
 		if id == "" {
 			id = v.Phrase.ID
 		}
-		rref := a.client.Collection("games").Doc(g.ID).Collection("records").Doc(id)
+		rref := a.client.Collection("games").Doc(game.ID).Collection("records").Doc(id)
 		batch.Set(rref, v)
 	}
 
 	a.log("removing phrases from board")
-	ref := a.client.Collection("games").Doc(g.ID).Collection("boards").Doc(b.ID).Collection("phrases")
+	ref := a.client.Collection("games").Doc(game.ID).Collection("boards").Doc(board.ID).Collection("phrases")
 	for {
 		// Get a batch of documents
 		iter := ref.Limit(100).Documents(a.ctx)
@@ -719,46 +719,46 @@ func (a *Agent) DeleteBoard(b Board, g Game) error {
 }
 
 // SaveBoard persists a board to firestore
-func (a *Agent) SaveBoard(b Board) (Board, error) {
+func (a *Agent) SaveBoard(board Board) (Board, error) {
 
 	a.log("Starting batch operation")
 	batch := a.client.Batch()
-	bref := a.client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID)
-	batch.Set(bref, b)
+	bref := a.client.Collection("games").Doc(board.Game).Collection("boards").Doc(board.ID)
+	batch.Set(bref, board)
 
-	pref := a.client.Collection("games").Doc(b.Game).Collection("players").Doc(b.Player.Email)
-	batch.Set(pref, b.Player)
+	pref := a.client.Collection("games").Doc(board.Game).Collection("players").Doc(board.Player.Email)
+	batch.Set(pref, board.Player)
 
-	for _, v := range b.Phrases {
-		ref := a.client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID).Collection("phrases").Doc(v.ID)
+	for _, v := range board.Phrases {
+		ref := a.client.Collection("games").Doc(board.Game).Collection("boards").Doc(board.ID).Collection("phrases").Doc(v.ID)
 		batch.Set(ref, v)
 	}
 
 	if _, err := batch.Commit(a.ctx); err != nil {
-		return b, fmt.Errorf("failed to add records to database: %v", err)
+		return board, fmt.Errorf("failed to add records to database: %v", err)
 	}
 
-	return b, nil
+	return board, nil
 
 }
 
 // SelectPhrase records clicks on the board and the game
-func (a *Agent) SelectPhrase(b Board, p Phrase, r Record) error {
+func (a *Agent) SelectPhrase(board Board, phrase Phrase, record Record) error {
 
 	a.log("Starting batch operation")
 	batch := a.client.Batch()
 
 	a.log("Updating phrase on board")
-	bref := a.client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID).Collection("phrases").Doc(p.ID)
-	batch.Set(bref, p)
+	bref := a.client.Collection("games").Doc(board.Game).Collection("boards").Doc(board.ID).Collection("phrases").Doc(phrase.ID)
+	batch.Set(bref, phrase)
 
 	a.log("Updating game record")
-	gref := a.client.Collection("games").Doc(b.Game).Collection("records").Doc(r.Phrase.ID)
-	batch.Set(gref, r)
+	gref := a.client.Collection("games").Doc(board.Game).Collection("records").Doc(record.Phrase.ID)
+	batch.Set(gref, record)
 
 	a.log("Updating board to bingo")
-	bingoref := a.client.Collection("games").Doc(b.Game).Collection("boards").Doc(b.ID)
-	update := map[string]interface{}{"bingodeclared": b.BingoDeclared}
+	bingoref := a.client.Collection("games").Doc(board.Game).Collection("boards").Doc(board.ID)
+	update := map[string]interface{}{"bingodeclared": board.BingoDeclared}
 	batch.Set(bingoref, update, firestore.MergeAll)
 
 	a.log("Committing Batch")

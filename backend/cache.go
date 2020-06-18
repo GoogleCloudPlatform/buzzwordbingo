@@ -67,9 +67,9 @@ func (c Cache) Clear() error {
 	return nil
 }
 
-func (c Cache) boardKeys(b Board) (boardkey string, playerkey string) {
-	boardkey = c.boardKeyForBoard(b.ID)
-	playerkey = c.boardKeyForPlayer(b.Game, b.Player.Email)
+func (c Cache) boardKeys(board Board) (boardkey string, playerkey string) {
+	boardkey = c.boardKeyForBoard(board.ID)
+	playerkey = c.boardKeyForPlayer(board.Game, board.Player.Email)
 	return boardkey, playerkey
 }
 
@@ -94,7 +94,7 @@ func (c *Cache) gamesKey(key string) string {
 ////////////////////////////////////////////////////////////////////////////////
 
 // SaveBoard records a board into the cache.
-func (c *Cache) SaveBoard(b Board) error {
+func (c *Cache) SaveBoard(board Board) error {
 	if !c.enabled {
 		return nil
 	}
@@ -102,12 +102,12 @@ func (c *Cache) SaveBoard(b Board) error {
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
-	json, err := b.JSON()
+	json, err := board.JSON()
 	if err != nil {
 		return err
 	}
 
-	boardkey, playerkey := c.boardKeys(b)
+	boardkey, playerkey := c.boardKeys(board)
 
 	conn.Send("MULTI")
 	conn.Send("SET", boardkey, json)
@@ -193,7 +193,7 @@ func (c *Cache) DeleteBoard(board Board) error {
 ////////////////////////////////////////////////////////////////////////////////
 
 // SaveGame records a game in the cache.
-func (c *Cache) SaveGame(g Game) error {
+func (c *Cache) SaveGame(game Game) error {
 	if !c.enabled {
 		return nil
 	}
@@ -201,19 +201,19 @@ func (c *Cache) SaveGame(g Game) error {
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
-	json, err := g.JSON()
+	json, err := game.JSON()
 	if err != nil {
 		return err
 	}
 
-	gamekey := c.gameKey(g.ID)
+	gamekey := c.gameKey(game.ID)
 
 	if _, err := conn.Do("SET", gamekey, json); err != nil {
 		return err
 	}
 	c.log("Successfully saved game to cache")
 
-	if len(g.Boards) == 0 {
+	if len(game.Boards) == 0 {
 		c.log("WARNING game saved to cache without the boards.")
 	}
 
@@ -248,7 +248,7 @@ func (c *Cache) GetGame(key string) (Game, error) {
 }
 
 // SaveGamesForKey saves a list of all of the games a player is in.
-func (c *Cache) SaveGamesForKey(key string, g Games) error {
+func (c *Cache) SaveGamesForKey(key string, games Games) error {
 	if !c.enabled {
 		return nil
 	}
@@ -256,7 +256,7 @@ func (c *Cache) SaveGamesForKey(key string, g Games) error {
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
-	json, err := g.JSON()
+	json, err := games.JSON()
 	if err != nil {
 		return err
 	}
@@ -352,14 +352,14 @@ func (c *Cache) DeleteGame(game Game) error {
 
 // UpdatePhrase will update all of the versions of a phrase in a game and all
 // of the boards in that game.
-func (c *Cache) UpdatePhrase(g Game, p Phrase) error {
-	c.log("Update Phrase " + p.Text)
+func (c *Cache) UpdatePhrase(game Game, phrase Phrase) error {
+	c.log("Update Phrase " + phrase.Text)
 	conn := c.redisPool.Get()
 	defer conn.Close()
 
-	gamekey := c.gameKey(g.ID)
+	gamekey := c.gameKey(game.ID)
 
-	gjson, err := g.JSON()
+	gjson, err := game.JSON()
 	if err != nil {
 		return err
 	}
@@ -367,7 +367,7 @@ func (c *Cache) UpdatePhrase(g Game, p Phrase) error {
 	conn.Send("MULTI")
 	conn.Send("SET", gamekey, gjson)
 
-	for _, b := range g.Boards {
+	for _, b := range game.Boards {
 
 		boardkey, playerkey := c.boardKeys(b)
 

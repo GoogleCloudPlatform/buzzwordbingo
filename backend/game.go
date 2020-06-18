@@ -2,21 +2,21 @@ package main
 
 import "fmt"
 
-func getBoardForPlayer(p Player, g Game) (Board, error) {
+func getBoardForPlayer(player Player, game Game) (Board, error) {
 	var err error
 	b := Board{}
 	messages := []Message{}
 	weblog("Trying Cache")
-	b, err = cache.GetBoardForPlayer(g.ID, p.Email)
+	b, err = cache.GetBoardForPlayer(game.ID, player.Email)
 	if err != nil {
 		if err == ErrCacheMiss {
 			weblog("Cache Empty trying DB")
-			b, err = a.GetBoardForPlayer(g.ID, p)
+			b, err = a.GetBoardForPlayer(game.ID, player)
 			if err != nil {
 				return b, fmt.Errorf("error getting board for player: %v", err)
 			}
 		}
-		if err := cache.DeleteGamesForKey([]string{p.Email}); err != nil {
+		if err := cache.DeleteGamesForKey([]string{player.Email}); err != nil {
 			return b, fmt.Errorf("error clearing game cache for player: %v", err)
 		}
 		if err := cache.SaveBoard(b); err != nil {
@@ -28,7 +28,7 @@ func getBoardForPlayer(p Player, g Game) (Board, error) {
 	m.SetAudience("admin", b.Player.Email)
 
 	if b.ID == "" {
-		b = g.NewBoard(p)
+		b = game.NewBoard(player)
 		b, err = a.SaveBoard(b)
 		if err != nil {
 			return b, fmt.Errorf("error saving board for player: %v", err)
@@ -36,9 +36,9 @@ func getBoardForPlayer(p Player, g Game) (Board, error) {
 		if err := cache.SaveBoard(b); err != nil {
 			return b, fmt.Errorf("error caching board for player: %v", err)
 		}
-		g.Boards[b.ID] = b
+		game.Boards[b.ID] = b
 
-		if err := cache.SaveGame(g); err != nil {
+		if err := cache.SaveGame(game); err != nil {
 			return b, fmt.Errorf("error caching game for player: %v", err)
 		}
 		m.SetText("<strong>%s</strong> got a board and joined the game.", b.Player.Name)
@@ -50,11 +50,11 @@ func getBoardForPlayer(p Player, g Game) (Board, error) {
 
 	bingo := b.Bingo()
 	if bingo {
-		msg := generateBingoMessages(b, g, false)
+		msg := generateBingoMessages(b, game, false)
 		messages = append(messages, msg...)
 	}
 
-	if err := a.AddMessagesToGame(g, messages); err != nil {
+	if err := a.AddMessagesToGame(game, messages); err != nil {
 		return b, fmt.Errorf("could not send message to notify player of bingo: %s", err)
 	}
 
@@ -117,34 +117,34 @@ func deleteBoard(bid, gid string) error {
 	return nil
 }
 
-func generateBingoMessages(b Board, g Game, first bool) []Message {
+func generateBingoMessages(board Board, game Game, first bool) []Message {
 
 	messages := []Message{}
 
 	bingoMsg := "<strong>You</strong> already had <em><strong>BINGO</strong></em> on your board."
-	dubiousMsg := fmt.Sprintf("<strong>%s</strong> might have just redeclared a dubious <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
+	dubiousMsg := fmt.Sprintf("<strong>%s</strong> might have just redeclared a dubious <em><strong>BINGO</strong></em> on their board.", board.Player.Name)
 
 	if first {
-		bingoMsg = fmt.Sprintf("<strong>%s</strong> just got <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
-		dubiousMsg = fmt.Sprintf("<strong>%s</strong> might have just declared a dubious <em><strong>BINGO</strong></em> on their board.", b.Player.Name)
+		bingoMsg = fmt.Sprintf("<strong>%s</strong> just got <em><strong>BINGO</strong></em> on their board.", board.Player.Name)
+		dubiousMsg = fmt.Sprintf("<strong>%s</strong> might have just declared a dubious <em><strong>BINGO</strong></em> on their board.", board.Player.Name)
 	}
 
 	m1 := Message{}
 	m1.SetText(bingoMsg)
-	m1.SetAudience(b.Player.Email)
+	m1.SetAudience(board.Player.Email)
 	if first {
-		m1.SetAudience("all", b.Player.Email)
+		m1.SetAudience("all", board.Player.Email)
 	}
 
 	m1.Bingo = true
 	messages = append(messages, m1)
 
-	reports := g.CheckBoard(b)
+	reports := game.CheckBoard(board)
 	if reports.IsDubious() {
-		b.log("REPORTED BINGO IS DUBIOUS")
+		board.log("REPORTED BINGO IS DUBIOUS")
 		m2 := Message{}
 		m2.SetText(dubiousMsg)
-		m2.SetAudience("admin", b.Player.Email)
+		m2.SetAudience("admin", board.Player.Email)
 		m2.Bingo = true
 		messages = append(messages, m2)
 
@@ -155,7 +155,7 @@ func generateBingoMessages(b Board, g Game, first bool) []Message {
 				mr.SetText("<strong>%s</strong> was selected by none of the other %d players", v.Phrase.Text, v.Total-1)
 			}
 
-			mr.SetAudience("admin", b.Player.Email)
+			mr.SetAudience("admin", board.Player.Email)
 			mr.Bingo = true
 			messages = append(messages, mr)
 		}
@@ -192,13 +192,13 @@ func getGamesForKey(key string) (Games, error) {
 	return g, nil
 }
 
-func getNewGame(name string, p Player) (Game, error) {
+func getNewGame(name string, player Player) (Game, error) {
 
-	game, err := a.NewGame(name, p)
+	game, err := a.NewGame(name, player)
 	if err != nil {
 		return game, fmt.Errorf("failed to get new game: %v", err)
 	}
-	if err := cache.DeleteGamesForKey([]string{p.Email}); err != nil {
+	if err := cache.DeleteGamesForKey([]string{player.Email}); err != nil {
 		return game, fmt.Errorf("failed to clear cache: %v", err)
 	}
 	if err := cache.SaveGame(game); err != nil {
@@ -272,15 +272,15 @@ func deactivateGame(gid string) error {
 	return nil
 }
 
-func recordSelect(boardID, gameID, phraseID string, selected bool) error {
+func recordSelect(bid, gid, pid string, selected bool) error {
 	p := Phrase{}
-	p.ID = phraseID
+	p.ID = pid
 	p.Selected = selected
 	messages := []Message{}
 
-	b, err := getBoard(boardID, gameID)
+	b, err := getBoard(bid, gid)
 	if err != nil {
-		return fmt.Errorf("could not get board id(%s): %s", boardID, err)
+		return fmt.Errorf("could not get board id(%s): %s", bid, err)
 	}
 
 	g, err := getGame(b.Game)
@@ -335,14 +335,14 @@ func updateMasterPhrase(phrase Phrase) error {
 	return nil
 }
 
-func updateGamePhrases(gameID string, phrase Phrase) error {
+func updateGamePhrases(gid string, phrase Phrase) error {
 	messages := []Message{}
 	m := Message{}
 	m.SetText("A square has been changed and reset for all players. ")
 	m.SetAudience("all")
 	messages = append(messages, m)
 
-	g, err := getGame(gameID)
+	g, err := getGame(gid)
 	if err != nil {
 		return fmt.Errorf("could not get game id(%s): %s", g.ID, err)
 	}

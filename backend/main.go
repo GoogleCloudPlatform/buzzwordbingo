@@ -835,6 +835,20 @@ func wrapHandler(h http.Handler) http.HandlerFunc {
 	}
 }
 
+func getQueries(r *http.Request, queries ...string) (map[string]string, error) {
+	results := make(map[string]string)
+
+	for _, v := range results {
+		result, ok := r.URL.Query()[v]
+		if !ok || len(result[0]) < 1 || result[0] == "undefined" {
+			return results, fmt.Errorf("query parameter %s is missing", v)
+		}
+		results[v] = result[0]
+	}
+
+	return results, nil
+}
+
 func getFirstQuery(query string, r *http.Request) (string, error) {
 	result, ok := r.URL.Query()[query]
 
