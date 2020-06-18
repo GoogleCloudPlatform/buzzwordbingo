@@ -8,6 +8,8 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
+// RedisPool is an interface that allows us to swap in an mock for testing cache
+// code.
 type RedisPool interface {
 	Get() redis.Conn
 }
@@ -37,7 +39,7 @@ func (c *Cache) log(msg string) {
 	}
 }
 
-// Init starts the cache off
+// InitPool starts the cache off
 func (c Cache) InitPool(redisHost, redisPort string) RedisPool {
 	redisAddr := fmt.Sprintf("%s:%s", redisHost, redisPort)
 	msg := fmt.Sprintf("Initialized Redis at %s", redisAddr)
@@ -49,10 +51,6 @@ func (c Cache) InitPool(redisHost, redisPort string) RedisPool {
 	}, maxConnections)
 
 	return pool
-}
-
-func (c *Cache) SetRedisPool(r RedisPool) {
-
 }
 
 // Clear removes all items from the cache.
