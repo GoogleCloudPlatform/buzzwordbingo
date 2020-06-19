@@ -583,8 +583,6 @@ func wrapHandler(h http.Handler) http.HandlerFunc {
 func getQueries(r *http.Request, queries ...string) (map[string]string, error) {
 	results := make(map[string]string)
 
-	fmt.Printf("%+v\n", r)
-
 	switch r.Method {
 	case http.MethodPost:
 		if err := r.ParseMultipartForm(160000); err != nil {

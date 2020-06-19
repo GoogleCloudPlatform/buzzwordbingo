@@ -263,10 +263,6 @@ func TestGetGames(t *testing.T) {
 		t.Errorf("Agent.GetGames() err want %v got %s ", nil, err)
 	}
 
-	// fmt.Printf("%+v\n", game)
-	// fmt.Printf("%+v\n", game2)
-	// fmt.Printf("%+v\n", gamesFromFirestore)
-
 	if len(gamesFromFirestore) != 2 {
 		t.Errorf("Agent.GetGames() count want %d got %d ", 2, len(gamesFromFirestore))
 	}
