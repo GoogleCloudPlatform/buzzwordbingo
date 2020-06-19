@@ -103,13 +103,6 @@ redisclean:
 	-docker stop some-redis
 	-docker rm some-redis
 
-server:  
-	cd $(BASEDIR)/backend && \
-	export REDISHOST=127.0.0.1 && \
-	export REDISPORT=6379 && \
-	export GOOGLE_APPLICATION_CREDENTIALS=$(BASEDIR)/creds/creds.json && \
-	go run main.go firestore.go bingo.go cache.go game.go
-
 dev: redis
 	(trap 'kill 0' SIGINT; \
 	cd $(BASEDIR)/backend && \
@@ -117,7 +110,17 @@ dev: redis
 	export REDISPORT=6379 && \
 	export GOOGLE_APPLICATION_CREDENTIALS=$(BASEDIR)/creds/creds.json && \
 	go run main.go firestore.go bingo.go cache.go game.go & \
-	cd $(BASEDIR)/frontend && ng serve --open )	
+	cd $(BASEDIR)/frontend && ng serve --open )		
+
+server:  
+	cd $(BASEDIR)/backend && \
+	export REDISHOST=127.0.0.1 && \
+	export REDISPORT=6379 && \
+	export GOOGLE_APPLICATION_CREDENTIALS=$(BASEDIR)/creds/creds.json && \
+	go run main.go firestore.go bingo.go cache.go game.go
+
+fe: 
+	cd $(BASEDIR)/frontend && ng serve --open
 
 firestore-rules:
 	firebase deploy --only firestore
