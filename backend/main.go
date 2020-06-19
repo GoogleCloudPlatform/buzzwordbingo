@@ -101,10 +101,16 @@ func main() {
 
 }
 
+// ErrorEmitter is a http.Handler that emits an error for much better reporting
 type ErrorEmitter func(http.ResponseWriter, *http.Request) error
+
+// JSONEmitter is a http.Handler that emits a jsoning file
 type JSONEmitter func(http.ResponseWriter, *http.Request) (JSONProducer, error)
+
+// AdminEmitter is a http.Handler checks a boolean condition
 type AdminEmitter func(http.ResponseWriter, *http.Request) (int, error)
 
+// AdminHandler is a http.Handler checks the conditions of a isadmin request
 func AdminHandler(h AdminEmitter) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		weblog(fmt.Sprintf("%s called", r.URL.Path))
@@ -125,6 +131,7 @@ func AdminHandler(h AdminEmitter) http.Handler {
 	})
 }
 
+// SimpleHandler is a http.Handler thta does a simple request
 func SimpleHandler(h ErrorEmitter, adminlevel string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		weblog(fmt.Sprintf("%s called", r.URL.Path))
@@ -143,16 +150,17 @@ func SimpleHandler(h ErrorEmitter, adminlevel string) http.Handler {
 	})
 }
 
+// IsAdminChecker does the proper test for whether or not something is an admin
 func IsAdminChecker(w http.ResponseWriter, r *http.Request, adminlevel string) error {
 	switch adminlevel {
 	case "game":
-		gid, err := getFirstQuery("g", r)
+		queries, err := getQueries(r, "g")
 		if err != nil {
 			writeResponse(w, http.StatusInternalServerError, fmt.Sprintf("{\"error\":\"%s\"}", err))
 			return err
 		}
 
-		statusCode, err := isAdmin(r, gid)
+		statusCode, err := isAdmin(r, queries["g"])
 		if err != nil {
 			weblog(fmt.Sprintf("IsAdminCheck failed in the handler"))
 			writeResponse(w, statusCode, fmt.Sprintf("{\"error\":\"%s\"}", err))
@@ -173,6 +181,7 @@ func IsAdminChecker(w http.ResponseWriter, r *http.Request, adminlevel string) e
 	return nil
 }
 
+// JSONHandler is a http.Handler that handles returning json
 func JSONHandler(h JSONEmitter, adminlevel string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		weblog(fmt.Sprintf("%s called", r.URL.Path))
@@ -192,6 +201,7 @@ func JSONHandler(h JSONEmitter, adminlevel string) http.Handler {
 	})
 }
 
+// PrefetechHandler is a http.Handler that handles preflight requests
 func PrefetechHandler(h ErrorEmitter, method string, adminlevel string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		weblog(fmt.Sprintf("%s called", r.URL.Path))
@@ -234,66 +244,50 @@ func isAdminHandle(w http.ResponseWriter, r *http.Request) (int, error) {
 }
 
 func isGameAdminHandle(w http.ResponseWriter, r *http.Request) (int, error) {
-	gid, err := getFirstQuery("g", r)
+
+	queries, err := getQueries(r, "g")
+
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
 
-	return isGameAdmin(r, gid)
+	return isGameAdmin(r, queries["g"])
 }
 
 func gamePhraseUpdateHandle(w http.ResponseWriter, r *http.Request) error {
-	gid, err := getFirstQuery("g", r)
-	if err != nil {
-		return err
-	}
-
-	pid, err := getFirstQuery("p", r)
-	if err != nil {
-		return err
-	}
-
-	text, err := getFirstQuery("text", r)
+	queries, err := getQueries(r, "g", "p", "text")
 	if err != nil {
 		return err
 	}
 
 	phrase := Phrase{}
-	phrase.ID = pid
-	phrase.Text = text
+	phrase.ID = queries["p"]
+	phrase.Text = queries["text"]
 
-	return updateGamePhrases(gid, phrase)
+	return updateGamePhrases(queries["g"], phrase)
 }
 
 func masterPhraseUpdateHandle(w http.ResponseWriter, r *http.Request) error {
-	pid, err := getFirstQuery("p", r)
-	if err != nil {
-		return err
-	}
-
-	text, err := getFirstQuery("text", r)
+	queries, err := getQueries(r, "p", "text")
 	if err != nil {
 		return err
 	}
 
 	phrase := Phrase{}
-	phrase.ID = pid
-	phrase.Text = text
+	phrase.ID = queries["p"]
+	phrase.Text = queries["text"]
 
 	return updateMasterPhrase(phrase)
 }
 
 func iapUsernameGetHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error) {
-	p := Player{}
 
 	email, err := getPlayerEmail(r)
 	if err != nil {
-		return p, err
+		return Player{}, err
 	}
 
-	p.Email = email
-
-	return p, nil
+	return Player{"", email}, nil
 }
 
 func messageAcknowledgeHandle(w http.ResponseWriter, r *http.Request) error {
@@ -301,21 +295,15 @@ func messageAcknowledgeHandle(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	mid := r.Form.Get("m")
-	gid := r.Form.Get("g")
-
-	if mid == "" {
-		return fmt.Errorf("m is required")
-	}
-
-	if gid == "" {
-		return fmt.Errorf("g is required")
+	queries, err := getQueries(r, "m", "g")
+	if err != nil {
+		return err
 	}
 
 	g := Game{}
 	m := Message{}
-	g.ID = gid
-	m.ID = mid
+	g.ID = queries["g"]
+	m.ID = queries["m"]
 
 	return a.AcknowledgeMessage(g, m)
 }
@@ -338,19 +326,14 @@ func boardGetHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error
 		return Board{}, err
 	}
 
-	name, err := getFirstQuery("name", r)
+	queries, err := getQueries(r, "g", "name")
 	if err != nil {
 		return Board{}, err
 	}
 
-	gid, err := getFirstQuery("g", r)
-	if err != nil {
-		return Board{}, err
-	}
+	p := Player{Name: queries["name"], Email: email}
 
-	p := Player{Name: name, Email: email}
-
-	g, err := getGame(gid)
+	g, err := getGame(queries["g"])
 	if err != nil {
 		return Board{}, err
 	}
@@ -359,17 +342,12 @@ func boardGetHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error
 }
 
 func boardDeleteHandle(w http.ResponseWriter, r *http.Request) error {
-	b, err := getFirstQuery("b", r)
+	queries, err := getQueries(r, "b", "g")
 	if err != nil {
 		return err
 	}
 
-	g, err := getFirstQuery("g", r)
-	if err != nil {
-		return err
-	}
-
-	board, err := getBoard(b, g)
+	board, err := getBoard(queries["b"], queries["g"])
 	if err != nil {
 		return err
 	}
@@ -379,7 +357,7 @@ func boardDeleteHandle(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	if _, err := isAdmin(r, g); err != nil && err != ErrNotAdmin {
+	if _, err := isAdmin(r, queries["g"]); err != nil && err != ErrNotAdmin {
 		return err
 	}
 
@@ -387,7 +365,7 @@ func boardDeleteHandle(w http.ResponseWriter, r *http.Request) error {
 		return ErrNotAdminOrPlayer
 	}
 
-	return deleteBoard(b, g)
+	return deleteBoard(queries["b"], queries["g"])
 }
 
 func gameNewHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error) {
@@ -396,19 +374,14 @@ func gameNewHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error)
 		return Game{}, err
 	}
 
-	name, err := getFirstQuery("name", r)
+	queries, err := getQueries(r, "name", "pname")
 	if err != nil {
 		return Game{}, err
 	}
 
-	pname, err := getFirstQuery("pname", r)
-	if err != nil {
-		return Game{}, err
-	}
+	p := Player{Name: queries["pname"], Email: email}
 
-	p := Player{Name: pname, Email: email}
-
-	return getNewGame(name, p)
+	return getNewGame(queries["name"], p)
 }
 
 func gameGetHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error) {
@@ -417,17 +390,17 @@ func gameGetHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error)
 		return Game{}, err
 	}
 
-	g, err := getFirstQuery("g", r)
+	queries, err := getQueries(r, "g")
 	if err != nil {
 		return Game{}, err
 	}
 
-	game, err := getGame(g)
+	game, err := getGame(queries["g"])
 	if err != nil {
 		return Game{}, err
 	}
 
-	if _, err := isAdmin(r, g); err != nil {
+	if _, err := isAdmin(r, queries["g"]); err != nil {
 		if err != ErrNotAdmin {
 			return Game{}, err
 		}
@@ -437,60 +410,40 @@ func gameGetHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error)
 }
 
 func gameDeactivateHandle(w http.ResponseWriter, r *http.Request) error {
-	g, err := getFirstQuery("g", r)
+	queries, err := getQueries(r, "g")
 	if err != nil {
 		return err
 	}
 
-	return deactivateGame(g)
+	return deactivateGame(queries["g"])
 }
 
 func recordSelectHandle(w http.ResponseWriter, r *http.Request) error {
-	pid, err := getFirstQuery("p", r)
+	queries, err := getQueries(r, "p", "b", "g", "selected")
 	if err != nil {
 		return err
 	}
 
-	bid, err := getFirstQuery("b", r)
-	if err != nil {
-		return err
-	}
-
-	gid, err := getFirstQuery("g", r)
-	if err != nil {
-		return err
-	}
-
-	st, err := getFirstQuery("selected", r)
-	if err != nil {
-		return err
-	}
-
-	selected := st == "true"
-	return recordSelect(bid, gid, pid, selected)
+	selected := queries["selected"] == "true"
+	return recordSelect(queries["b"], queries["g"], queries["p"], selected)
 }
 
 func gameAdminAddHandle(w http.ResponseWriter, r *http.Request) error {
 	if err := r.ParseMultipartForm(160000); err != nil {
 		return err
 	}
-	g := r.Form.Get("g")
-	email := r.Form.Get("email")
 
-	if email == "" {
-		return fmt.Errorf("email is required")
+	queries, err := getQueries(r, "g", "email")
+	if err != nil {
+		return err
 	}
 
-	if g == "" {
-		return fmt.Errorf("g is required")
-	}
-
-	game, err := getGame(g)
+	game, err := getGame(queries["g"])
 	if err != nil {
 		return err
 	}
 	p := Player{}
-	p.Email = email
+	p.Email = queries["email"]
 	game.Admins.Add(p)
 
 	if err := cache.SaveGame(game); err != nil {
@@ -501,21 +454,16 @@ func gameAdminAddHandle(w http.ResponseWriter, r *http.Request) error {
 }
 
 func gameAdminDeleteHandle(w http.ResponseWriter, r *http.Request) error {
-	g, err := getFirstQuery("g", r)
+	queries, err := getQueries(r, "g", "email")
 	if err != nil {
 		return err
 	}
 
-	email, err := getFirstQuery("email", r)
+	game, err := getGame(queries["g"])
 	if err != nil {
 		return err
 	}
-
-	game, err := getGame(g)
-	if err != nil {
-		return err
-	}
-	p := Player{"", email}
+	p := Player{"", queries["email"]}
 	game.Admins.Remove(p)
 
 	if err := cache.SaveGame(game); err != nil {
@@ -530,24 +478,23 @@ func adminAddHandle(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	email := r.Form.Get("email")
-
-	if email == "" {
-		return fmt.Errorf("email is required")
+	queries, err := getQueries(r, "email")
+	if err != nil {
+		return err
 	}
 
-	p := Player{"", email}
+	p := Player{"", queries["email"]}
 
 	return a.AddAdmin(p)
 }
 
 func adminDeleteHandle(w http.ResponseWriter, r *http.Request) error {
-	email, err := getFirstQuery("email", r)
+	queries, err := getQueries(r, "email")
 	if err != nil {
 		return err
 	}
 
-	p := Player{"", email}
+	p := Player{"", queries["email"]}
 
 	return a.DeleteAdmin(p)
 }
@@ -645,24 +592,27 @@ func wrapHandler(h http.Handler) http.HandlerFunc {
 func getQueries(r *http.Request, queries ...string) (map[string]string, error) {
 	results := make(map[string]string)
 
-	for _, v := range results {
-		result, ok := r.URL.Query()[v]
-		if !ok || len(result[0]) < 1 || result[0] == "undefined" {
-			return results, fmt.Errorf("query parameter %s is missing", v)
+	switch r.Method {
+	case http.MethodPost:
+		for _, v := range queries {
+			result := r.Form.Get(v)
+			if len(result) < 1 {
+				return results, fmt.Errorf("query parameter %s is missing", v)
+			}
+			results[v] = result
 		}
-		results[v] = result[0]
+
+	default:
+		for _, v := range queries {
+			result, ok := r.URL.Query()[v]
+			if !ok || len(result[0]) < 1 || result[0] == "undefined" {
+				return results, fmt.Errorf("query parameter %s is missing", v)
+			}
+			results[v] = result[0]
+		}
 	}
 
 	return results, nil
-}
-
-func getFirstQuery(query string, r *http.Request) (string, error) {
-	result, ok := r.URL.Query()[query]
-
-	if !ok || len(result[0]) < 1 || result[0] == "undefined" {
-		return "", fmt.Errorf("query parameter %s is missing", query)
-	}
-	return result[0], nil
 }
 
 func getProjectID() (string, error) {
