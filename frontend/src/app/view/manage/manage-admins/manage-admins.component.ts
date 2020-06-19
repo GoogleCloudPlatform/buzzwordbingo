@@ -38,10 +38,10 @@ export class ManageAdminsComponent implements OnInit {
     this.refreshGame();
   }
 
-  onAdminRemove($event){
+  onAdminRemove($event, email:string){
     console.log($event)
     $event.target.parentElement.style.display = 'none';
-    this.gameService.removeGameAdmin(this.gameid, $event.target.id).subscribe(val=>{$event.target.parentElement.style.display = 'none';});
+    this.gameService.removeGameAdmin(this.gameid, email).subscribe(val=>{$event.target.parentElement.style.display = 'none';});
     this.refreshGame();
     
   }
