@@ -27,7 +27,10 @@ var (
 	projectNumber = ""
 	// ErrNotAdmin is an error that indicates that the user is not an admin
 	ErrNotAdmin = fmt.Errorf("not an admin or game admin")
-	ctx         = context.Background()
+	// ErrNotAdminOrPlayer is an error that indicates that the user is not an
+	// admin nor an owner of the board they are editing.
+	ErrNotAdminOrPlayer = fmt.Errorf("not an admin or game admin, or owner of board")
+	ctx                 = context.Background()
 )
 
 func main() {
@@ -58,26 +61,26 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/healthz", handleHealth)
-	r.Handle("/api/board", JSONHandler(boardGetHandle))
-	r.Handle("/api/board/delete", PrefetechHandler(boardDeleteHandle, http.MethodDelete))
-	r.Handle("/api/record", SimpleHandler(recordSelectHandle))
-	r.Handle("/api/game", JSONHandler(gameGetHandle))
-	r.Handle("/api/game/new", JSONHandler(gameNewHandle))
-	r.Handle("/api/game/list", JSONHandler(gameListHandle))
-	r.Handle("/api/player/game/list", JSONHandler(playerGameListHandle))
-	r.Handle("/api/game/admin/add", PrefetechHandler(gameAdminAddHandle, http.MethodPost))
-	r.Handle("/api/game/admin/remove", PrefetechHandler(gameAdminDeleteHandle, http.MethodDelete))
-	r.Handle("/api/game/deactivate", SimpleHandler(gameDeactivateHandle))
-	r.Handle("/api/game/phrase/update", SimpleHandler(gamePhraseUpdateHandle))
-	r.Handle("/api/phrase/update", SimpleHandler(masterPhraseUpdateHandle))
-	r.Handle("/api/game/isadmin", SimpleHandler(isGameAdminHandle))
-	r.Handle("/api/player/identify", JSONHandler(iapUsernameGetHandle))
-	r.Handle("/api/player/isadmin", SimpleHandler(isAdminHandle))
-	r.Handle("/api/admin/add", PrefetechHandler(adminAddHandle, http.MethodPost))
-	r.Handle("/api/admin/remove", PrefetechHandler(adminDeleteHandle, http.MethodDelete))
-	r.Handle("/api/admin/list", JSONHandler(adminListHandle))
-	r.Handle("/api/message/receive", PrefetechHandler(messageAcknowledgeHandle, http.MethodPost))
-	r.Handle("/api/cache/clear", SimpleHandler(clearCacheHandle))
+	r.Handle("/api/board", JSONHandler(boardGetHandle, "none"))
+	r.Handle("/api/board/delete", PrefetechHandler(boardDeleteHandle, http.MethodDelete, "none"))
+	r.Handle("/api/record", SimpleHandler(recordSelectHandle, "none"))
+	r.Handle("/api/game", JSONHandler(gameGetHandle, "none"))
+	r.Handle("/api/game/new", JSONHandler(gameNewHandle, "none"))
+	r.Handle("/api/game/list", JSONHandler(gameListHandle, "global"))
+	r.Handle("/api/player/game/list", JSONHandler(playerGameListHandle, "none"))
+	r.Handle("/api/game/admin/add", PrefetechHandler(gameAdminAddHandle, http.MethodPost, "game"))
+	r.Handle("/api/game/admin/remove", PrefetechHandler(gameAdminDeleteHandle, http.MethodDelete, "game"))
+	r.Handle("/api/game/deactivate", SimpleHandler(gameDeactivateHandle, "game"))
+	r.Handle("/api/game/phrase/update", SimpleHandler(gamePhraseUpdateHandle, "game"))
+	r.Handle("/api/phrase/update", SimpleHandler(masterPhraseUpdateHandle, "global"))
+	r.Handle("/api/game/isadmin", AdminHandler(isGameAdminHandle))
+	r.Handle("/api/player/identify", JSONHandler(iapUsernameGetHandle, "none"))
+	r.Handle("/api/player/isadmin", AdminHandler(isAdminHandle))
+	r.Handle("/api/admin/add", PrefetechHandler(adminAddHandle, http.MethodPost, "global"))
+	r.Handle("/api/admin/remove", PrefetechHandler(adminDeleteHandle, http.MethodDelete, "global"))
+	r.Handle("/api/admin/list", JSONHandler(adminListHandle, "global"))
+	r.Handle("/api/message/receive", PrefetechHandler(messageAcknowledgeHandle, http.MethodPost, "none"))
+	r.Handle("/api/cache/clear", SimpleHandler(clearCacheHandle, "global"))
 
 	routes := []string{"login", "invite", "game", "manage", "gamenew", "gamepicker", "admin"}
 
@@ -98,45 +101,98 @@ func main() {
 
 }
 
-type Adapter func(http.Handler) http.Handler
-type ErrorEmitter func(http.ResponseWriter, *http.Request) (string, int, error)
-type JSONEmitter func(http.ResponseWriter, *http.Request) (JSONProducer, int, error)
+type ErrorEmitter func(http.ResponseWriter, *http.Request) error
+type JSONEmitter func(http.ResponseWriter, *http.Request) (JSONProducer, error)
+type AdminEmitter func(http.ResponseWriter, *http.Request) (int, error)
 
-func SimpleHandler(h ErrorEmitter) http.Handler {
+func AdminHandler(h AdminEmitter) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		weblog(fmt.Sprintf("%s called", r.URL.Path))
-		response, statuscode, err := h(w, r)
+
+		_, err := h(w, r)
 
 		if err != nil {
-			if statuscode != http.StatusInternalServerError {
-				writeResponse(w, statuscode, response)
+			if err == ErrNotAdmin {
+				writeResponse(w, http.StatusOK, fmt.Sprintf("%t", false))
 				return
 			}
-			writeError(w, err.Error())
+			writeErrorMsg(w, err)
 			return
 		}
-		writeSuccess(w, response)
+		writeResponse(w, http.StatusOK, fmt.Sprintf("%t", true))
+		return
+
 	})
 }
 
-func JSONHandler(h JSONEmitter) http.Handler {
+func SimpleHandler(h ErrorEmitter, adminlevel string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		weblog(fmt.Sprintf("%s called", r.URL.Path))
-		jsonProducer, statuscode, err := h(w, r)
+
+		if err := IsAdminChecker(w, r, adminlevel); err != nil {
+			return
+		}
+
+		err := h(w, r)
 
 		if err != nil {
-			if statuscode != http.StatusInternalServerError {
-				writeResponse(w, statuscode, fmt.Sprintf("{\"error\":\"%s\"}", err))
-				return
-			}
+			writeError(w, err.Error())
+			return
+		}
+		writeSuccess(w, "ok")
+	})
+}
+
+func IsAdminChecker(w http.ResponseWriter, r *http.Request, adminlevel string) error {
+	switch adminlevel {
+	case "game":
+		gid, err := getFirstQuery("g", r)
+		if err != nil {
+			writeResponse(w, http.StatusInternalServerError, fmt.Sprintf("{\"error\":\"%s\"}", err))
+			return err
+		}
+
+		statusCode, err := isAdmin(r, gid)
+		if err != nil {
+			weblog(fmt.Sprintf("IsAdminCheck failed in the handler"))
+			writeResponse(w, statusCode, fmt.Sprintf("{\"error\":\"%s\"}", err))
+			return err
+		}
+		weblog(fmt.Sprintf("IsAdminCheck passed in the handler"))
+	case "global":
+		statusCode, err := isGlobalAdmin(r)
+		if err != nil {
+			weblog(fmt.Sprintf("IsGlobalCheck failed in the handler"))
+			writeResponse(w, statusCode, fmt.Sprintf("{\"error\":\"%s\"}", err))
+			return err
+		}
+		weblog(fmt.Sprintf("IsGlobalCheck passed in the handler"))
+	default:
+		return nil
+	}
+	return nil
+}
+
+func JSONHandler(h JSONEmitter, adminlevel string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		weblog(fmt.Sprintf("%s called", r.URL.Path))
+
+		if err := IsAdminChecker(w, r, adminlevel); err != nil {
+			return
+		}
+
+		jsonProducer, err := h(w, r)
+
+		if err != nil {
 			writeError(w, err.Error())
 			return
 		}
 		writeJSON(w, jsonProducer)
+		return
 	})
 }
 
-func PrefetechHandler(h ErrorEmitter, method string) http.Handler {
+func PrefetechHandler(h ErrorEmitter, method string, adminlevel string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		weblog(fmt.Sprintf("%s called", r.URL.Path))
 
@@ -147,135 +203,113 @@ func PrefetechHandler(h ErrorEmitter, method string) http.Handler {
 			return
 		}
 
-		response, statuscode, err := h(w, r)
-
 		if r.Method != method {
 			msg := fmt.Sprintf("{\"error\":\"Must use http method %s you had %s\"}", method, r.Method)
 			writeResponse(w, http.StatusMethodNotAllowed, msg)
 			return
 		}
 
-		if err != nil {
-			if statuscode != http.StatusInternalServerError {
-				writeResponse(w, statuscode, response)
-				return
+		if err := IsAdminChecker(w, r, adminlevel); err != nil {
+			return
+		}
+
+		if err := h(w, r); err != nil {
+			if err == ErrNotAdminOrPlayer {
+				writeResponse(w, http.StatusForbidden, fmt.Sprintf("{\"error\":\"%s\"}", err))
 			}
+
 			writeError(w, err.Error())
 			return
 		}
-		writeSuccess(w, response)
+		writeSuccess(w, "ok")
 	})
 }
 
-func clearCacheHandle(w http.ResponseWriter, r *http.Request) (string, int, error) {
-	return "ok", http.StatusOK, cache.Clear()
+func clearCacheHandle(w http.ResponseWriter, r *http.Request) error {
+	return cache.Clear()
 }
 
-func isAdminHandle(w http.ResponseWriter, r *http.Request) (string, int, error) {
-	statusCode, err := isGlobalAdmin(r)
-	if err != nil {
-		if err == ErrNotAdmin {
-			return fmt.Sprintf("%t", false), http.StatusOK, err
-		}
-		return fmt.Sprintf("{\"error\":\"%s\"}", err), statusCode, err
-	}
-	return fmt.Sprintf("%t", true), http.StatusOK, err
+func isAdminHandle(w http.ResponseWriter, r *http.Request) (int, error) {
+	return isGlobalAdmin(r)
 }
 
-func isGameAdminHandle(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func isGameAdminHandle(w http.ResponseWriter, r *http.Request) (int, error) {
 	gid, err := getFirstQuery("g", r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
+		return http.StatusInternalServerError, err
 	}
 
-	statusCode, err := isGameAdmin(r, gid)
-	if err != nil {
-		if err == ErrNotAdmin {
-			return fmt.Sprintf("%t", false), http.StatusOK, err
-		}
-		return fmt.Sprintf("{\"error\":\"%s\"}", err), statusCode, err
-	}
-	return fmt.Sprintf("%t", true), http.StatusOK, err
+	return isGameAdmin(r, gid)
 }
 
-func gamePhraseUpdateHandle(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func gamePhraseUpdateHandle(w http.ResponseWriter, r *http.Request) error {
 	gid, err := getFirstQuery("g", r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
 	pid, err := getFirstQuery("p", r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
 	text, err := getFirstQuery("text", r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
-	}
-
-	statusCode, err := isAdmin(r, gid)
-	if err != nil {
-		return fmt.Sprintf("{\"error\":\"%s\"}", err), statusCode, err
+		return err
 	}
 
 	phrase := Phrase{}
 	phrase.ID = pid
 	phrase.Text = text
 
-	return "ok", http.StatusInternalServerError, updateGamePhrases(gid, phrase)
+	return updateGamePhrases(gid, phrase)
 }
 
-func masterPhraseUpdateHandle(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func masterPhraseUpdateHandle(w http.ResponseWriter, r *http.Request) error {
 	pid, err := getFirstQuery("p", r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
 	text, err := getFirstQuery("text", r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
-	}
-
-	statusCode, err := isGlobalAdmin(r)
-	if err != nil {
-		return fmt.Sprintf("{\"error\":\"%s\"}", err), statusCode, err
+		return err
 	}
 
 	phrase := Phrase{}
 	phrase.ID = pid
 	phrase.Text = text
 
-	return "ok", http.StatusInternalServerError, updateMasterPhrase(phrase)
+	return updateMasterPhrase(phrase)
 }
 
-func iapUsernameGetHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, int, error) {
+func iapUsernameGetHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error) {
 	p := Player{}
 
 	email, err := getPlayerEmail(r)
 	if err != nil {
-		return p, http.StatusInternalServerError, err
+		return p, err
 	}
 
 	p.Email = email
 
-	return p, http.StatusOK, nil
+	return p, nil
 }
 
-func messageAcknowledgeHandle(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func messageAcknowledgeHandle(w http.ResponseWriter, r *http.Request) error {
 	if err := r.ParseMultipartForm(160000); err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
 	mid := r.Form.Get("m")
 	gid := r.Form.Get("g")
 
 	if mid == "" {
-		return "", http.StatusInternalServerError, fmt.Errorf("m is required")
+		return fmt.Errorf("m is required")
 	}
 
 	if gid == "" {
-		return "", http.StatusInternalServerError, fmt.Errorf("g is required")
+		return fmt.Errorf("g is required")
 	}
 
 	g := Game{}
@@ -283,299 +317,243 @@ func messageAcknowledgeHandle(w http.ResponseWriter, r *http.Request) (string, i
 	g.ID = gid
 	m.ID = mid
 
-	return "ok", http.StatusOK, a.AcknowledgeMessage(g, m)
+	return a.AcknowledgeMessage(g, m)
 }
 
-func playerGameListHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, int, error) {
+func playerGameListHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error) {
 	email, err := getPlayerEmail(r)
 	if err != nil {
-		return Games{}, http.StatusInternalServerError, err
+		return Games{}, err
 	}
-	games, err := getGamesForKey(email)
-	return games, http.StatusOK, err
+	return getGamesForKey(email)
 }
 
-func gameListHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, int, error) {
-	statusCode, err := isGlobalAdmin(r)
-	if err != nil {
-		return Games{}, statusCode, err
-	}
-
-	games, err := getGamesForKey("admin-list")
-	return games, http.StatusOK, err
+func gameListHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error) {
+	return getGamesForKey("admin-list")
 }
 
-func boardGetHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, int, error) {
+func boardGetHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error) {
 	email, err := getPlayerEmail(r)
 	if err != nil {
-		return Board{}, http.StatusInternalServerError, err
+		return Board{}, err
 	}
 
 	name, err := getFirstQuery("name", r)
 	if err != nil {
-		return Board{}, http.StatusInternalServerError, err
+		return Board{}, err
 	}
 
 	gid, err := getFirstQuery("g", r)
 	if err != nil {
-		return Board{}, http.StatusInternalServerError, err
+		return Board{}, err
 	}
 
 	p := Player{Name: name, Email: email}
 
 	g, err := getGame(gid)
 	if err != nil {
-		return Board{}, http.StatusInternalServerError, err
+		return Board{}, err
 	}
 
-	board, err := getBoardForPlayer(p, g)
-	if err != nil {
-		return Board{}, http.StatusInternalServerError, err
-	}
-
-	return board, http.StatusOK, err
+	return getBoardForPlayer(p, g)
 }
 
-func boardDeleteHandle(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func boardDeleteHandle(w http.ResponseWriter, r *http.Request) error {
 	b, err := getFirstQuery("b", r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
 	g, err := getFirstQuery("g", r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
 	board, err := getBoard(b, g)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
 	email, err := getPlayerEmail(r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
-	if statusCode, err := isAdmin(r, g); err != nil && err != ErrNotAdmin {
-		return fmt.Sprintf("{\"error\":\"%s\"}", err), statusCode, err
+	if _, err := isAdmin(r, g); err != nil && err != ErrNotAdmin {
+		return err
 	}
 
 	if !(board.Player.Email == email) && err == ErrNotAdmin {
-		return fmt.Sprintf("{\"error\":\"%s\"}", err), http.StatusForbidden, err
+		return ErrNotAdminOrPlayer
 	}
 
-	return "ok", http.StatusOK, deleteBoard(b, g)
+	return deleteBoard(b, g)
 }
 
-func gameNewHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, int, error) {
+func gameNewHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error) {
 	email, err := getPlayerEmail(r)
 	if err != nil {
-		return Game{}, http.StatusInternalServerError, err
+		return Game{}, err
 	}
 
 	name, err := getFirstQuery("name", r)
 	if err != nil {
-		return Game{}, http.StatusInternalServerError, err
+		return Game{}, err
 	}
 
 	pname, err := getFirstQuery("pname", r)
 	if err != nil {
-		return Game{}, http.StatusInternalServerError, err
+		return Game{}, err
 	}
 
 	p := Player{Name: pname, Email: email}
 
-	game, err := getNewGame(name, p)
-	if err != nil {
-		return Game{}, http.StatusInternalServerError, err
-	}
-
-	return game, http.StatusOK, err
+	return getNewGame(name, p)
 }
 
-func gameGetHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, int, error) {
+func gameGetHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error) {
 	email, err := getPlayerEmail(r)
 	if err != nil {
-		return Game{}, http.StatusInternalServerError, err
+		return Game{}, err
 	}
 
 	g, err := getFirstQuery("g", r)
 	if err != nil {
-		return Game{}, http.StatusInternalServerError, err
+		return Game{}, err
 	}
 
 	game, err := getGame(g)
 	if err != nil {
-		return Game{}, http.StatusInternalServerError, err
+		return Game{}, err
 	}
 
 	if _, err := isAdmin(r, g); err != nil {
 		if err != ErrNotAdmin {
-			return Game{}, http.StatusInternalServerError, err
+			return Game{}, err
 		}
 		game.Obscure(email)
 	}
-	return game, http.StatusOK, err
+	return game, nil
 }
 
-func gameDeactivateHandle(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func gameDeactivateHandle(w http.ResponseWriter, r *http.Request) error {
 	g, err := getFirstQuery("g", r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
-	statusCode, err := isAdmin(r, g)
-	if err != nil {
-		return fmt.Sprintf("{\"error\":\"%s\"}", err), statusCode, err
-	}
-
-	return "ok", http.StatusInternalServerError, deactivateGame(g)
+	return deactivateGame(g)
 }
 
-func recordSelectHandle(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func recordSelectHandle(w http.ResponseWriter, r *http.Request) error {
 	pid, err := getFirstQuery("p", r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
 	bid, err := getFirstQuery("b", r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
 	gid, err := getFirstQuery("g", r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
 	st, err := getFirstQuery("selected", r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
 	selected := st == "true"
-	return "ok", http.StatusInternalServerError, recordSelect(bid, gid, pid, selected)
+	return recordSelect(bid, gid, pid, selected)
 }
 
-func gameAdminAddHandle(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func gameAdminAddHandle(w http.ResponseWriter, r *http.Request) error {
 	if err := r.ParseMultipartForm(160000); err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 	g := r.Form.Get("g")
 	email := r.Form.Get("email")
 
 	if email == "" {
-		return "", http.StatusInternalServerError, fmt.Errorf("email is required")
+		return fmt.Errorf("email is required")
 	}
 
 	if g == "" {
-		return "", http.StatusInternalServerError, fmt.Errorf("g is required")
-	}
-
-	statusCode, err := isAdmin(r, g)
-	if err != nil {
-		return fmt.Sprintf("{\"error\":\"%s\"}", err), statusCode, err
+		return fmt.Errorf("g is required")
 	}
 
 	game, err := getGame(g)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 	p := Player{}
 	p.Email = email
 	game.Admins.Add(p)
 
 	if err := cache.SaveGame(game); err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
-	if err := a.SaveGame(game); err != nil {
-		return "", http.StatusInternalServerError, err
-	}
-
-	return "ok", http.StatusOK, nil
+	return a.SaveGame(game)
 }
 
-func gameAdminDeleteHandle(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func gameAdminDeleteHandle(w http.ResponseWriter, r *http.Request) error {
 	g, err := getFirstQuery("g", r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
 	email, err := getFirstQuery("email", r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
-	}
-
-	statusCode, err := isAdmin(r, g)
-	if err != nil {
-		return fmt.Sprintf("{\"error\":\"%s\"}", err), statusCode, err
+		return err
 	}
 
 	game, err := getGame(g)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 	p := Player{"", email}
 	game.Admins.Remove(p)
 
 	if err := cache.SaveGame(game); err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
-	if err := a.SaveGame(game); err != nil {
-		return "", http.StatusInternalServerError, err
-	}
-
-	return "ok", http.StatusOK, nil
+	return a.SaveGame(game)
 }
 
-func adminAddHandle(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func adminAddHandle(w http.ResponseWriter, r *http.Request) error {
 	if err := r.ParseMultipartForm(160000); err != nil {
-		return "", http.StatusInternalServerError, err
+		return err
 	}
 
 	email := r.Form.Get("email")
 
 	if email == "" {
-		return "", http.StatusInternalServerError, fmt.Errorf("email is required")
-	}
-
-	statusCode, err := isGlobalAdmin(r)
-	if err != nil {
-		return fmt.Sprintf("{\"error\":\"%s\"}", err), statusCode, err
+		return fmt.Errorf("email is required")
 	}
 
 	p := Player{"", email}
 
-	return "ok", http.StatusOK, a.AddAdmin(p)
+	return a.AddAdmin(p)
 }
 
-func adminDeleteHandle(w http.ResponseWriter, r *http.Request) (string, int, error) {
+func adminDeleteHandle(w http.ResponseWriter, r *http.Request) error {
 	email, err := getFirstQuery("email", r)
 	if err != nil {
-		return "", http.StatusInternalServerError, err
-	}
-
-	statusCode, err := isGlobalAdmin(r)
-	if err != nil {
-		return fmt.Sprintf("{\"error\":\"%s\"}", err), statusCode, err
+		return err
 	}
 
 	p := Player{"", email}
 
-	return "ok", http.StatusOK, a.DeleteAdmin(p)
+	return a.DeleteAdmin(p)
 }
 
-func adminListHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, int, error) {
-	statusCode, err := isGlobalAdmin(r)
-	if err != nil {
-		return Games{}, statusCode, err
-	}
-
-	players, err := a.GetAdmins()
-	return players, http.StatusOK, err
+func adminListHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error) {
+	return a.GetAdmins()
 }
 
 func handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -611,6 +589,12 @@ func writeSuccess(w http.ResponseWriter, msg string) {
 
 func writeError(w http.ResponseWriter, msg string) {
 	s := fmt.Sprintf("{\"error\":\"%s\"}", msg)
+	writeResponse(w, http.StatusInternalServerError, s)
+	return
+}
+
+func writeErrorMsg(w http.ResponseWriter, err error) {
+	s := fmt.Sprintf("{\"error\":\"%s\"}", err)
 	writeResponse(w, http.StatusInternalServerError, s)
 	return
 }
