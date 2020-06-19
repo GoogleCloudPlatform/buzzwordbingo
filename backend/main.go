@@ -291,9 +291,6 @@ func iapUsernameGetHandle(w http.ResponseWriter, r *http.Request) (JSONProducer,
 }
 
 func messageAcknowledgeHandle(w http.ResponseWriter, r *http.Request) error {
-	if err := r.ParseMultipartForm(160000); err != nil {
-		return err
-	}
 
 	queries, err := getQueries(r, "m", "g")
 	if err != nil {
@@ -429,9 +426,6 @@ func recordSelectHandle(w http.ResponseWriter, r *http.Request) error {
 }
 
 func gameAdminAddHandle(w http.ResponseWriter, r *http.Request) error {
-	if err := r.ParseMultipartForm(160000); err != nil {
-		return err
-	}
 
 	queries, err := getQueries(r, "g", "email")
 	if err != nil {
@@ -474,9 +468,6 @@ func gameAdminDeleteHandle(w http.ResponseWriter, r *http.Request) error {
 }
 
 func adminAddHandle(w http.ResponseWriter, r *http.Request) error {
-	if err := r.ParseMultipartForm(160000); err != nil {
-		return err
-	}
 
 	queries, err := getQueries(r, "email")
 	if err != nil {
@@ -592,8 +583,13 @@ func wrapHandler(h http.Handler) http.HandlerFunc {
 func getQueries(r *http.Request, queries ...string) (map[string]string, error) {
 	results := make(map[string]string)
 
+	fmt.Printf("%+v\n", r)
+
 	switch r.Method {
 	case http.MethodPost:
+		if err := r.ParseMultipartForm(160000); err != nil {
+			return results, err
+		}
 		for _, v := range queries {
 			result := r.Form.Get(v)
 			if len(result) < 1 {
