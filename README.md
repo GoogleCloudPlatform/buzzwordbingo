@@ -1,7 +1,8 @@
-# Bingomeeting
+# Buzzword Bingo
 
 This project is an open source version of a Buzzword Bingo game for meetings. 
 The idea is to make the litany of meetings that we do more engaging. 
+![Diagram of the sustem architecture](images/screenshot.png "System Diagram")
 
 ## The Setup
 
@@ -29,7 +30,7 @@ Source technologies.
 * [go](https://golang.org/dl/)
  
 ### Setup script
-
+![Diagram of the sustem architecture](images/diagram.png "System Diagram")
 
 <!-- TODO: clean this up -->
 * Create a Google Cloud Project
@@ -41,11 +42,8 @@ Source technologies.
 * Set environmental variable `BINGO_OAUTH_SECRET` value given in IAP console.  
 * Eanble IAP by runninbg `make secure`
 * Initilize project using Firestore CLI
-* Download Firebase config and copy into  `frontend/src/environments/environment.ts1`
+* Download Firebase config and copy into  `frontend/src/environments/environment.ts`
 * Repeat for `frontend/src/environments/environment.prod.ts`
-
-
-
 
 
 
@@ -56,12 +54,29 @@ Run `make dev` for a dev server. Navigate to `http://localhost:4200/`. The app w
 
 ## Deploy to production
 
-There are two ways to go about running this in production
+`make deploy`
 
-1. Use `make deploy`
-1. Setup a CLI pipeline on a git repo that runs a Cloud Build job to deploy to 
+
+## Optional Components
+### Firestore emulator for testing
+In order to test you need to setup and install the Firestore emulator, which 
+requires the JDK to be installed. 
+
+[Firestore Emulator](https://firebase.google.com/docs/rules/emulator-setup)
+
+### Cloud Build
+Setup a CLI pipeline on a git repo that runs a Cloud Build job to deploy to 
 App Engine. There is a cloudbuild.yaml setup and a builder directory available 
-for doing that. 
+for doing that.  To do this, you need to run
+`make builders`
+
+Then you can run Cloud Build deploys using `make build`
+
+### Cloud Functions
+Readup on [sending Cloud Build notifications using Mailgun](https://cloud.google.com/cloud-build/docs/configure-third-party-notifications#email_notifications). 
+Setup `/functions/email/config.json` based on the sample file there. 
+
+Then run `make function`
 
 
 This is not an official Google product. 
