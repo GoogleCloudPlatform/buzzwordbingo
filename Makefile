@@ -134,3 +134,9 @@ savecreds: env
 builders:
 	cd builders/gotester && make build
 	cd builders/ng && make build	
+
+function: env
+	gcloud services enable cloudfunctions.googleapis.com
+	-gcloud functions deploy subscribeMailgun --trigger-topic cloud-builds \
+	--runtime nodejs10 --set-env-vars GCLOUD_PROJECT=$(PROJECT) \
+	--source $(BASEDIR)/functions/email	--allow-unauthenticated	

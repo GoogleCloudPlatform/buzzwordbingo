@@ -9,3 +9,4 @@ firestore-debug.log
 backend/app.yaml
 frontend/src/environments/environment.prod.ts
 frontend/src/environments/environment.ts
+functions/email/config.json
