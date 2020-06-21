@@ -106,7 +106,51 @@ func TestGetUsername(t *testing.T) {
 		}
 
 	}
+}
 
+func TestGetQueries(t *testing.T) {
+	emptyreq, _ := http.NewRequest("GET", "/", nil)
+	req, _ := http.NewRequest("GET", "/?g=12345678&email=test@example.com", nil)
+
+	postreq, _ := http.NewRequest("POST", "/", strings.NewReader("g=12345678"))
+	postreq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	var table = []struct {
+		inReq    *http.Request
+		inParam  string
+		outErr   error
+		outParam string
+		outOK    bool
+	}{
+		{req, "g", nil, "12345678", true},
+		{emptyreq, "g", fmt.Errorf("query parameter '%s' is missing", "g"), "", false},
+		{req, "email", nil, "test@example.com", true},
+		{emptyreq, "email", fmt.Errorf("query parameter '%s' is missing", "email"), "", false},
+		{req, "name", fmt.Errorf("query parameter '%s' is missing", "name"), "", false},
+		{postreq, "g", nil, "12345678", true},
+		{postreq, "name", fmt.Errorf("query parameter '%s' is missing", "name"), "", false},
+	}
+
+	for _, v := range table {
+		result, err := getQueries(v.inReq, v.inParam)
+
+		// Was having a weird condition where comparisonwas always wrong despite
+		// beig the exact same thing.
+		errText := fmt.Sprintf("%s", err)
+		wantText := fmt.Sprintf("%s", v.outErr)
+		if !(errText == wantText) {
+			t.Errorf("getQueries()  got '%+v', want '%+v'", err, v.outErr)
+		}
+
+		got, ok := result[v.inParam]
+		if ok != v.outOK {
+			t.Errorf("getQueries()  got '%t', want '%t'", ok, v.outOK)
+		}
+
+		if got != v.outParam {
+			t.Errorf("getQueries()  got '%s', want '%s'", got, v.outParam)
+		}
+	}
 }
 
 func TestSimpleHandlers(t *testing.T) {
@@ -155,10 +199,9 @@ func TestSimpleHandlers(t *testing.T) {
 		}
 
 	}
-
 }
 
-func TestAuthErrorsGetHandlers(t *testing.T) {
+func TestGlobalAuthErrorsGetHandlers(t *testing.T) {
 
 	errmsg := fmt.Sprintf(`{"error":"%s"}`, ErrNotAdmin)
 
@@ -202,5 +245,74 @@ func TestAuthErrorsGetHandlers(t *testing.T) {
 		}
 
 	}
+}
 
+func TestGlobalAuthSuccessGetHandlers(t *testing.T) {
+
+	player1 := Player{"", fmt.Sprintf("%s@google.com", os.Getenv("USER"))}
+	player2 := Player{"", fmt.Sprintf("%s@google.com", "other")}
+
+	game1, err := getNewGame("Test Game 1", player1)
+	if err != nil {
+		t.Errorf("error in setting up games for testing %v", err)
+	}
+
+	game2, err := getNewGame("Test Game 2", player2)
+	if err != nil {
+		t.Errorf("error in setting up games for testing %v", err)
+	}
+
+	if err := a.AddAdmin(player1); err != nil {
+		t.Errorf("error in setting up adin for testing %v", err)
+	}
+
+	games := Games{}
+	games.Add(game1)
+	games.Add(game2)
+
+	gamejson, err := games.JSON()
+	if err != nil {
+		t.Errorf("error in setting up games json for testing %v", err)
+	}
+
+	var table = []struct {
+		in      string
+		out     string
+		handler http.Handler
+	}{
+		{"/api/admin/list", fmt.Sprintf(`[{"name":"","email":"%s"}]`, player1.Email), JSONHandler(adminListHandle, "global")},
+		{"/api/game/list", gamejson, JSONHandler(gameListHandle, "global")},
+		{"/api/cache/clear", `{"msg":"ok"}`, SimpleHandler(clearCacheHandle, "global")},
+	}
+
+	for _, v := range table {
+
+		// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
+		// pass 'nil' as the third parameter.
+		req, err := http.NewRequest("GET", v.in, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+		rr := httptest.NewRecorder()
+
+		// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
+		// directly and pass in our Request and ResponseRecorder.
+		v.handler.ServeHTTP(rr, req)
+
+		// Check the status code is what we expect.
+		if status := rr.Code; status != http.StatusOK {
+			t.Errorf("handler returned wrong status code: got %v want %v",
+				status, http.StatusOK)
+		}
+
+		// Check the response body is what we expect.
+		expected := v.out
+		if rr.Body.String() != expected {
+			t.Errorf("handler returned unexpected body: got %v want %v",
+				rr.Body.String(), expected)
+		}
+
+	}
 }

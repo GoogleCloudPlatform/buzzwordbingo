@@ -65,7 +65,7 @@ func NewGame(name string, player Player, phrases []Phrase) Game {
 	g.ID = uniqueID()
 	g.Name = name
 	g.Active = true
-	g.Created = time.Now()
+	g.Created = time.Now().UTC()
 	g.Boards = make(map[string]Board)
 	g.Admins.Add(player)
 	g.Players.Add(player)
@@ -134,8 +134,25 @@ func (g *Game) DeleteBoard(board Board) {
 // Games is a collection of game objects.
 type Games []Game
 
+// Add adds a particular game to the list.
+func (gs *Games) Add(game Game) {
+	*gs = append(*gs, game)
+	return
+}
+
+// Sort orders Games by createdon
+func (gs *Games) Sort() {
+	tmp := *gs
+	sort.Slice(tmp, func(i, j int) bool {
+		return tmp[i].Created.Before(tmp[j].Created)
+	})
+	gs = &tmp
+	return
+}
+
 // JSON marshalls the content of a slice of games to json.
 func (g Games) JSON() (string, error) {
+	g.Sort()
 	bytes, err := json.Marshal(g)
 	if err != nil {
 		return "", fmt.Errorf("could not marshal json for response: %s", err)

@@ -222,6 +222,16 @@ func (a *Agent) GetGames() (Games, error) {
 		doc.DataTo(&game)
 		game.ID = doc.Ref.ID
 
+		game, err = a.loadGameWithRecords(game)
+		if err != nil {
+			return g, fmt.Errorf("failed to load records for game: %v", err)
+		}
+
+		game, err = a.loadGameWithPlayers(game)
+		if err != nil {
+			return g, fmt.Errorf("failed to load players for game: %v", err)
+		}
+
 		game, err = a.loadGameWithAdmins(game)
 		if err != nil {
 			return g, fmt.Errorf("failed to load admins for game: %v", err)

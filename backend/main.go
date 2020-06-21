@@ -585,13 +585,14 @@ func getQueries(r *http.Request, queries ...string) (map[string]string, error) {
 
 	switch r.Method {
 	case http.MethodPost:
-		if err := r.ParseMultipartForm(160000); err != nil {
+		if err := r.ParseForm(); err != nil {
 			return results, err
 		}
 		for _, v := range queries {
 			result := r.Form.Get(v)
 			if len(result) < 1 {
-				return results, fmt.Errorf("query parameter %s is missing", v)
+				fmt.Printf("POST '%+v'\n", v)
+				return results, fmt.Errorf("query parameter '%s' is missing", v)
 			}
 			results[v] = result
 		}
@@ -600,7 +601,8 @@ func getQueries(r *http.Request, queries ...string) (map[string]string, error) {
 		for _, v := range queries {
 			result, ok := r.URL.Query()[v]
 			if !ok || len(result[0]) < 1 || result[0] == "undefined" {
-				return results, fmt.Errorf("query parameter %s is missing", v)
+				err := fmt.Errorf("query parameter '%s' is missing", v)
+				return results, err
 			}
 			results[v] = result[0]
 		}
