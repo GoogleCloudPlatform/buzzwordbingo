@@ -6,7 +6,7 @@ The idea is to make the litany of meetings that we do more engaging.
 
 ## The Setup
 
-This app take advantage of several connected Google Cloud and Google Open 
+This app takes advantage of several connected Google Cloud and Google Open 
 Source technologies. 
 
 |    |            |
@@ -30,9 +30,8 @@ Source technologies.
 * [go](https://golang.org/dl/)
  
 ### Setup script
-![Diagram of the sustem architecture](images/diagram.png "System Diagram")
+![Diagram of the system architecture](images/diagram.png "System Diagram")
 
-<!-- TODO: clean this up -->
 * Create a Google Cloud Project
 * Set environmental variable `BINGO_PROJECT_ID` with project id of your project.
 * Perform multiple tasks by running `make project init`
@@ -42,6 +41,7 @@ Source technologies.
 * Set environmental variable `BINGO_OAUTH_SECRET` value given in IAP console.  
 * Eanble IAP by runninbg `make secure`
 * Initilize project using Firestore CLI
+* Make copies of `frontend/src/environments/sample.environment.ts` and `frontend/src/environments/sample.environment.prod.ts` named `frontend/src/environments/environment.ts` and `frontend/src/environments/environment.prod.ts`
 * Download Firebase config and copy into  `frontend/src/environments/environment.ts`
 * Repeat for `frontend/src/environments/environment.prod.ts`
 
@@ -78,5 +78,5 @@ Setup `/functions/email/config.json` based on the sample file there.
 
 Then run `make function`
 
-
+<hr>
 This is not an official Google product. 

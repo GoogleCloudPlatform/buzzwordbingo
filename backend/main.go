@@ -551,19 +551,19 @@ func writeResponse(w http.ResponseWriter, code int, msg string) {
 	return
 }
 
-type NotFoundRedirectRespWr struct {
+type notFoundRedirectRespWr struct {
 	http.ResponseWriter // We embed http.ResponseWriter
 	status              int
 }
 
-func (w *NotFoundRedirectRespWr) WriteHeader(status int) {
+func (w *notFoundRedirectRespWr) WriteHeader(status int) {
 	w.status = status // Store the status for our own use
 	if status != http.StatusNotFound {
 		w.ResponseWriter.WriteHeader(status)
 	}
 }
 
-func (w *NotFoundRedirectRespWr) Write(p []byte) (int, error) {
+func (w *notFoundRedirectRespWr) Write(p []byte) (int, error) {
 	if w.status != http.StatusNotFound {
 		return w.ResponseWriter.Write(p)
 	}
@@ -572,7 +572,7 @@ func (w *NotFoundRedirectRespWr) Write(p []byte) (int, error) {
 
 func wrapHandler(h http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		nfrw := &NotFoundRedirectRespWr{ResponseWriter: w}
+		nfrw := &notFoundRedirectRespWr{ResponseWriter: w}
 		h.ServeHTTP(nfrw, r)
 		if nfrw.status == 404 {
 			http.Redirect(w, r, "/index.html", http.StatusFound)
