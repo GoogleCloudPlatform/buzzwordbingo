@@ -45,8 +45,10 @@
                 [gid]="gid"
                 [position]="i+1" [currentState]='currentState'>
             </app-item>
-        </div>    
+        </div> 
+        <app-snackbar #snackbar></app-snackbar>   
     </div>
     <app-messages class="board-messages" [messages]='messages' [target]='player.email'></app-messages>
+    
     <app-footer></app-footer>
 </div>

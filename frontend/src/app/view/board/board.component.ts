@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ViewChildren } from '@angular/core';
 import { Observable, of as observableOf, Subscription } from 'rxjs';
 import { DataService, Phrase} from '../../service/data.service'
 import {AuthService, Player} from '../../service/auth.service'
@@ -6,6 +6,7 @@ import {GameService, Board, Message, Game} from '../../service/game.service'
 import { Router, ActivatedRoute } from '@angular/router';
 import {ItemComponent} from './item/item.component'
 import { map, share, debounceTime } from 'rxjs/operators';
+import { SnackbarComponent } from '../widgets/snackbar/snackbar.component';
 
 
 
@@ -15,9 +16,9 @@ import { map, share, debounceTime } from 'rxjs/operators';
   styleUrls: ['./board.component.scss']
 })
 export class BoardComponent implements OnInit {
-
-  @ViewChild(ItemComponent)
-  private itemComponent: ItemComponent;
+  // @ViewChildren(ItemComponent)
+  @ViewChild('snackbar') sb: SnackbarComponent;
+ 
   public itemComponents: ItemComponent[] = [];
 
   public gid:string;
@@ -40,6 +41,7 @@ export class BoardComponent implements OnInit {
     if (!auth.isAuth()){
       auth.logout("not authed")
     }
+    
     
     
     this.gid = route.snapshot.paramMap.get('id');
@@ -67,6 +69,7 @@ export class BoardComponent implements OnInit {
    }
 
    handleBoard(){
+   
     let self = this;
     let block = false;
     if (!block){
@@ -148,6 +151,7 @@ export class BoardComponent implements OnInit {
   showBingo(){
     let board = document.querySelector(".header-container");
     board.classList.add("header-bingo");
+    this.sb.show("You have bingo!");
   }
 
   hideBingo(){
@@ -177,6 +181,7 @@ export class BoardComponent implements OnInit {
     }
 
     if (msg.operation == "reset" && !msg.received){
+      
       this.gameService.messageReceived(this.gid, msg.id).pipe(debounceTime(1000)).subscribe(val=>{
         this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
           this.router.navigateByUrl('/game/'+this.gid);
