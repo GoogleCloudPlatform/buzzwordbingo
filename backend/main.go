@@ -585,13 +585,14 @@ func getQueries(r *http.Request, queries ...string) (map[string]string, error) {
 
 	switch r.Method {
 	case http.MethodPost:
-		if err := r.ParseForm(); err != nil {
+		if err := r.ParseMultipartForm(160000); err != nil {
 			return results, err
 		}
 		for _, v := range queries {
 			result := r.Form.Get(v)
 			if len(result) < 1 {
 				fmt.Printf("POST '%+v'\n", v)
+				fmt.Printf("Form '%+v'\n", r.Form)
 				return results, fmt.Errorf("query parameter '%s' is missing", v)
 			}
 			results[v] = result
@@ -692,8 +693,7 @@ func isGameAdmin(r *http.Request, gid string) (int, error) {
 		return http.StatusInternalServerError, err
 	}
 
-	p := Player{}
-	p.Email = email
+	p := Player{"", email}
 
 	result := game.IsAdmin(p)
 	if result {
