@@ -65,7 +65,7 @@ func NewGame(name string, player Player, phrases []Phrase) Game {
 	g.ID = uniqueID()
 	g.Name = name
 	g.Active = true
-	g.Created = time.Now().UTC()
+	g.Created = time.Now().UTC().Truncate(time.Nanosecond)
 	g.Boards = make(map[string]Board)
 	g.Admins.Add(player)
 	g.Players.Add(player)
@@ -151,9 +151,9 @@ func (gs *Games) Sort() {
 }
 
 // JSON marshalls the content of a slice of games to json.
-func (g Games) JSON() (string, error) {
-	g.Sort()
-	bytes, err := json.Marshal(g)
+func (gs Games) JSON() (string, error) {
+	gs.Sort()
+	bytes, err := json.Marshal(gs)
 	if err != nil {
 		return "", fmt.Errorf("could not marshal json for response: %s", err)
 	}
