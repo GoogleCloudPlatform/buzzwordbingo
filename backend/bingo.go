@@ -65,7 +65,7 @@ func NewGame(name string, player Player, phrases []Phrase) Game {
 	g.ID = uniqueID()
 	g.Name = name
 	g.Active = true
-	g.Created = time.Now().UTC().Truncate(time.Nanosecond)
+	g.Created = time.Now().UTC().Truncate(time.Millisecond)
 	g.Boards = make(map[string]Board)
 	g.Admins.Add(player)
 	g.Players.Add(player)
