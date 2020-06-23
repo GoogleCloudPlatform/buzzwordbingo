@@ -68,7 +68,7 @@ requires the JDK to be installed.
 Setup a CLI pipeline on a git repo that runs a Cloud Build job to deploy to 
 App Engine. There is a cloudbuild.yaml setup and a builder directory available 
 for doing that.  To do this, you need to run
-`make builders`
+`make builders` and `make savecreds`
 
 Then you can run Cloud Build deploys using `make build`
 

@@ -10,9 +10,6 @@ REDISIP=$(shell gcloud beta redis instances describe $(REDISNAME) \
 			--region $(REGION) --format='value(host)')
 VPCCONNECTOR=$(shell gcloud compute networks vpc-access connectors describe \
 			$(REDISNAME)connector --region $(REGION) --format='value(name)' )
-
-test: 
-	@echo $(REDISIP)
 env:
 	gcloud config set project $(PROJECT)
 
