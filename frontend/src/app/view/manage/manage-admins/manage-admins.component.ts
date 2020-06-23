@@ -3,8 +3,7 @@ import { GameService, Game } from 'src/app/service/game.service';
 import { BehaviorSubject, Observable, of as observableOf  } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ProgressspinnerComponent } from '../../widgets/progressspinner/progressspinner.component';
-
-
+import { FormalertComponent } from '../../widgets/formalert/formalert.component';
 
 @Component({
   selector: 'app-manage-admins',
@@ -13,6 +12,7 @@ import { ProgressspinnerComponent } from '../../widgets/progressspinner/progress
 })
 export class ManageAdminsComponent implements OnInit {
   @ViewChild(ProgressspinnerComponent ) spinner: ProgressspinnerComponent ;
+  @ViewChild(FormalertComponent ) formalert: FormalertComponent ;
   public id:string;
   public game:BehaviorSubject<Game> = new BehaviorSubject(new Game);
   public gameid:string;
@@ -34,15 +34,17 @@ export class ManageAdminsComponent implements OnInit {
   }
 
   onAdminAdd(email:string){
-    this.gameService.addGameAdmin(this.gameid, email).subscribe();
+    this.gameService.addGameAdmin(this.gameid, email).subscribe(val=>{this.refreshGame()});
+    this.formalert.alert(`Added ${email} to the list of admins`);
     this.refreshGame();
   }
 
   onAdminRemove($event, email:string){
     console.log($event)
     $event.target.parentElement.style.display = 'none';
-    this.gameService.removeGameAdmin(this.gameid, email).subscribe(val=>{$event.target.parentElement.style.display = 'none';});
-    this.refreshGame();
+    this.gameService.removeGameAdmin(this.gameid, email).subscribe(val=>{$event.target.parentElement.style.display = 'none'; this.refreshGame();});
+    this.formalert.alert(`Removed ${email} from the list of admins`);
+    
     
   }
 

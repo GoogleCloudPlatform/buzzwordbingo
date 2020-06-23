@@ -45,7 +45,11 @@ export const unicornTheme = {
     'grayscale-filter' : 'grayscale(0%)',
     'brightness-filter':'brightness(100%)',
     'interface-shadow1':'rgba(160,164,167,0.35)',
-    'interface-shadow2':'rgba(160,164,167,0.17)'
+    'interface-shadow2':'rgba(160,164,167,0.17)',
+    'alert-text-color':'#000',
+  'alert-text-bg-color':'#fff25e',
+  'error-text-color':'#f9f9f9',
+  'error-text-bg-color':'#CF6679'
 } 
 
 export const lightTheme = {
@@ -92,7 +96,11 @@ export const lightTheme = {
   'grayscale-filter' : 'grayscale(100%)',
   'brightness-filter':'brightness(0)',
   'interface-shadow1':'rgba(60,64,67,0.15)',
-  'interface-shadow2':'rgba(60,64,67,0.07)'
+  'interface-shadow2':'rgba(60,64,67,0.07)',
+  'alert-text-color':'#FFF',
+  'alert-text-bg-color':'#03DAc6',
+  'error-text-color':'#f9f9f9',
+  'error-text-bg-color':'#CF6679'
 } 
 
 
@@ -139,7 +147,11 @@ export const darkTheme = {
   'grayscale-filter' : 'grayscale(100%)',
   'brightness-filter':'brightness(100)',
   'interface-shadow1':'rgba(160,164,167,0.35)',
-  'interface-shadow2':'rgba(160,164,167,0.17)'
+  'interface-shadow2':'rgba(160,164,167,0.17)',
+  'alert-text-color':'#FFF',
+  'alert-text-bg-color':'#03DAc6',
+  'error-text-color':'#f9f9f9',
+  'error-text-bg-color':'#CF6679'
 } 
 
 

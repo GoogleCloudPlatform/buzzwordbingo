@@ -31,6 +31,7 @@ import { AdminGamesComponent } from './view/admin/admin-games/admin-games.compon
 import { ProgressbarComponent } from './view/widgets/progressbar/progressbar.component';
 import { ProgressspinnerComponent } from './view/widgets/progressspinner/progressspinner.component';
 import { SnackbarComponent } from './view/widgets/snackbar/snackbar.component';
+import { FormalertComponent } from './view/widgets/formalert/formalert.component';
 
 @NgModule({
   declarations: [
@@ -57,7 +58,8 @@ import { SnackbarComponent } from './view/widgets/snackbar/snackbar.component';
     AdminGamesComponent,
     ProgressbarComponent,
     ProgressspinnerComponent,
-    SnackbarComponent
+    SnackbarComponent,
+    FormalertComponent
   ],
   imports: [
     BrowserModule,

@@ -3,6 +3,7 @@ import { Observable, of } from 'rxjs';
 import { DataService, Phrase} from '../../../service/data.service'
 import {GameService, Board, Message, Record} from '../../../service/game.service'
 import {ProgressbarComponent} from 'src/app/view/widgets/progressbar/progressbar.component'
+import { FormalertComponent } from '../../widgets/formalert/formalert.component';
 
 @Component({
   selector: 'app-manage-boards',
@@ -11,6 +12,7 @@ import {ProgressbarComponent} from 'src/app/view/widgets/progressbar/progressbar
 })
 export class ManageBoardsComponent implements OnInit {
   @ViewChild(ProgressbarComponent ) bar: ProgressbarComponent ; 
+  @ViewChild(FormalertComponent ) formalert: FormalertComponent ;
   @Input() gid:string;
   public boards: Observable<any[]>;
   constructor(public data:DataService, public gameService:GameService) { }
@@ -22,6 +24,7 @@ export class ManageBoardsComponent implements OnInit {
 
   reset(bid:string, gid:string){
     this.gameService.resetboard(bid, gid);
+    this.formalert.alert(`Board reset`);
   }
 
   onAdminAdd(email:string){
