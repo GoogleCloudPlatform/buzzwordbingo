@@ -4,10 +4,15 @@ REDISNAME=bingocollab
 REGION=us-central1
 GAEREGION=us-central
 SAACCOUNT=bingo-developer-account
-PROJECTNUMBER=$(shell gcloud projects list --filter="$(PROJECT)" --format="value(PROJECT_NUMBER)")
-REDISIP=$(shell gcloud beta redis instances describe $(REDISNAME) --region $(REGION) --format='value(host)')
-VPCCONNECTOR=$(shell gcloud compute networks vpc-access connectors describe $(REDISNAME)connector --region $(REGION) --format='value(name)' )
+PROJECTNUMBER=$(shell gcloud projects list --filter="$(PROJECT)" \
+			--format="value(PROJECT_NUMBER)")
+REDISIP=$(shell gcloud beta redis instances describe $(REDISNAME) \
+			--region $(REGION) --format='value(host)')
+VPCCONNECTOR=$(shell gcloud compute networks vpc-access connectors describe \
+			$(REDISNAME)connector --region $(REGION) --format='value(name)' )
 
+test: 
+	@echo $(REDISIP)
 env:
 	gcloud config set project $(PROJECT)
 
@@ -21,27 +26,25 @@ deploy: env frontend
 	cd backend && gcloud app deploy -q
 
 build:
-	gcloud builds submit --config cloudbuild.yaml --timeout=1200s --machine-type=n1-highcpu-8 . 	
-
-test:
-	gcloud builds submit --config cloudbuild.test.yaml --timeout=1200s --machine-type=n1-highcpu-8 . 	
+	gcloud builds submit --config cloudbuild.yaml --timeout=1200s \
+	--machine-type=n1-highcpu-8 . 	
 
 init:
 	cd frontend && npm install
 	cd backend && go mod vendor
 
 serviceaccount: env
-	@echo ~~~~~~~~~~~~~ Create service account for Development   
+	@echo ~~~ Create service account for Development   
 	-gcloud iam service-accounts create $(SAACCOUNT) \
-    --description "A service account for development of frontend of a bingo game" \
+    --description "A service account for development of a bingo game" \
     --display-name "Bingo App" --project $(PROJECT)
-	@echo ~~~~~~~~~~~~~ Download key for service account. 
+	@echo ~~~ Download key for service account. 
 	-gcloud iam service-accounts keys create creds/creds.json \
   	--iam-account $(SAACCOUNT)@$(PROJECT).iam.gserviceaccount.com  	
 
 
 perms:
-	@echo ~~~~~~~~~~~~~ Grant Service account permissions
+	@echo ~~~ Grant Service account permissions
 	-gcloud projects add-iam-policy-binding $(PROJECT) \
   	--member serviceAccount:$(PROJECT)@appspot.gserviceaccount.com \
   	--role roles/vpaccess.user
@@ -58,7 +61,8 @@ perms:
   	--member serviceAccount:$(SAACCOUNT)@$(PROJECT).iam.gserviceaccount.com \
   	--role roles/project.viewer  
 
-project: env services appengine cloudbuild memorystore serviceaccount perms firestore-rules
+project: env services appengine cloudbuild memorystore \
+		serviceaccount perms firestore-rules
 
 services: env
 	-gcloud services enable vpcaccess.googleapis.com
@@ -69,19 +73,20 @@ services: env
 	-gcloud services enable iap.googleapis.com
 
 appengine: env
-	@echo ~~~~~~~~~~~~~ Intialize AppEngine on $(PROJECT)
+	@echo ~~~ Intialize AppEngine on $(PROJECT)
 	-gcloud app create --region $(GAEREGION)	
 
 cloudbuild: env
-	@echo ~~~~~~~~~~~~~ Enable Cloud Build service account to deploy to AppEngine on $(PROJECT)
+	@echo ~~~ Enable Build service account to deploy to GAE on $(PROJECT)
 	-gcloud projects add-iam-policy-binding $(PROJECT) \
   	--member serviceAccount:$(PROJECTNUMBER)@cloudbuild.gserviceaccount.com \
   	--role roles/appengine.appAdmin	
 
 memorystore: env
 	-gcloud redis instances create $(REDISNAME) --size=1 --region=$(REGION)
-	-gcloud compute networks vpc-access connectors create $(REDISNAME)connector \
-	--network default --region $(REGION) --range 10.8.0.0/28 	
+	-gcloud compute networks vpc-access connectors create \
+	$(REDISNAME)connector --network default --region $(REGION) \
+	--range 10.8.0.0/28 	
 
 listvpc:
 	echo $(VPCCONNECTOR)
