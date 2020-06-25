@@ -164,9 +164,14 @@ func generateBingoMessages(board Board, game Game, first bool) []Message {
 
 		for _, v := range reports {
 			mr := Message{}
-			mr.SetText("<strong>%s</strong> was selected by only %d of the other %d players", v.Phrase.Text, v.Count-1, v.Total-1)
-			if v.Count == 1 {
-				mr.SetText("<strong>%s</strong> was selected by none of the other %d players", v.Phrase.Text, v.Total-1)
+
+			if v.Percent > .5 {
+				mr.SetText("<strong>%s</strong> was selected by %d of the other %d players", v.Phrase.Text, v.Count-1, v.Total-1)
+			} else {
+				mr.SetText("<strong>%s</strong> was selected by only <strong>%d of the other %d players</strong>", v.Phrase.Text, v.Count-1, v.Total-1)
+				if v.Count == 1 {
+					mr.SetText("<strong>%s</strong> was selected by <strong>none</strong> of the other %d players", v.Phrase.Text, v.Total-1)
+				}
 			}
 
 			mr.SetAudience("admin", board.Player.Email)
