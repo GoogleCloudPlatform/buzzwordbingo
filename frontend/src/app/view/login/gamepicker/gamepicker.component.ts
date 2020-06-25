@@ -18,6 +18,7 @@ import { Component, OnInit,ViewChild } from '@angular/core';
 import { GameService, Game } from 'src/app/service/game.service';
 import {Router, ActivatedRoute} from '@angular/router';
 import { BehaviorSubject, Observable, of as observableOf  } from 'rxjs';
+import {AuthService, Player} from 'src/app/service/auth.service'
 import {ProgressbarComponent} from 'src/app/view/widgets/progressbar/progressbar.component'
 
 @Component({
@@ -29,7 +30,10 @@ export class GamepickerComponent implements OnInit {
   @ViewChild(ProgressbarComponent ) bar: ProgressbarComponent ; 
   public games:BehaviorSubject<Game[]> = new BehaviorSubject([]);
   
-  constructor(public game:GameService, public router:Router) { 
+  constructor(public game:GameService, public router:Router, public auth:AuthService) { 
+    if (!auth.isAuth()){
+      auth.logout("not authed")
+    }
     this.refreshGames();
   }
 

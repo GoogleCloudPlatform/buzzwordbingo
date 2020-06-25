@@ -17,6 +17,7 @@
 import { Component, OnInit } from '@angular/core';
 import {GameService, Board, Message, Game} from '../../service/game.service';
 import { DataService, Phrase} from '../../service/data.service'
+import {AuthService, Player} from 'src/app/service/auth.service'
 import { Observable, of as observableOf } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 
@@ -32,7 +33,12 @@ export class ManageComponent implements OnInit {
   public inviteLink:string;
   message_target:string = "admin";
 
-  constructor(public data:DataService, public gameService:GameService, public router:Router, route: ActivatedRoute,) {
+  constructor(public data:DataService, public gameService:GameService, public router:Router, route: ActivatedRoute, public auth:AuthService) {
+    if (!auth.isAuth()){
+      auth.logout("not authed")
+    }
+    
+    
     this.id = route.snapshot.paramMap.get('id');
     gameService.getGame(this.id).subscribe(val=>{let g:Game = val as Game; this.game=observableOf(g)});
     this.inviteLink = "http://" + window.location.hostname + "/invite";

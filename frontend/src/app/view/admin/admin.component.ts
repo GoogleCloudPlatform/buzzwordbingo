@@ -19,6 +19,7 @@ import {GameService, Board, Message} from '../../service/game.service';
 import { DataService, Phrase} from '../../service/data.service'
 import { Observable, of } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
+import { AuthService } from 'src/app/service/auth.service';
 
 @Component({
   selector: 'app-admin',
@@ -29,7 +30,11 @@ export class AdminComponent implements OnInit {
   public id:string;
   public messages: Observable<any[]>;
   message_target:string = "admin";
-  constructor(public data:DataService, public game:GameService, public router:Router, route: ActivatedRoute,) {
+  constructor(public data:DataService, public game:GameService, public router:Router, route: ActivatedRoute, public auth:AuthService) {
+    if (!auth.isAuth()){
+      auth.logout("not authed")
+    }
+    
     this.id = route.snapshot.paramMap.get('id');
    }
 

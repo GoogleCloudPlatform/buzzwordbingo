@@ -34,7 +34,7 @@ export class AdminGameComponent implements OnInit {
   }
 
   createNewGame(name:string){
-    let player = this.auth.getPlayer()
+    let player = this.auth.getPlayer();
 
 
     this.game.newGame(name,player.name).subscribe(val => {
