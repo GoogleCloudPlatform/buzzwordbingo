@@ -217,7 +217,7 @@ func getNewGame(name string, player Player) (Game, error) {
 	if err != nil {
 		return game, fmt.Errorf("failed to get new game: %v", err)
 	}
-	if err := cache.DeleteGamesForKey([]string{player.Email}); err != nil {
+	if err := cache.DeleteGamesForKey([]string{player.Email, "admin-list"}); err != nil {
 		return game, fmt.Errorf("failed to clear cache: %v", err)
 	}
 	if err := cache.SaveGame(game); err != nil {

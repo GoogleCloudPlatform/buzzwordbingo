@@ -18,7 +18,7 @@
 
 <div>
     
-    
+    <app-formalert></app-formalert>
     <table class="game-list">
         <thead>
             <tr><th>Name</th><th>Admins</th><th>Date</th><th></th></tr>
@@ -27,7 +27,7 @@
             <td class="game-name"><a routerLink="/game/{{game.id}}">{{game.name}}</a></td>
             <td><span *ngFor="let admin of game.admins">{{admin.name}}</span></td>
             <td>{{game.created | date:'short'}}</td>
-            <td><button [id]="game.id" (click)="deactivateGame($event)"><span>Close</span> <i class="material-icons">cancel</i></button></td>
+            <td><button [id]="game.id" (click)="deactivateGame($event, game.id)"><span>Close</span> <i class="material-icons">cancel</i></button></td>
         </tr>
         <tfoot>
             <tr>

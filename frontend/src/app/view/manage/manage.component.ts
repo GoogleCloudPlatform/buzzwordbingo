@@ -50,7 +50,9 @@ export class ManageComponent implements OnInit {
   }
 
   deactivateGame(){
-    this.gameService.deactivateGame(this.id).subscribe();
+    this.gameService.deactivateGame(this.id).subscribe(val =>{
+      this.router.navigateByUrl('/gamepicker');
+    });
   }
 
 

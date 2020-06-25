@@ -18,6 +18,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { GameService, Game } from 'src/app/service/game.service';
 import { BehaviorSubject, Observable, of as observableOf  } from 'rxjs';
 import {ProgressbarComponent} from 'src/app/view/widgets/progressbar/progressbar.component'
+import { FormalertComponent } from '../../widgets/formalert/formalert.component';
 
 @Component({
   selector: 'app-admin-games',
@@ -26,6 +27,7 @@ import {ProgressbarComponent} from 'src/app/view/widgets/progressbar/progressbar
 })
 export class AdminGamesComponent implements OnInit {
   @ViewChild(ProgressbarComponent ) bar: ProgressbarComponent ; 
+  @ViewChild(FormalertComponent ) formalert: FormalertComponent ;
   public games:BehaviorSubject<Game[]> = new BehaviorSubject([]);
   
   constructor(public game:GameService) { 
@@ -35,10 +37,10 @@ export class AdminGamesComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  deactivateGame($event){
-    let id = $event.target.id;
+  deactivateGame($event, gid:string){
     $event.target.parentElement.parentElement.style.display = 'none';
-    this.game.deactivateGame(id).subscribe(val=>{this.refreshGame();});
+    this.formalert.alert(`Game has been deactivated`);
+    this.game.deactivateGame(gid).subscribe(val=>{this.refreshGame();});
   }
 
   refreshGame(){
