@@ -18,7 +18,7 @@ module.exports.subscribeMailgun = (pubSubEvent, context) => {
     return;
   }
 
-  if (build.steps[0].name == "gcr.io/cloud-builders/gcs-fetche"){
+  if (build.steps[0].name == "gcr.io/cloud-builders/gcs-fetcher"){
     return;
   }
 
@@ -62,7 +62,7 @@ const createEmail = (build) => {
   const message = {
     from: config.MAILGUN_FROM,
     to: config.MAILGUN_TO,
-    subject: `Project: ${build.projectId} Build finished - ${build.status}`,
+    subject: `${build.status}: Project: ${build.projectId} Build finished`,
     text: "Build complete",
     html: msgHtml
   };

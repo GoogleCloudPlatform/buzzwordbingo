@@ -142,3 +142,5 @@ function: env
 	-gcloud functions deploy subscribeMailgun --trigger-topic cloud-builds \
 	--runtime nodejs10 --set-env-vars GCLOUD_PROJECT=$(PROJECT) \
 	--source $(BASEDIR)/functions/email	--allow-unauthenticated	
+	-gcloud alpha functions add-iam-policy-binding subscribeMailgun \
+	--member=allUsers --role=roles/cloudfunctions.invoker
