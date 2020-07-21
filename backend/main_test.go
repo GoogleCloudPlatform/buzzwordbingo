@@ -178,7 +178,7 @@ func TestSimpleHandlers(t *testing.T) {
 		{"/api/player/identify", fmt.Sprintf(`{"name":"","email":"%s@google.com"}`, os.Getenv("USER")), JSONHandler(iapUsernameGetHandle, "none")},
 		{"/api/player/isadmin", "false", AdminHandler(isAdminHandle)},
 		{"/api/admin/list", "[]", JSONHandler(adminListHandle, "none")},
-		{"/api/game/list", "[]", JSONHandler(gameListHandle, "none")},
+		{"/api/game/list?l=5&t=1000000", "[]", JSONHandler(gameListHandle, "none")},
 		{"/api/player/game/list", "[]", JSONHandler(playerGameListHandle, "none")},
 		{"/api/cache/clear", `{"msg":"ok"}`, SimpleHandler(clearCacheHandle, "none")},
 	}
@@ -284,18 +284,12 @@ func TestGlobalAuthSuccessGetHandlers(t *testing.T) {
 	games.Add(game1)
 	games.Add(game2)
 
-	gamejson, err := games.JSON()
-	if err != nil {
-		t.Errorf("error in setting up games json for testing %v", err)
-	}
-
 	var table = []struct {
 		in      string
 		out     string
 		handler http.Handler
 	}{
 		{"/api/admin/list", fmt.Sprintf(`[{"name":"","email":"%s"}]`, player1.Email), JSONHandler(adminListHandle, "global")},
-		{"/api/game/list", gamejson, JSONHandler(gameListHandle, "global")},
 		{"/api/cache/clear", `{"msg":"ok"}`, SimpleHandler(clearCacheHandle, "global")},
 	}
 
