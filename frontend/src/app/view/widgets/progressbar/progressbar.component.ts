@@ -29,7 +29,19 @@ export class ProgressbarComponent implements OnInit {
   }
 
   public toggle(){
+    if (this.display){
+      this.display = false;
+    } else {
+      this.display = true;
+    }
+  }
+
+  public hide(){
     this.display = false;
+  }
+
+  public show(){
+    this.display = true;
   }
 
 }

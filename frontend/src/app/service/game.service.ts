@@ -140,8 +140,8 @@ export class GameService {
     return this.http.get(this.hostUrl +  "/api/player/game/list").pipe(share());
   }
 
-  getGames(){
-    return this.http.get(this.hostUrl +  "/api/game/list").pipe(share());
+  getGames(limit:number, token:string){
+    return this.http.get(this.hostUrl +  `/api/game/list?l=${limit}&t=${token}`).pipe(share());
   }
 
   updateMasterPhrase(phrase:Phrase){

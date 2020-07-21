@@ -64,7 +64,14 @@
         margin-top: 20px;
     }
     
-    
+.next{
+    text-align: right;
+}    
+
+.pager{
+    cursor: pointer;
+    color: var(--link-text-color);
+}
 
 
 .picker{

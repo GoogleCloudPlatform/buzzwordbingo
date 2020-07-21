@@ -29,7 +29,10 @@ export class AdminGamesComponent implements OnInit {
   @ViewChild(ProgressbarComponent ) bar: ProgressbarComponent ; 
   @ViewChild(FormalertComponent ) formalert: FormalertComponent ;
   public games:BehaviorSubject<Game[]> = new BehaviorSubject([]);
-  
+  private limit:number = 5;
+  private tokens:number[] = [];
+  public showPrev = false;
+  public showNext = false;
   constructor(public game:GameService) { 
     this.refreshGame();
   }
@@ -44,12 +47,77 @@ export class AdminGamesComponent implements OnInit {
   }
 
   refreshGame(){
-    this.game.getGames().subscribe(val=>{
+    let token = Math.round(new Date().getTime() /1000);
+    this.game.getGames(this.limit, token.toString()).subscribe(val=>{
       let games:Game[] = val as Game[];
-      games.sort((a, b) => (a.created > b.created) ? 1 : -1)
+      games.sort((a, b) => (a.created < b.created) ? 1 : -1)
       this.games.next(games); 
       this.bar.toggle();
+      this.showNext = true;
+      this.tokens.push(token);
     } );
+  }
+
+  next(){
+
+
+    let gs = this.games.getValue();
+    let date = gs[gs.length -1].created;
+    let t = new Date(date);
+    let token = Math.round(t.getTime() /1000);
+    this.bar.show();
+
+    this.game.getGames(this.limit, token.toString()).subscribe(val=>{
+      let games:Game[] = val as Game[];
+      games.sort((a, b) => (a.created < b.created) ? 1 : -1)
+
+      this.games.next(games); 
+      this.bar.toggle();
+      this.showPrev = true;
+      
+
+      if (this.tokens[this.tokens.length -1] == token){
+        this.showNext = false;
+      } else {
+        this.tokens.push(token);
+        this.showNext = true;
+      }
+
+      if (games.length != this.limit){
+        this.showNext = false;
+      }
+      
+
+    } );
+
+
+
+  }
+
+  prev(){
+
+    this.tokens.pop();
+    let token = this.tokens[this.tokens.length-1];
+    this.bar.show();
+
+    this.game.getGames(this.limit, token.toString()).subscribe(val=>{
+      let games:Game[] = val as Game[];
+      games.sort((a, b) => (a.created < b.created) ? 1 : -1)
+
+      this.games.next(games); 
+      this.bar.toggle();
+      this.showNext = true;
+
+      if (this.tokens.length == 1){
+        this.showPrev = false;
+      } else {
+        this.showPrev = true;
+      }
+     
+    } );
+
+
+
   }
 
 }
