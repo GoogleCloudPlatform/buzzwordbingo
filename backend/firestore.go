@@ -534,34 +534,79 @@ func (a *Agent) GetGamesForKey(email string) (Games, error) {
 	return g, nil
 }
 
+func (a *Agent) PurgeOldGames() error {
+	g := []Game{}
+
+	dateCutoff := time.Now().AddDate(0, 0, -30)
+
+	msg := fmt.Sprintf("Getting Games before %s", dateCutoff.Format("2006-01-02"))
+
+	a.log(msg)
+	iter := a.client.Collection("games").Where("created", "<", dateCutoff).Documents(a.ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("Failed to iterate: %v", err)
+		}
+		game := Game{}
+		doc.DataTo(&game)
+		game.ID = doc.Ref.ID
+
+		g = append(g, game)
+	}
+
+	for _, v := range g {
+		msg := fmt.Sprintf("%s - %s \n", v.Name, v.Created.Format("2006-01-02"))
+		a.log(msg)
+		err := a.DeleteGame(v)
+		if err != nil {
+			return fmt.Errorf("failure deleting %s: %s", v.Name, err)
+		}
+	}
+
+	return nil
+}
+
 // DeleteGame delete a specifc game from firestore
 func (a *Agent) DeleteGame(game Game) error {
+
+	refs := []*firestore.DocumentRef{}
+
 	batch := a.client.Batch()
 	a.log("Deleting board")
 	gref := a.client.Collection("games").Doc(game.ID)
+	refs = append(refs, gref)
 	batch.Delete(gref)
 
 	for _, v := range game.Admins {
 		rref := a.client.Collection("games").Doc(game.ID).Collection("admins").Doc(v.Email)
+		refs = append(refs, rref)
 		batch.Delete(rref)
 	}
 
 	for _, v := range game.Players {
 		rref := a.client.Collection("games").Doc(game.ID).Collection("players").Doc(v.Email)
+		refs = append(refs, rref)
 		batch.Delete(rref)
 	}
 
 	for _, v := range game.Master.Records {
 		rref := a.client.Collection("games").Doc(game.ID).Collection("records").Doc(v.ID)
+		refs = append(refs, rref)
 		batch.Delete(rref)
 	}
 
 	for _, v := range game.Boards {
 		rref := a.client.Collection("games").Doc(game.ID).Collection("boards").Doc(v.ID)
+		refs = append(refs, rref)
 		batch.Delete(rref)
 
 		for _, subv := range v.Phrases {
 			pref := a.client.Collection("games").Doc(game.ID).Collection("boards").Doc(v.ID).Collection("phrases").Doc(subv.ID)
+			refs = append(refs, pref)
 			batch.Delete(pref)
 		}
 	}
@@ -570,7 +615,7 @@ func (a *Agent) DeleteGame(game Game) error {
 	ref := a.client.Collection("games").Doc(game.ID).Collection("messages")
 	for {
 		// Get a batch of documents
-		iter := ref.Limit(1000).Documents(a.ctx)
+		iter := ref.Limit(500).Documents(a.ctx)
 
 		for {
 			doc, err := iter.Next()
@@ -582,8 +627,33 @@ func (a *Agent) DeleteGame(game Game) error {
 			}
 
 			a.log(fmt.Sprintf("removing message %s from board", doc.Ref.ID))
+			refs = append(refs, doc.Ref)
 			batch.Delete(doc.Ref)
 		}
+
+		limit := 500
+		for i := 0; i < len(refs); i = i + limit {
+			added := 0
+			batch := a.client.Batch()
+
+			for j := i; j < limit; j++ {
+				if j >= len(refs)-i {
+					break
+				}
+				batch.Delete(refs[j])
+				added++
+			}
+
+			if added == 0 {
+				break
+			}
+
+			if _, err := batch.Commit(a.ctx); err != nil {
+				return fmt.Errorf("failed to clean messages from firestore: %v", err)
+			}
+
+		}
+
 		if _, err := batch.Commit(a.ctx); err != nil {
 			return fmt.Errorf("failed to clean messages from firestore: %v", err)
 		}

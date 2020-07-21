@@ -86,6 +86,7 @@ func main() {
 	r.Handle("/api/game/admin/add", PrefetechHandler(gameAdminAddHandle, http.MethodPost, "game"))
 	r.Handle("/api/game/admin/remove", PrefetechHandler(gameAdminDeleteHandle, http.MethodDelete, "game"))
 	r.Handle("/api/game/deactivate", SimpleHandler(gameDeactivateHandle, "game"))
+	r.Handle("/api/game/purge", SimpleHandler(purgeHandle, "none"))
 	r.Handle("/api/game/phrase/update", SimpleHandler(gamePhraseUpdateHandle, "game"))
 	r.Handle("/api/phrase/update", SimpleHandler(masterPhraseUpdateHandle, "global"))
 	r.Handle("/api/game/isadmin", AdminHandler(isGameAdminHandle))
@@ -267,6 +268,10 @@ func isGameAdminHandle(w http.ResponseWriter, r *http.Request) (int, error) {
 	}
 
 	return isGameAdmin(r, queries["g"])
+}
+
+func purgeHandle(w http.ResponseWriter, r *http.Request) error {
+	return a.PurgeOldGames()
 }
 
 func gamePhraseUpdateHandle(w http.ResponseWriter, r *http.Request) error {
