@@ -40,12 +40,12 @@ var (
 	noisy         = true
 	projectID     = ""
 	projectNumber = ""
+	ctx           = context.Background()
 	// ErrNotAdmin is an error that indicates that the user is not an admin
 	ErrNotAdmin = fmt.Errorf("not an admin or game admin")
 	// ErrNotAdminOrPlayer is an error that indicates that the user is not an
 	// admin nor an owner of the board they are editing.
 	ErrNotAdminOrPlayer = fmt.Errorf("not an admin or game admin, or owner of board")
-	ctx                 = context.Background()
 )
 
 func main() {
