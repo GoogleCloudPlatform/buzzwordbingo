@@ -144,3 +144,7 @@ function: env
 	--source $(BASEDIR)/functions/email	--allow-unauthenticated	
 	-gcloud alpha functions add-iam-policy-binding subscribeMailgun \
 	--member=allUsers --role=roles/cloudfunctions.invoker
+
+schedule: env
+	gcloud scheduler jobs create app-engine purgeGames --schedule="0 1 * * *"	\
+	--relative-url="/api/game/purge"
