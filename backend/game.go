@@ -16,6 +16,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -193,7 +194,7 @@ func getGamesForKey(key string, limit int, token time.Time) (Games, error) {
 	if err != nil {
 		if err == ErrCacheMiss {
 
-			if key == "admin-list" {
+			if strings.Contains(key, "admin-list") {
 				g, err = a.GetGames(limit, token)
 				if err != nil {
 					return g, fmt.Errorf("error getting games: %v", err)

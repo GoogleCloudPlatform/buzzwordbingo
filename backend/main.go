@@ -35,7 +35,7 @@ var (
 	randseedfunc  = randomseed
 	a             Agent
 	cache         *Cache
-	cacheEnabled  = false
+	cacheEnabled  = true
 	port          = ":8080"
 	noisy         = true
 	projectID     = ""
@@ -330,7 +330,6 @@ func playerGameListHandle(w http.ResponseWriter, r *http.Request) (JSONProducer,
 	return getGamesForKey(email, 10, time.Now())
 }
 
-// TODO: Change to handle things passed from request.
 func gameListHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error) {
 	queries, err := getQueries(r, "l", "t")
 	if err != nil {
@@ -347,21 +346,15 @@ func gameListHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error
 		return Games{}, err
 	}
 
-	fmt.Printf("***************************\n")
-	fmt.Printf("%+v\n", queries["t"])
-	fmt.Printf("***************************\n")
-
 	token := time.Unix(int64(tokenint), 0)
-
-	fmt.Printf("***************************\n")
-	fmt.Printf("%+v\n", token)
-	fmt.Printf("***************************\n")
 
 	if err != nil {
 		return Games{}, err
 	}
 
-	return getGamesForKey("admin-list", limit, token)
+	key := fmt.Sprintf("admin-list-%d-%d", limit, tokenint)
+
+	return getGamesForKey(key, limit, token)
 }
 
 func boardGetHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error) {
