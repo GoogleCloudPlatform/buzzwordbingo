@@ -86,11 +86,8 @@ export class AdminGamesComponent implements OnInit {
       if (games.length != this.limit){
         this.showNext = false;
       }
-      
 
     } );
-
-
 
   }
 
