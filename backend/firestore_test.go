@@ -18,6 +18,7 @@ import (
 	"context"
 	"log"
 	"testing"
+	"time"
 
 	"cloud.google.com/go/firestore"
 )
@@ -263,7 +264,7 @@ func TestGamesEditing(t *testing.T) {
 		t.Errorf("Agent.NewGame() err want %v got %s ", nil, err)
 	}
 
-	games, err := a.GetGames()
+	games, err := a.GetGames(10, time.Now())
 	if err != nil {
 		t.Errorf("Agent.GetGames() err want %v got %s ", nil, err)
 	}

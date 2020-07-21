@@ -16,6 +16,7 @@ package main
 
 import (
 	"testing"
+	"time"
 )
 
 func TestGetBoardForPlayer(t *testing.T) {
@@ -272,7 +273,7 @@ func TestGetGames(t *testing.T) {
 		t.Errorf("Agent.NewGame() err want %v got %s ", nil, err)
 	}
 
-	gamesFromFirestore, err := getGamesForKey("admin-list")
+	gamesFromFirestore, err := getGamesForKey("admin-list", 10, time.Now())
 	if err != nil {
 		t.Errorf("Agent.GetGames() err want %v got %s ", nil, err)
 	}
@@ -281,7 +282,7 @@ func TestGetGames(t *testing.T) {
 		t.Errorf("Agent.GetGames() count want %d got %d ", 2, len(gamesFromFirestore))
 	}
 
-	gamesFromCache, err := getGamesForKey("admin-list")
+	gamesFromCache, err := getGamesForKey("admin-list", 10, time.Now())
 	if err != nil {
 		t.Errorf("Agent.GetGames() err want %v got %s ", nil, err)
 	}
@@ -310,7 +311,7 @@ func TestGetGamesForPlayer(t *testing.T) {
 		t.Errorf("Agent.NewGame() err want %v got %s ", nil, err)
 	}
 
-	gamesFromFirestore, err := getGamesForKey(player.Email)
+	gamesFromFirestore, err := getGamesForKey(player.Email, 10, time.Now())
 	if err != nil {
 		t.Errorf("Agent.GetGames() err want %v got %s ", nil, err)
 	}
@@ -319,7 +320,7 @@ func TestGetGamesForPlayer(t *testing.T) {
 		t.Errorf("Agent.GetGames() count want %d got %d ", 2, len(gamesFromFirestore))
 	}
 
-	gamesFromCache, err := getGamesForKey(player.Email)
+	gamesFromCache, err := getGamesForKey(player.Email, 10, time.Now())
 	if err != nil {
 		t.Errorf("Agent.GetGames() err want %v got %s ", nil, err)
 	}

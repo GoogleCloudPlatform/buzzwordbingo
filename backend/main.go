@@ -22,6 +22,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 	"golang.org/x/oauth2/google"
@@ -34,7 +35,7 @@ var (
 	randseedfunc  = randomseed
 	a             Agent
 	cache         *Cache
-	cacheEnabled  = true
+	cacheEnabled  = false
 	port          = ":8080"
 	noisy         = true
 	projectID     = ""
@@ -319,16 +320,48 @@ func messageAcknowledgeHandle(w http.ResponseWriter, r *http.Request) error {
 	return a.AcknowledgeMessage(g, m)
 }
 
+// TODO: Change to handle things passed from request.
 func playerGameListHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error) {
+
 	email, err := getPlayerEmail(r)
 	if err != nil {
 		return Games{}, err
 	}
-	return getGamesForKey(email)
+	return getGamesForKey(email, 10, time.Now())
 }
 
+// TODO: Change to handle things passed from request.
 func gameListHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error) {
-	return getGamesForKey("admin-list")
+	queries, err := getQueries(r, "l", "t")
+	if err != nil {
+		return Games{}, err
+	}
+
+	limit, err := strconv.Atoi(queries["l"])
+	if err != nil {
+		return Games{}, err
+	}
+
+	tokenint, err := strconv.Atoi(queries["t"])
+	if err != nil {
+		return Games{}, err
+	}
+
+	fmt.Printf("***************************\n")
+	fmt.Printf("%+v\n", queries["t"])
+	fmt.Printf("***************************\n")
+
+	token := time.Unix(int64(tokenint), 0)
+
+	fmt.Printf("***************************\n")
+	fmt.Printf("%+v\n", token)
+	fmt.Printf("***************************\n")
+
+	if err != nil {
+		return Games{}, err
+	}
+
+	return getGamesForKey("admin-list", limit, token)
 }
 
 func boardGetHandle(w http.ResponseWriter, r *http.Request) (JSONProducer, error) {

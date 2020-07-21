@@ -14,7 +14,10 @@
 
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func getBoardForPlayer(player Player, game Game) (Board, error) {
 	var err error
@@ -182,7 +185,7 @@ func generateBingoMessages(board Board, game Game, first bool) []Message {
 	return messages
 }
 
-func getGamesForKey(key string) (Games, error) {
+func getGamesForKey(key string, limit int, token time.Time) (Games, error) {
 	g := Games{}
 	var err error
 
@@ -191,7 +194,7 @@ func getGamesForKey(key string) (Games, error) {
 		if err == ErrCacheMiss {
 
 			if key == "admin-list" {
-				g, err = a.GetGames()
+				g, err = a.GetGames(limit, token)
 				if err != nil {
 					return g, fmt.Errorf("error getting games: %v", err)
 				}

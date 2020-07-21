@@ -219,11 +219,14 @@ func (a *Agent) NewGame(name string, player Player) (Game, error) {
 }
 
 // GetGames finds a collection of all games.
-func (a *Agent) GetGames() (Games, error) {
+func (a *Agent) GetGames(limit int, token time.Time) (Games, error) {
 	g := []Game{}
 
 	a.log("Getting Games")
-	iter := a.client.Collection("games").Where("active", "==", true).Documents(a.ctx)
+	iter := a.client.Collection("games").
+		Where("active", "==", true).Limit(limit).
+		OrderBy("created", firestore.Desc).
+		StartAfter(token).Documents(a.ctx)
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
