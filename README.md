@@ -44,7 +44,7 @@ Source technologies.
 * Make copies of `frontend/src/environments/sample.environment.ts` and `frontend/src/environments/sample.environment.prod.ts` named `frontend/src/environments/environment.ts` and `frontend/src/environments/environment.prod.ts`
 * Download Firebase config and copy into  `frontend/src/environments/environment.ts`
 * Repeat for `frontend/src/environments/environment.prod.ts`
-
+* Initialize the dabase by running `make initdb` 
 
 
 ## Development server
@@ -77,6 +77,11 @@ Readup on [sending Cloud Build notifications using Mailgun](https://cloud.google
 Setup `/functions/email/config.json` based on the sample file there. 
 
 Then run `make function`
+
+### Cloud Scheduler
+Purge the system of games, boards, and most importantly, emails older than 30 days. 
+
+Set this up by running `make schedule`
 
 <hr>
 This is not an official Google product. 
