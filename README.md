@@ -44,7 +44,6 @@ Source technologies.
 * Make copies of `frontend/src/environments/sample.environment.ts` and `frontend/src/environments/sample.environment.prod.ts` named `frontend/src/environments/environment.ts` and `frontend/src/environments/environment.prod.ts`
 * Download Firebase config and copy into  `frontend/src/environments/environment.ts`
 * Repeat for `frontend/src/environments/environment.prod.ts`
-* Initialize the dabase by running `make initdb` 
 
 
 ## Development server

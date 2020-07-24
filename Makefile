@@ -157,9 +157,6 @@ schedule: env
 	gcloud scheduler jobs create app-engine purgeGames --schedule="0 1 * * *"	\
 	--relative-url="/api/game/purge"
 
-initdb: env
-	export GOOGLE_APPLICATION_CREDENTIALS=$(BASEDIR)/creds/creds.json && \
-	cd $(BASEDIR)/init && go run main.go 
 
 fsconfig:
 	firebase firestore:indexes

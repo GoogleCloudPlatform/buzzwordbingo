@@ -38,6 +38,34 @@ func NewAgent(ctx context.Context, projectID string) (Agent, error) {
 	if err != nil {
 		return a, fmt.Errorf("Failed to create client: %v", err)
 	}
+
+	admins, err := a.GetAdmins()
+	if err != nil {
+		return a, fmt.Errorf("error trying to check on admins: %v", err)
+	}
+
+	if len(admins) == 0 {
+		a.log("Intializing admin email.")
+		player := Player{"", "notrealemail"}
+		err = a.AddAdmin(player)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	phrases, err := a.GetPhrases()
+	if err != nil {
+		return a, fmt.Errorf("error trying to check on phrases: %v", err)
+	}
+
+	if len(phrases) < 25 {
+		phrases = a.getDefaultList()
+
+		if err := a.LoadPhrases(phrases); err != nil {
+			return a, fmt.Errorf("error loading phrases: %v", err)
+		}
+	}
+
 	return a, nil
 }
 
@@ -168,6 +196,39 @@ func (a *Agent) UpdateMasterPhrase(phrase Phrase) error {
 	}
 
 	return nil
+}
+
+func (a *Agent) getDefaultList() []Phrase {
+	a.log("Getting the default phrase list")
+	phrases := []Phrase{
+		{"101", "Someone tells a dad joke", false, "", "", 0},
+		{"102", "Greg references airplanes/piloting", false, "", "", 0},
+		{"103", "\"We’re all in this together\"", false, "", "", 0},
+		{"104", "\"the new normal\"", false, "", "", 0},
+		{"105", "Someone's child/S.O. on screen", false, "", "", 0},
+		{"106", "\"Goals\"", false, "", "", 0},
+		{"107", "\"Increased (better, clearer) focus\"", false, "", "", 0},
+		{"108", "\"These uncertain times\"", false, "", "", 0},
+		{"109", "Someone’s pet on screen", false, "", "", 0},
+		{"110", "\"working from home\"", false, "", "", 0},
+		{"111", "Someone speaks when muted", false, "", "", 0},
+		{"112", "\"Wash your hands\"", false, "", "", 0},
+		{"113", "FREE", false, "", "", 0},
+		{"114", "Awkward silence", false, "", "", 0},
+		{"115", "Sports metaphor", false, "", "", 0},
+		{"116", "Start at least 5 min late", false, "", "", 0},
+		{"117", "Joke made, but no one laughs", false, "", "", 0},
+		{"118", "Someone eats on screen", false, "", "", 0},
+		{"119", "Answer all Dory questions", false, "", "", 0},
+		{"120", "\"self care\"", false, "", "", 0},
+		{"121", "\"Can you see my screen?\"", false, "", "", 0},
+		{"122", "\"headcount\"", false, "", "", 0},
+		{"123", "CEO's name mentioned", false, "", "", 0},
+		{"124", "\"TK\"", false, "", "", 0},
+		{"125", "VP's name mentioned", false, "", "", 0},
+	}
+
+	return phrases
 }
 
 ////////////////////////////////////////////////////////////////////////////////
