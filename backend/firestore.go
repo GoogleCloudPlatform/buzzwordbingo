@@ -636,43 +636,47 @@ func (a *Agent) DeleteGame(game Game) error {
 
 	refs := []*firestore.DocumentRef{}
 
+	game, err := a.GetGame(game.ID)
+	if err != nil {
+		return fmt.Errorf("loading complete game data: %v", err)
+	}
+
 	batch := a.client.Batch()
-	a.log("Deleting board")
+	a.log("Deleting game")
 	gref := a.client.Collection("games").Doc(game.ID)
 	refs = append(refs, gref)
-	batch.Delete(gref)
 
 	for _, v := range game.Admins {
+		a.log("Deleting admin: " + v.Email)
 		rref := a.client.Collection("games").Doc(game.ID).Collection("admins").Doc(v.Email)
 		refs = append(refs, rref)
-		batch.Delete(rref)
 	}
 
 	for _, v := range game.Players {
+		a.log("Deleting player: " + v.Email)
 		rref := a.client.Collection("games").Doc(game.ID).Collection("players").Doc(v.Email)
 		refs = append(refs, rref)
-		batch.Delete(rref)
 	}
 
 	for _, v := range game.Master.Records {
+		a.log("Deleting record: " + v.ID)
 		rref := a.client.Collection("games").Doc(game.ID).Collection("records").Doc(v.ID)
 		refs = append(refs, rref)
-		batch.Delete(rref)
 	}
 
 	for _, v := range game.Boards {
+		a.log("Deleting boards: " + v.ID)
 		rref := a.client.Collection("games").Doc(game.ID).Collection("boards").Doc(v.ID)
 		refs = append(refs, rref)
-		batch.Delete(rref)
 
 		for _, subv := range v.Phrases {
+			a.log("Deleting phrases: " + subv.ID)
 			pref := a.client.Collection("games").Doc(game.ID).Collection("boards").Doc(v.ID).Collection("phrases").Doc(subv.ID)
 			refs = append(refs, pref)
-			batch.Delete(pref)
 		}
 	}
 
-	a.log("removing phrases from board")
+	a.log("removing messages from board")
 	ref := a.client.Collection("games").Doc(game.ID).Collection("messages")
 	for {
 		// Get a batch of documents
