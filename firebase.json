@@ -11,5 +11,8 @@
       "enabled": true,
       "port": 6061
     }
+  },
+  "functions": {
+    "source": "functions"
   }
 }
